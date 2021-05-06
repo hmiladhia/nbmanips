@@ -37,6 +37,9 @@ class Notebook:
     def delete(self, selector):
         self.nb['cells'] = [cell for cell in self.nb['cells'] if not selector(cell)]
 
+    def keep(self, selector):
+        self.nb['cells'] = [cell for cell in self.nb['cells'] if selector(cell)]
+
     def search(self, text, case=False):
         if not case:
             text = text.lower()
