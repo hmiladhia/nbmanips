@@ -24,6 +24,26 @@ class Notebook:
         nb['cells'] = nb['cells'] + copy.copy(other.nb['cells'])
         return Notebook(nb)
 
+    def search(self, text, case=False):
+        if not case:
+            text = text.lower()
+
+        for i, cell in enumerate(self.nb['cells']):
+            if text in '\n'.join(cell['source']).lower():
+                return i
+
+    def search_all(self, text, case=False):
+        if not case:
+            text = text.lower()
+
+        result = []
+        for i, cell in enumerate(self.nb['cells']):
+            if text in '\n'.join(cell['source']).lower():
+                result.append(i)
+
+        return result
+
+
     def to_ipynb(self, path):
         write_ipynb(self.nb, path)
 
