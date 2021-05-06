@@ -24,6 +24,11 @@ class Notebook:
         nb['cells'] = nb['cells'] + copy.copy(other.nb['cells'])
         return Notebook(nb)
 
+    def replace(self, old, new):
+        for i, cell in enumerate(self.nb['cells']):
+            if old in '\n'.join(cell['source']):
+                cell['source'] = [line.replace(old, new) for line in cell['source']]
+
     def search(self, text, case=False):
         if not case:
             text = text.lower()
@@ -42,7 +47,6 @@ class Notebook:
                 result.append(i)
 
         return result
-
 
     def to_ipynb(self, path):
         write_ipynb(self.nb, path)
