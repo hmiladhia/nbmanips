@@ -29,6 +29,14 @@ class Notebook:
             if old in '\n'.join(cell['source']):
                 cell['source'] = [line.replace(old, new) for line in cell['source']]
 
+    def erase(self, selector):
+        for i, cell in enumerate(self.nb['cells']):
+            if selector(cell):
+                cell['source'] = []
+
+    def delete(self, selector):
+        self.nb['cells'] = [cell for cell in self.nb['cells'] if not selector(cell)]
+
     def search(self, text, case=False):
         if not case:
             text = text.lower()
