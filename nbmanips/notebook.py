@@ -10,10 +10,10 @@ class Notebook:
 
     def __add__(self, other):
         # Copying the notebook
-        nb = copy.copy(self.nb)
+        nb = copy.deepcopy(self.nb)
 
         # Concatenating the notebooks
-        nb['cells'] = nb['cells'] + copy.copy(other.nb['cells'])
+        nb['cells'] = nb['cells'] + other.nb['cells']
         return Notebook(nb)
 
     def replace(self, old, new):
@@ -22,12 +22,12 @@ class Notebook:
             cell.set_source([line.replace(old, new) for line in cell.get_source(text=False)])
 
     def tag(self, tag_key, tag_value, selector):
-        for i, cell in enumerate(self.nb['cells']):
-            if selector(cell):
-                cell['metadata'][tag_key] = tag_value
-
-    def erase(self, selector):
         sel = Selector(selector)
+        for cell in sel.iter_cells(self.nb['cells']):
+            cell.cell['metadata'][tag_key] = tag_value
+
+    def erase(self, selector, **kwargs):
+        sel = Selector(selector, **kwargs)
         for cell in sel.iter_cells(self.nb['cells']):
             cell.set_source([])
 
