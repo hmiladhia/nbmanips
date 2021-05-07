@@ -6,21 +6,31 @@ from nbmanips import Cell
 class Selector:
     default_selectors = {None: lambda cell: True}
 
-    def __init__(self, selector=None, *args, **kwargs):
+    def __init__(self, selector=None, neg=False):
+        self.neg = neg
+        self.is_slice = False
         if callable(selector):
             self._selector = selector
-        else:
-            self._selector = partial(self.default_selectors[selector], *args, **kwargs)
+        elif isinstance(selector, str):
+            self._selector = self.default_selectors[selector]
+        elif isinstance(selector, tuple):
+            self._selector = partial(self.default_selectors[selector[0]], **selector[1])
+        elif isinstance(selector, slice):
+            self.is_slice = True
+            self._selector = selector
 
     def select(self, cell):
-        return self._selector(cell)
+        result = self._selector(cell)
+        return not result if self.neg else result
 
     def iter_cells(self, cells):
-        # return (Cell(cell, i) for i, cell in enumerate(cells) if self.select(cell))
-        for i, cell in enumerate(cells):
-            cell = Cell(cell, i)
-            if self.select(cell):
-                yield cell
+        if self.is_slice:
+            return (Cell(cell, i) for i, cell in enumerate(cells[self._selector]))
+        else:
+            for i, cell in enumerate(cells):
+                cell = Cell(cell, i)
+                if self.select(cell):
+                    yield cell
 
     @classmethod
     def register_selector(cls, key, selector):
@@ -50,6 +60,6 @@ def is_raw(cell):
 # Default Selectors
 Selector.register_selector('contains', contains)
 Selector.register_selector('has_type', has_type)
-Selector.register_selector('is_raw', is_raw)
-Selector.register_selector('is_markdown', is_markdown)
-Selector.register_selector('is_code', is_code)
+Selector.register_selector('raw_cells', is_raw)
+Selector.register_selector('markdown_cels', is_markdown)
+Selector.register_selector('code_cells', is_code)
