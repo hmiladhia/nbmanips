@@ -5,7 +5,7 @@ from nbmanips import NotebookBase, SlideShowMixin
 
 class Notebook(SlideShowMixin, NotebookBase):
     def replace(self, old, new):
-        sel = Selector(('contains', {'text': old}))
+        sel = Selector('contains', text=old)
         for cell in sel.iter_cells(self.nb['cells']):
             cell.set_source([line.replace(old, new) for line in cell.get_source(text=False)])
 
@@ -20,19 +20,23 @@ class Notebook(SlideShowMixin, NotebookBase):
             cell.set_source([])
 
     def delete(self, selector, *args, **kwargs):
-        self.nb['cells'] = [cell.cell for cell in ~Selector(selector, *args, **kwargs).iter_cells(self.nb['cells'])]
+        selector = Selector(selector, *args, **kwargs)
+        self.nb['cells'] = [cell.cell for cell in selector.iter_cells(self.nb['cells'], neg=True)]
 
     def keep(self, selector, *args, **kwargs):
-        self.nb['cells'] = [cell.cell for cell in Selector(selector).iter_cells(self.nb['cells'])]
+        selector = Selector(selector, *args, **kwargs)
+        self.nb['cells'] = [cell.cell for cell in selector.iter_cells(self.nb['cells'])]
 
     def search(self, text, case=False):
-        sel = Selector(('contains', dict(text=text, case=case)))
+        sel = Selector('contains', text=text, case=case)
 
-        for cell in sel.iter_cells(self.nb['cells']):
-            return cell.num
+        # for cell in sel.iter_cells(self.nb['cells']):
+        #     return cell.num
+        cell = next(iter(sel.iter_cells(self.nb['cells'])))
+        return cell.num
 
     def search_all(self, text, case=False):
-        sel = Selector(('contains', dict(text=text, case=case)))
+        sel = Selector('contains', text=text, case=case)
         return [cell.num for cell in sel.iter_cells(self.nb['cells'])]
 
     def to_ipynb(self, path):

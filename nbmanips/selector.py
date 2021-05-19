@@ -8,9 +8,6 @@ class Selector:
     default_selectors = {None: lambda cell: True}
 
     def __init__(self, selector, *args, **kwargs):
-        self.slice = False
-        self.list = False
-
         if callable(selector):
             assert not args  # TODO: add message
             self._selector = partial(selector, **kwargs)
@@ -24,29 +21,20 @@ class Selector:
                 kwargs_list = args
             else:
                 kwargs_list = args[0] if args else [{} for _ in selector]
-            self.list = [Selector(sel, **kwgs) for sel, kwgs in zip(selector, kwargs_list)]
-            # TODO: implement this
-            raise NotImplemented("This feature is not implemented yet")
+            selector_list = [Selector(sel, **kwgs) for sel, kwgs in zip(selector, kwargs_list)]
+            self._selector = lambda cell: all(sel.select(cell) for sel in selector_list)
         elif isinstance(selector, slice):
-            self.slice = selector
             start, stop, step = selector.start, selector.stop, selector.step
             self._selector = lambda cell: (cell.num < stop) and ((cell.num-start) % step == 0)
 
-    def select(self, cell):
-        return self._selector(cell)
-        # return not result if self.neg else result
+    def select(self, neg=False):
+        if neg:
+            return lambda cell: not self._selector(cell)
+        else:
+            return self._selector
 
     def iter_cells(self, cells, neg=False):
-        # TODO: move to select
-        if self.slice:
-            if neg:
-                start, stop, step = self.slice.start, self.slice.stop, self.slice.step
-                return filter(lambda i: i >= stop or ((i-start) % step), (Cell(c, i) for i, c in enumerate(cells)))
-            else:
-                return (Cell(cell, i) for i, cell in enumerate(cells[self.slice]))
-        else:
-            return filter(lambda cell: not self.select(cell) if neg else self.select(cell),
-                          (Cell(cell, i) for i, cell in enumerate(cells)))
+        return filter(self.select(neg), (Cell(cell, i) for i, cell in enumerate(cells)))
 
     @classmethod
     def register_selector(cls, key, selector):
