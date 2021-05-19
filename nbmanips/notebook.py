@@ -1,4 +1,4 @@
-from nbmanips import read_ipynb, write_ipynb
+from nbmanips import read_ipynb, write_ipynb, get_ipynb_name
 from nbmanips import Selector
 from nbmanips import NotebookBase, SlideShowMixin
 
@@ -50,4 +50,4 @@ class Notebook(SlideShowMixin, NotebookBase):
     @classmethod
     def read_ipynb(cls, path):
         nb = read_ipynb(path)
-        return Notebook(nb)
+        return Notebook(nb, get_ipynb_name(path))

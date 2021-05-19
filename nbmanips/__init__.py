@@ -1,4 +1,4 @@
-from nbmanips.utils import read_ipynb, write_ipynb
+from nbmanips.utils import read_ipynb, write_ipynb, get_ipynb_name
 from nbmanips.cell import Cell
 from nbmanips.selector import Selector
 from nbmanips.notebook_mixins import NotebookBase, SlideShowMixin

@@ -1,4 +1,9 @@
+import os
 import json
+
+
+def get_ipynb_name(path):
+    return os.path.splitext(os.path.basename(path))[0]
 
 
 def read_ipynb(notebook_path):
