@@ -1,4 +1,3 @@
-from copy import copy
 from functools import partial
 
 from nbmanips import Cell
