@@ -2,8 +2,9 @@ import copy
 
 
 class NotebookBase:
-    def __init__(self, content):
+    def __init__(self, content, name=None):
         self.nb = copy.deepcopy(content)
+        self.name = name
 
     def __add__(self, other):
         # Copying the notebook
@@ -12,6 +13,12 @@ class NotebookBase:
         # Concatenating the notebooks
         nb['cells'] = nb['cells'] + other.nb['cells']
         return self.__class__(nb)
+
+    def __repr__(self):
+        if self.name:
+            return f"<Notebook {self.name}>"
+        else:
+            return f"<Notebook>"
 
 
 class SlideShowMixin(NotebookBase):
