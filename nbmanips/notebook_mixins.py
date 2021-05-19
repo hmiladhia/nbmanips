@@ -14,6 +14,11 @@ class NotebookBase:
         nb['cells'] = nb['cells'] + other.nb['cells']
         return self.__class__(nb)
 
+    def __len__(self):
+        if self.nb is None or 'cells' not in self.nb:
+            return 0
+        return len(self.nb['cells'])
+
     def __repr__(self):
         if self.name:
             return f"<Notebook {self.name}>"
