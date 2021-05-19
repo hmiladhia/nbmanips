@@ -4,10 +4,15 @@ from nbmanips import NotebookBase, SlideShowMixin
 
 
 class Notebook(SlideShowMixin, NotebookBase):
-    def replace(self, old, new):
-        sel = Selector('contains', text=old)
+    def replace(self, old, new, first=False, case=True):
+        if not case:
+            raise NotImplemented("case support is not implemented yet")
+
+        sel = Selector('contains', text=old, case=case)
         for cell in sel.iter_cells(self.nb['cells']):
             cell.set_source([line.replace(old, new) for line in cell.get_source(text=False)])
+            if first:
+                break
 
     def tag(self, tag_key, tag_value, selector, *args, **kwargs):
         sel = Selector(selector, *args, **kwargs)
@@ -27,13 +32,13 @@ class Notebook(SlideShowMixin, NotebookBase):
         selector = Selector(selector, *args, **kwargs)
         self.nb['cells'] = [cell.cell for cell in selector.iter_cells(self.nb['cells'])]
 
-    def search(self, text, case=False):
+    def search(self, text, case=False, regex=False):
         sel = Selector('contains', text=text, case=case)
+        if regex:
+            raise NotImplemented("regex support isn't implemented yet")
 
-        # for cell in sel.iter_cells(self.nb['cells']):
-        #     return cell.num
-        cell = next(iter(sel.iter_cells(self.nb['cells'])))
-        return cell.num
+        for cell in sel.iter_cells(self.nb['cells']):
+            return cell.num
 
     def search_all(self, text, case=False):
         sel = Selector('contains', text=text, case=case)
