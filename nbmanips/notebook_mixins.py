@@ -31,6 +31,10 @@ class NotebookBase:
         else:
             return f"<Notebook>"
 
+    @property
+    def cells(self):
+        return self.nb['cells']
+
 
 class SlideShowMixin(NotebookBase):
     def mark_slideshow(self):
