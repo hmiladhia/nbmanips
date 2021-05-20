@@ -39,7 +39,9 @@ class Cell:
         :param readable:
         :return:
         """
-        assert self.type == "code", 'Only code cells have outputs'
+        if self.type != "code":
+            return ''
+
         preferred_data_types = ["text/plain", "text/html"] if preferred_data_types is None else preferred_data_types
         exclude_data_types = {'image/png'} if exclude_data_types is None else exclude_data_types
         outputs = self.cell.get('outputs', [])
@@ -113,3 +115,16 @@ class Cell:
         else:
             source = self.get_source()
         return text in source
+
+    def __repr__(self):
+        return f"<Cell {self.num}>" if self.num else "<Cell>"
+
+    def __str__(self):
+        sources = [self.source]
+        output = self.output
+        if output:
+            source = sources[0]
+            m, n = max(len(line) for line in source.split('\n')), max(len(line) for line in output.split('\n'))
+            sep = "#" * max(m, n)
+            sources = [sep, source, sep, output, sep]
+        return '\n'.join(sources)
