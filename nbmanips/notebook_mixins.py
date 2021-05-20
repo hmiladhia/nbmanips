@@ -14,6 +14,12 @@ class NotebookBase:
         nb['cells'] = nb['cells'] + other.nb['cells']
         return self.__class__(nb)
 
+    def __getitem__(self, item):
+        return self.nb[item]
+
+    def __setitem__(self, item, value):
+        self.nb[item] = value
+
     def __len__(self):
         if self.nb is None or 'cells' not in self.nb:
             return 0
