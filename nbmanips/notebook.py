@@ -17,7 +17,10 @@ class Notebook(SlideShowMixin, NotebookBase):
     def tag(self, tag_key, tag_value, selector, *args, **kwargs):
         sel = Selector(selector, *args, **kwargs)
         for cell in sel.iter_cells(self.nb['cells']):
-            cell.cell['metadata'][tag_key] = tag_value
+            if tag_key in cell.cell['metadata'] and isinstance(cell.cell['metadata'][tag_key], dict):
+                cell.cell['metadata'][tag_key].update(tag_value)
+            else:
+                cell.cell['metadata'][tag_key] = tag_value
 
     def erase(self, selector, *args, **kwargs):
         sel = Selector(selector, *args, **kwargs)

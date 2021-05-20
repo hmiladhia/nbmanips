@@ -21,21 +21,33 @@ class NotebookBase:
 
     def __repr__(self):
         if self.name:
-            return f"<Notebook {self.name}>"
+            return f'<Notebook "{self.name}">'
         else:
             return f"<Notebook>"
 
 
 class SlideShowMixin(NotebookBase):
-    def slide(self, selector):
-        self.tag_slide('slide', selector)
+    def mark_slideshow(self):
+        self.nb['metadata']["celltoolbar"] = "Slideshow"
 
-    def skip(self, selector):
-        self.tag_slide('skip', selector)
+    def set_slide(self, selector, *args, **kwargs):
+        self.tag_slide('slide', selector, *args, **kwargs)
 
-    def tag_slide(self, tag, selector):
-        # assert tag in {'skip', 'slide', }  TODO: complete list
-        self.tag('slideshow', {'slide_type': tag}, selector)
+    def set_skip(self, selector, *args, **kwargs):
+        self.tag_slide('skip', selector, *args, **kwargs)
 
-    def tag(self, tag_key, tag, selctor):
-        raise NotImplemented
+    def set_subslide(self, selector, *args, **kwargs):
+        self.tag_slide('subslide', selector, *args, **kwargs)
+
+    def set_fragment(self, selector, *args, **kwargs):
+        self.tag_slide('fragment', selector, *args, **kwargs)
+
+    def set_notes(self, selector, *args, **kwargs):
+        self.tag_slide('notes', selector, *args, **kwargs)
+
+    def tag_slide(self, tag, selector, *args, **kwargs):
+        assert tag in {'-', 'skip', 'slide', 'subslide', 'fragment', 'notes'}
+        self.tag('slideshow', {'slide_type': tag}, selector, *args, **kwargs)
+
+    def tag(self, tag_key, tag, selector, *args, **kwargs):
+        raise NotImplemented()
