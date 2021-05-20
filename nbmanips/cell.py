@@ -24,6 +24,10 @@ class Cell:
         return self.cell['metadata']
 
     @property
+    def source(self):
+        return self.get_source()
+
+    @property
     def output(self):
         return self.get_output(text=True, readable=True)
 
@@ -86,10 +90,6 @@ class Cell:
             return '\n'.join(processed_outputs)
         return processed_outputs
 
-    @property
-    def source(self):
-        return self.get_source()
-
     def get_source(self, text=True):
         source = self.cell['source']
 
@@ -106,15 +106,14 @@ class Cell:
         self.cell['source'] = content
 
     def contains(self, text, case=True, output=False):
+        search_target = self.source
         if output:
-            raise NotImplemented()
+            search_target += self.output
 
         if not case:
             text = text.lower()
-            source = self.get_source().lower()
-        else:
-            source = self.get_source()
-        return text in source
+            search_target = search_target.lower()
+        return text in search_target
 
     def __repr__(self):
         return f"<Cell {self.num}>" if self.num else "<Cell>"

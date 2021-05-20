@@ -34,30 +34,33 @@ def test_len(nb2):
     assert len(nb2) == 5
 
 
-@pytest.mark.parametrize("search_term,case,expected", [
-    ('b', False, None),
-    ('Hello', False, 1),
-    ('hello', False, 1),
-    ('hello', True, None),
-    ('a', True, 0),
-    ('a ', True, 2),
+@pytest.mark.parametrize("search_term,case,output,expected", [
+    ('b', False, False, None),
+    ('Hello', False, False, 1),
+    ('hello', False, False, 1),
+    ('hello', True, False, None),
+    ('a', True, False, 0),
+    ('a ', True, False, 2),
+    ('125', True, False, None),
+    ('125', True, True, 3),
 ])
-def test_search(nb1, search_term, case, expected):
+def test_search(nb1, search_term, case, output, expected):
     # TODO: Test regexes
-    # TODO: Test output
-    assert nb1.search(search_term, case=case) == expected
+    assert nb1.search(search_term, case=case, output=output) == expected
 
 
-@pytest.mark.parametrize("search_term,case,expected", [
-    ('b', False, []),
-    ('Hello', False, [1]),
-    ('hello', False, [1]),
-    ('hello', True, []),
-    ('a', True, [0, 2, 3]),
-    ('a ', True, [2]),
+@pytest.mark.parametrize("search_term,case,output,expected", [
+    ('b', False, False, []),
+    ('Hello', False, False, [1]),
+    ('hello', False, False, [1]),
+    ('hello', True, False, []),
+    ('a', True, False, [0, 2, 3]),
+    ('a ', True, False, [2]),
+    ('125', True, False, []),
+    ('125', True, True, [3]),
 ])
-def test_search_all(nb1, search_term, case, expected):
-    assert nb1.search_all(search_term, case=case) == expected
+def test_search_all(nb1, search_term, case, output, expected):
+    assert nb1.search_all(search_term, case=case, output=output) == expected
 
 
 @pytest.mark.parametrize("old, new, case, first, expected_old, expected_new", [
