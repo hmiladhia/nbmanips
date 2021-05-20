@@ -17,6 +17,7 @@ setuptools.setup(
     license='MIT',
     url="https://github.com/hmiladhia/nbmanips",
     packages=['nbmanips'],
+    include_package_data=True,
     # install_requires=['scikit-learn==0.24.0'],
     classifiers=[
         "Programming Language :: Python :: 3",
