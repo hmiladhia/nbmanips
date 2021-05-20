@@ -9,6 +9,12 @@ class Cell:
         self.cell = content
         self.num = num
 
+    def __getitem__(self, key):
+        return self.cell[key]
+
+    def __setitem__(self, key, value):
+        self.cell[key] = value
+
     @property
     def type(self):
         return self.cell['cell_type']
