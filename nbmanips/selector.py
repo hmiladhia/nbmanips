@@ -60,9 +60,14 @@ def is_raw(cell):
     return has_type(cell, 'raw')
 
 
+def has_readable_output(cell):
+    return cell.output.strip() != ""
+
+
 # Default Selectors
 Selector.register_selector('contains', contains)
 Selector.register_selector('has_type', has_type)
 Selector.register_selector('raw_cells', is_raw)
 Selector.register_selector('markdown_cells', is_markdown)
 Selector.register_selector('code_cells', is_code)
+Selector.register_selector('has_readable_output', has_readable_output)
