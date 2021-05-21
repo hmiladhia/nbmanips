@@ -35,17 +35,26 @@ class Notebook(SlideShowMixin, NotebookBase):
         selector = Selector(selector, *args, **kwargs)
         self.nb['cells'] = [cell.cell for cell in selector.iter_cells(self.nb['cells'])]
 
-    def search(self, text, case=False, output=False, regex=False):
-        sel = Selector('contains', text=text, case=case, output=output)
-        if regex:
-            raise NotImplemented("regex support isn't implemented yet")
-
+    def find(self, selector, *args, **kwargs):
+        sel = Selector(selector, *args, **kwargs)
         for cell in sel.iter_cells(self.nb['cells']):
             return cell.num
 
-    def search_all(self, text, case=False, output=False):
-        sel = Selector('contains', text=text, case=case, output=output)
+    def find_all(self, selector, *args, **kwargs):
+        sel = Selector(selector, *args, **kwargs)
         return [cell.num for cell in sel.iter_cells(self.nb['cells'])]
+
+    def search(self, text, case=False, output=False, regex=False):
+        if regex:
+            raise NotImplemented("regex support isn't implemented yet")
+
+        return self.find('contains', text=text, case=case, output=output)
+
+    def search_all(self, text, case=False, output=False, regex=False):
+        if regex:
+            raise NotImplemented("regex support isn't implemented yet")
+
+        return self.find_all('contains', text=text, case=case, output=output)
 
     def to_ipynb(self, path):
         write_ipynb(self.nb, path)
