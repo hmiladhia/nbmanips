@@ -1,5 +1,5 @@
 try:
-    from html2txt import html2txt
+    from html2text import html2text
 except ImportError:
     html2txt = None
 
@@ -66,8 +66,8 @@ class Cell:
                             if text and not isinstance(output_text, str):
                                 output_text = '\n'.join(output_text)
                             if readable and data_type == 'text/html':
-                                if callable(html2txt):
-                                    output_text = html2txt(output_text)
+                                if callable(html2text):
+                                    output_text = html2text(output_text)
                                 else:
                                     raise ModuleNotFoundError('You need to pip install html2txt for readable option')
                             processed_outputs.append(output_text)
@@ -77,8 +77,8 @@ class Cell:
                         if text and not isinstance(output_text, str):
                             output_text = '\n'.join(output_text)
                         if readable and data_type == 'text/html':
-                            if callable(html2txt):
-                                output_text = html2txt(output_text)
+                            if callable(html2text):
+                                output_text = html2text(output_text)
                             else:
                                 raise ModuleNotFoundError('You need to pip install html2txt for readable option')
                         processed_outputs.append(output_text)
