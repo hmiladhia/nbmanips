@@ -1,6 +1,14 @@
-from functools import partial
+from functools import wraps
 
 from nbmanips import Cell
+
+
+def partial(func, *args, **keywords):
+    @wraps(func)
+    def new_func(*f_args, **f_keywords):
+        new_keywords = {**f_keywords, **keywords}
+        return func(*f_args, *args, **new_keywords)
+    return new_func
 
 
 class Selector:
@@ -9,12 +17,11 @@ class Selector:
     def __init__(self, selector, *args, **kwargs):
         if callable(selector):
             assert not args  # TODO: add message
-            self._selector = partial(selector, **kwargs)
+            self._selector = partial(selector, *args, **kwargs)
         elif isinstance(selector, int):
             self.slice = slice(selector, *args, **kwargs)
         elif isinstance(selector, str):
-            assert not args  # TODO: add message
-            self._selector = partial(self.default_selectors[selector], **kwargs)
+            self._selector = partial(self.default_selectors[selector], *args, **kwargs)
         elif isinstance(selector, list):
             if len(args) == len(selector):
                 kwargs_list = args
@@ -60,8 +67,8 @@ def is_raw(cell):
     return has_type(cell, 'raw')
 
 
-def has_readable_output(cell):
-    return cell.output.strip() != ""
+def has_output(cell):
+    return cell.output != ""
 
 
 # Default Selectors
@@ -70,4 +77,4 @@ Selector.register_selector('has_type', has_type)
 Selector.register_selector('raw_cells', is_raw)
 Selector.register_selector('markdown_cells', is_markdown)
 Selector.register_selector('code_cells', is_code)
-Selector.register_selector('has_readable_output', has_readable_output)
+Selector.register_selector('has_output', has_output)
