@@ -71,10 +71,25 @@ def has_output(cell):
     return cell.output != ""
 
 
+def has_slide_type(cell, slide_type):
+    if isinstance(slide_type, str):
+        slide_type = {slide_type}
+
+    return all(['slideshow' in cell.metadata,
+                'slide_type' in cell.metadata['slideshow'],
+                cell.metadata['slideshow']['slide_type'] in slide_type
+                ])
+
+
 # Default Selectors
 Selector.register_selector('contains', contains)
+Selector.register_selector('has_output', has_output)
+
+# Cell Types
 Selector.register_selector('has_type', has_type)
 Selector.register_selector('raw_cells', is_raw)
 Selector.register_selector('markdown_cells', is_markdown)
 Selector.register_selector('code_cells', is_code)
-Selector.register_selector('has_output', has_output)
+
+# Slide cells
+Selector.register_selector('has_slide_type', has_slide_type)
