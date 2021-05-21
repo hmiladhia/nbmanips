@@ -29,7 +29,7 @@ class Cell:
 
     @property
     def output(self):
-        return self.get_output(text=True, readable=True)
+        return self.get_output(text=True, readable=True).strip()
 
     def get_output(self, text=True, readable=True, preferred_data_types=None, exclude_data_types=None,
                    exclude_errors=True):
