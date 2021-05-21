@@ -45,3 +45,15 @@ def test_selector_args(nb1, selector, args, expected):
     assert nb1.find(selector, *args) == expected
 
 
+@pytest.mark.parametrize("selector,args,expected", [
+    # (['has_output', 'contains'], (), 3),
+    (['has_output', 'contains'], ({'value': False}, {'text': '5'}), 2),
+    (['has_output', 'contains'], ([{'value': False}, {'text': '5'}]), 2),
+    (['has_output', 'contains'], ([{'value': True}, {'text': '5'}]), None),
+    (['has_output', 'contains'], ([{'value': True}, {'text': 'a'}]), 3),
+    (['has_output', 'contains'], ([{}, {'text': 'a'}]), 3),
+    (['has_output', 'contains'], ({}, {'text': '5'}), None),
+    # (['has_output', 'contains'], ([True], ['a']), 3),
+])
+def test_list_selector_args(nb1, selector, args, expected):
+    assert nb1.find(selector, *args) == expected

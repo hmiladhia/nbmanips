@@ -12,35 +12,44 @@ def partial(func, *args, **keywords):
 
 
 class Selector:
-    default_selectors = {None: lambda cell: True}
+    default_selectors = {}
 
     def __init__(self, selector, *args, **kwargs):
         if callable(selector):
-            assert not args  # TODO: add message
             self._selector = partial(selector, *args, **kwargs)
         elif isinstance(selector, int):
-            self.slice = slice(selector, *args, **kwargs)
+            self._selector = lambda cell: cell.num == selector
         elif isinstance(selector, str):
             self._selector = partial(self.default_selectors[selector], *args, **kwargs)
-        elif isinstance(selector, list):
+        elif hasattr(selector, '__iter__'):
+            selector = list(selector)
+            type_ = kwargs.pop('type', 'and')
+            assert not kwargs, "only 'type' keyword is allowed as keyword argument"
             if len(args) == len(selector):
                 kwargs_list = args
             else:
                 kwargs_list = args[0] if args else [{} for _ in selector]
-            selector_list = [Selector(sel, **kwgs) for sel, kwgs in zip(selector, kwargs_list)]
-            self._selector = lambda cell: all(sel.select(cell) for sel in selector_list)
+            selector_list = [Selector(sel, **kwargs) for sel, kwargs in zip(selector, kwargs_list)]
+            if type_ == 'and':
+                self._selector = lambda cell: all(sel._selector(cell) for sel in selector_list)
+            elif type_ == 'or':
+                self._selector = lambda cell: any(sel._selector(cell) for sel in selector_list)
+            else:
+                raise ValueError(f'type can be "and" or "or": {type_}')
         elif isinstance(selector, slice):
             start, stop, step = selector.start, selector.stop, selector.step
             self._selector = lambda cell: (cell.num < stop) and ((cell.num-start) % step == 0)
+        else:
+            raise ValueError(f'selector needs to be of type: (str, int, list, slice): {type(selector)}')
 
-    def select(self, neg=False):
+    def get_selector(self, neg=False):
         if neg:
             return lambda cell: not self._selector(cell)
         else:
             return self._selector
 
     def iter_cells(self, cells, neg=False):
-        return filter(self.select(neg), (Cell(cell, i) for i, cell in enumerate(cells)))
+        return filter(self.get_selector(neg), (Cell(cell, i) for i, cell in enumerate(cells)))
 
     @classmethod
     def register_selector(cls, key, selector):
@@ -67,8 +76,8 @@ def is_raw(cell):
     return has_type(cell, 'raw')
 
 
-def has_output(cell):
-    return cell.output != ""
+def has_output(cell, value=True):
+    return (cell.output != "") == value
 
 
 def has_slide_type(cell, slide_type):
