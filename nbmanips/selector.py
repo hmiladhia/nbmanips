@@ -37,12 +37,11 @@ class Selector:
             else:
                 raise ValueError(f'type can be "and" or "or": {type_}')
         elif isinstance(selector, slice):
-            start, stop, step = selector.start, selector.stop, selector.step
-            self._selector = lambda cell: (cell.num < stop) and ((cell.num-start) % step == 0)
+            self._selector = self.__get_slice_selector(selector)
         else:
             raise ValueError(f'selector needs to be of type: (str, int, list, slice): {type(selector)}')
 
-    def get_selector(self, neg=False):
+    def get_selector(self, neg=False) -> callable:
         if neg:
             return lambda cell: not self._selector(cell)
         else:
@@ -54,6 +53,22 @@ class Selector:
     @classmethod
     def register_selector(cls, key, selector):
         cls.default_selectors[key] = selector
+
+    @classmethod
+    def __get_slice_selector(cls, selector: slice) -> callable:
+        start, stop, step = selector.start, selector.stop, selector.step
+        selector_list = []
+        if start is not None:
+            selector_list.append(lambda cell: cell.num >= start)
+        if stop is not None:
+            selector_list.append(lambda cell: cell.num < stop)
+        if step:
+            selector_list.append(lambda cell: (cell.num - start) % step == 0)
+        return cls.__get_multiple_selector(selector_list)
+
+    @staticmethod
+    def __get_multiple_selector(selector_list: list):
+        return lambda cell: all(sel(cell) for sel in selector_list)
 
 
 def contains(cell, text, case=True, output=False):

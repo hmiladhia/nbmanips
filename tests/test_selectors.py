@@ -59,8 +59,15 @@ def test_list_selector_args(nb1, selector, args, expected):
     assert nb1.find(selector, *args) == expected
 
 
-# def test_slice_selector(nb1):
-#     assert nb1.find(0)
+@pytest.mark.parametrize("slice_", [(0, 3),
+                                    (1, 3),
+                                    (1, 1),
+                                    (0,),
+                                    (1, 3, 2)
+                                    ])
+def test_slice_selector(nb1, slice_: list):
+    assert nb1.find_all(slice(*slice_)) == list(range(*slice_))
+
 
 @pytest.mark.parametrize("value,expected", [(0, 0), (3, 3), (5, None)])
 def test_int(nb1, value, expected):
