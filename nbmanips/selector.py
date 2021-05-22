@@ -79,8 +79,21 @@ class Selector:
         return cls.__get_multiple_selector(selector_list)
 
     @staticmethod
-    def __parse_list_args(list_args: tuple) -> (list, dict):
-        return [() for _ in range(len(list_args))], list_args
+    def __parse_list_args(list_args: tuple) -> (list, list):
+        args_list, kwargs_list = [], []
+        for arg in list_args:
+            if isinstance(arg, dict):
+                args_list.append([])
+                kwargs_list.append(arg)
+            elif isinstance(arg, tuple) and len(arg) == 2 and hasattr(arg[0], '__iter__') and isinstance(arg[1], dict):
+                args_list.append(arg[0])
+                kwargs_list.append(arg[1])
+            elif hasattr(arg, '__iter__'):
+                args_list.append(arg)
+                kwargs_list.append({})
+            else:
+                raise ValueError('Cannot parse arguments:', str(arg))
+        return args_list, kwargs_list
 
     @staticmethod
     def __get_multiple_selector(selector_list: list):
