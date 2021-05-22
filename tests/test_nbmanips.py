@@ -115,11 +115,11 @@ def test_keep(nb0, selector, selector_kwargs, search_term, expected, expected_le
     assert len(nb0) == expected_length
 
 
-def test_tag(nb1):
-    nb1.tag('test', {"key": "value"}, lambda cell: cell.num in {0, 1, 2})
-    nb1.tag('test', {"key": "new_value"}, lambda cell: cell.num == 1)
-    assert nb1.cells[1]['metadata']['test']['key'] == "new_value"
-    assert nb1.cells[0]['metadata']['test']['key'] == "value"
+def test_tag(nb0):
+    nb0.tag('test', {"key": "value"}, lambda cell: cell.num in {0, 1, 2})
+    nb0.tag('test', {"key": "new_value"}, lambda cell: cell.num == 1)
+    assert nb0.cells[1]['metadata']['test']['key'] == "new_value"
+    assert nb0.cells[0]['metadata']['test']['key'] == "value"
 
 
 # def test_selectors(nb0, selector, selector_kwargs):
