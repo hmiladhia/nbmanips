@@ -1,6 +1,6 @@
 import pytest
 
-from nbmanips import Notebook
+from nbmanips import Notebook, Selector
 
 
 @pytest.fixture(scope='function')
@@ -71,5 +71,10 @@ def test_slice_selector(nb1, slice_: list):
 
 
 @pytest.mark.parametrize("value,expected", [(0, 0), (3, 3), (5, None)])
-def test_int(nb1, value, expected):
+def test_int_selector(nb1, value, expected):
     assert nb1.find(value) == expected
+
+
+def test_selector_selector(nb1):
+    selector = Selector('contains', 'hello', case=False)
+    assert nb1.find(selector) == 1

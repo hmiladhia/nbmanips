@@ -26,6 +26,8 @@ class Selector:
         elif isinstance(selector, slice):
             assert not kwargs and not args
             self._selector = self.__get_slice_selector(selector)
+        elif isinstance(selector, Selector):
+            self._selector = selector.get_selector()
         else:
             raise ValueError(f'selector needs to be of type: (str, int, list, slice): {type(selector)}')
 
