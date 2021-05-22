@@ -59,7 +59,7 @@ class Cell:
                 processed_outputs.append(output_text)
             elif output['output_type'] in {'execute_result', 'display_data'}:
                 data = output['data']
-                if set(preferred_data_types) & set(data.keys()):
+                if (set(preferred_data_types)-set(exclude_data_types)) & set(data.keys()):
                     for data_type in preferred_data_types:
                         if data_type not in exclude_data_types and data_type in data:
                             output_text = data[data_type]
@@ -74,6 +74,8 @@ class Cell:
                             break
                 else:
                     for data_type, output_text in data.items():
+                        if data_type in exclude_data_types:
+                            continue
                         if text and not isinstance(output_text, str):
                             output_text = '\n'.join(output_text)
                         if readable and data_type == 'text/html':
