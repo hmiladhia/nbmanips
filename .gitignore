@@ -1,4 +1,12 @@
+*.loc.*
+
+# Python
+__pycache__
+.pytest_cache
+
+# Jupyter
 .ipynb_checkpoints
+
+# IDEs
 .idea
 .vscode
-*.loc.*
