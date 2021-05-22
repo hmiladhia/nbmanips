@@ -18,6 +18,9 @@ setuptools.setup(
     url="https://github.com/hmiladhia/nbmanips",
     packages=['nbmanips'],
     include_package_data=True,
+    entry_points={
+        'console_scripts': ['nbmanips=nbmanips.__main__:main'],
+    },
     # install_requires=['scikit-learn==0.24.0'],
     classifiers=[
         "Programming Language :: Python :: 3",
