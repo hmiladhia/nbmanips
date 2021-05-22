@@ -22,21 +22,9 @@ class Selector:
         elif isinstance(selector, str):
             self._selector = partial(self.default_selectors[selector], *args, **kwargs)
         elif hasattr(selector, '__iter__'):
-            selector = list(selector)
-            type_ = kwargs.pop('type', 'and')
-            assert not kwargs, "only 'type' keyword is allowed as keyword argument"
-            if len(args) == len(selector):
-                kwargs_list = args
-            else:
-                kwargs_list = args[0] if args else [{} for _ in selector]
-            selector_list = [Selector(sel, **kwargs) for sel, kwargs in zip(selector, kwargs_list)]
-            if type_ == 'and':
-                self._selector = lambda cell: all(sel._selector(cell) for sel in selector_list)
-            elif type_ == 'or':
-                self._selector = lambda cell: any(sel._selector(cell) for sel in selector_list)
-            else:
-                raise ValueError(f'type can be "and" or "or": {type_}')
+            self._selector = self.__get_list_selector(selector, *args, **kwargs)
         elif isinstance(selector, slice):
+            assert not kwargs and not args
             self._selector = self.__get_slice_selector(selector)
         else:
             raise ValueError(f'selector needs to be of type: (str, int, list, slice): {type(selector)}')
@@ -55,6 +43,30 @@ class Selector:
         cls.default_selectors[key] = selector
 
     @classmethod
+    def __get_list_selector(cls, selector, *args, **kwargs):
+        selector = list(selector)
+        type_ = kwargs.pop('type', 'and')
+        assert not kwargs, "only 'type' keyword is allowed as keyword argument"
+        if len(args) == len(selector):
+            args_kwargs_list = args
+        else:
+            args_kwargs_list = tuple(args[0]) if args else tuple([{} for _ in selector])
+
+        # Parsing args
+        args_list, kwargs_list = cls.__parse_list_args(args_kwargs_list)
+
+        # Creating list of selectors
+        selector_list = [Selector(sel, *args, **kwargs) for sel, args, kwargs in zip(selector, args_list, kwargs_list)]
+
+        # Return selector function
+        if type_ == 'and':
+            return lambda cell: all(sel._selector(cell) for sel in selector_list)
+        elif type_ == 'or':
+            return lambda cell: any(sel._selector(cell) for sel in selector_list)
+        else:
+            raise ValueError(f'type can be "and" or "or": {type_}')
+
+    @classmethod
     def __get_slice_selector(cls, selector: slice) -> callable:
         start, stop, step = selector.start, selector.stop, selector.step
         selector_list = []
@@ -65,6 +77,10 @@ class Selector:
         if step:
             selector_list.append(lambda cell: (cell.num - start) % step == 0)
         return cls.__get_multiple_selector(selector_list)
+
+    @staticmethod
+    def __parse_list_args(list_args: tuple) -> (list, dict):
+        return [() for _ in range(len(list_args))], list_args
 
     @staticmethod
     def __get_multiple_selector(selector_list: list):
