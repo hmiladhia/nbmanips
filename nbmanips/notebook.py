@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from nbmanips import read_ipynb, write_ipynb, get_ipynb_name
 from nbmanips import Selector
 from nbmanips import NotebookBase, SlideShowMixin
@@ -17,10 +19,11 @@ class Notebook(SlideShowMixin, NotebookBase):
     def tag(self, tag_key, tag_value, selector, *args, **kwargs):
         sel = Selector(selector, *args, **kwargs)
         for cell in sel.iter_cells(self.nb['cells']):
+            value = deepcopy(tag_value)
             if tag_key in cell.cell['metadata'] and isinstance(cell.cell['metadata'][tag_key], dict):
-                cell.cell['metadata'][tag_key].update(tag_value)
+                cell.cell['metadata'][tag_key].update(value)
             else:
-                cell.cell['metadata'][tag_key] = tag_value
+                cell.cell['metadata'][tag_key] = value
 
     def erase(self, selector, *args, **kwargs):
         sel = Selector(selector, *args, **kwargs)
