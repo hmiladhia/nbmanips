@@ -18,10 +18,22 @@ def write_ipynb(notebook, notebook_path):
         json.dump(notebook, f)
 
 
-def printable_cell(text):
-    width = shutil.get_terminal_size().columns
+def printable_cell(text, style='unicode'):
+    width = shutil.get_terminal_size().columns - 1
     result_list = wrap(text, width-4)
-    result = '+' + '_' * (width-2) + '+\n'
-    result += '\n'.join([f"| {line.ljust(width-4)} |" for line in result_list])
-    result += ('\n+' + '_' * (width-2) + '+')
+
+    char = '║' if style == 'unicode' else '|'
+
+    if style == 'unicode':
+        result = '╔' + '═' * (width - 2) + '╗'
+    else:
+        result = '+' + '_' * (width-2) + '+'
+
+    result += '\n'
+    result += '\n'.join([f"{char} {line.ljust(width-4)} {char}" for line in result_list])
+    result += '\n'
+    if style == 'unicode':
+        result += '╚' + '═' * (width - 2) + '╝'
+    else:
+        result += '+' + '_' * (width - 2) + '+'
     return result
