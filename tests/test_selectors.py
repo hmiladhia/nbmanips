@@ -46,25 +46,26 @@ def test_selector_args(nb1, selector, args, expected):
 
 
 @pytest.mark.parametrize("selector,args,expected", [
-    # (['has_output', 'contains'], (), 3),
+    # (['has_output', 'contains'], (), 3), # TODO: add another error test for this
     (['has_output', 'contains'], ({'value': False}, {'text': '5'}), 2),
     (['has_output', 'contains'], ([{'value': False}, {'text': '5'}]), 2),
     (['has_output', 'contains'], ([{'value': True}, {'text': '5'}]), None),
     (['has_output', 'contains'], ([{'value': True}, {'text': 'a'}]), 3),
     (['has_output', 'contains'], ([{}, {'text': 'a'}]), 3),
     (['has_output', 'contains'], ({}, {'text': '5'}), None),
-    # (['has_output', 'contains'], ([True], ['a']), 3),
+    (['has_output', 'contains'], ([True], ['a']), 3),
+    (['has_output', 'contains'], ({'value': True}, ['a']), 3),
+    (['has_output', 'contains'], ({'value': False}, ['5']), 2),
+    (['has_output', 'contains'], ([True], (['hello'], {'case': True})), None),
+    (['has_output', 'contains'], ([True], (('hello',), {'case': True})), None),
+    (['has_output', 'contains'], ([True], (['hello'], {'case': False})), 1),
+    (['has_output', 'contains'], ([True], (('hello',), {'case': False})), 1),
 ])
 def test_list_selector_args(nb1, selector, args, expected):
     assert nb1.find(selector, *args) == expected
 
 
-@pytest.mark.parametrize("slice_", [(0, 3),
-                                    (1, 3),
-                                    (1, 1),
-                                    (0,),
-                                    (1, 3, 2)
-                                    ])
+@pytest.mark.parametrize("slice_", [(0, 3), (1, 3), (1, 1), (0,), (1, 3, 2)])
 def test_slice_selector(nb1, slice_: list):
     assert nb1.find_all(slice(*slice_)) == list(range(*slice_))
 
