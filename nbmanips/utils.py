@@ -20,7 +20,9 @@ def write_ipynb(notebook, notebook_path):
 
 def printable_cell(text, style='unicode'):
     width = shutil.get_terminal_size().columns - 1
-    result_list = wrap(text, width-4)
+    result_list = []
+    for text_line in text.split('\n'):
+        result_list.extend(wrap(text_line, width-4, tabsize=4))
 
     char = '║' if style == 'unicode' else '|'
 
