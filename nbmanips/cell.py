@@ -3,6 +3,8 @@ try:
 except ImportError:
     html2txt = None
 
+from nbmanips.utils import printable_cell
+
 
 class Cell:
     def __init__(self, content, num=None):
@@ -121,11 +123,10 @@ class Cell:
         return f"<Cell {self.num}>" if self.num else "<Cell>"
 
     def __str__(self):
-        sources = [self.source]
-        output = self.output
-        if output:
-            source = sources[0]
-            m, n = max(len(line) for line in source.split('\n')), max(len(line) for line in output.split('\n'))
-            sep = "#" * max(m, n)
-            sources = [sep, source, sep, output, sep]
-        return '\n'.join(sources)
+        if self.type == 'code':
+            sources = [printable_cell(self.source)]
+            if self.output:
+                sources.append(self.output)
+            return '\n'.join(sources)
+        else:
+            return self.source
