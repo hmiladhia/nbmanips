@@ -75,6 +75,10 @@ def test_int_selector(nb1, value, expected):
     assert nb1.find(value) == expected
 
 
+def test_none_selector(nb1):
+    assert nb1.find_all(None) == [i for i in range(len(nb1))]
+
+
 def test_selector_selector(nb1):
     selector = Selector('contains', 'hello', case=False)
     assert nb1.find(selector) == 1

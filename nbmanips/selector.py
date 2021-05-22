@@ -15,21 +15,7 @@ class Selector:
     default_selectors = {}
 
     def __init__(self, selector, *args, **kwargs):
-        if callable(selector):
-            self._selector = partial(selector, *args, **kwargs)
-        elif isinstance(selector, int):
-            self._selector = lambda cell: cell.num == selector
-        elif isinstance(selector, str):
-            self._selector = partial(self.default_selectors[selector], *args, **kwargs)
-        elif hasattr(selector, '__iter__'):
-            self._selector = self.__get_list_selector(selector, *args, **kwargs)
-        elif isinstance(selector, slice):
-            assert not kwargs and not args
-            self._selector = self.__get_slice_selector(selector)
-        elif isinstance(selector, Selector):
-            self._selector = selector.get_selector()
-        else:
-            raise ValueError(f'selector needs to be of type: (str, int, list, slice): {type(selector)}')
+        self._selector = self._get_selector(selector, *args, **kwargs)
 
     def get_selector(self, neg=False) -> callable:
         if neg:
@@ -43,6 +29,25 @@ class Selector:
     @classmethod
     def register_selector(cls, key, selector):
         cls.default_selectors[key] = selector
+
+    def _get_selector(self, selector, *args, **kwargs):
+        if callable(selector):
+            return partial(selector, *args, **kwargs)
+        elif isinstance(selector, int):
+            return lambda cell: cell.num == selector
+        elif isinstance(selector, str):
+            return partial(self.default_selectors[selector], *args, **kwargs)
+        elif hasattr(selector, '__iter__'):
+            return self.__get_list_selector(selector, *args, **kwargs)
+        elif isinstance(selector, slice):
+            assert not kwargs and not args
+            return self.__get_slice_selector(selector)
+        elif isinstance(selector, Selector):
+            return selector.get_selector()
+        elif selector is None:
+            return lambda cell: True
+        else:
+            raise ValueError(f'selector needs to be of type: (str, int, list, slice, None): {type(selector)}')
 
     @classmethod
     def __get_list_selector(cls, selector, *args, **kwargs):
