@@ -3,7 +3,7 @@ try:
 except ImportError:
     html2txt = None
 
-from nbmanips.utils import printable_cell
+from nbmanips.cell_utils import printable_cell
 
 
 class Cell:
