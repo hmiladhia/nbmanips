@@ -1,9 +1,7 @@
-try:
-    from html2text import html2text
-except ImportError:
-    html2txt = None
+import shutil
 
 from nbmanips.cell_utils import printable_cell
+from nbmanips.cell_utils import get_readable
 
 
 class Cell:
@@ -34,7 +32,7 @@ class Cell:
         return self.get_output(text=True, readable=True).strip()
 
     def get_output(self, text=True, readable=True, preferred_data_types=None, exclude_data_types=None,
-                   exclude_errors=True):
+                   exclude_errors=True, **kwargs):
         """
         Tries its best to return a readable output from cell
 
@@ -48,8 +46,14 @@ class Cell:
         if self.type != "code":
             return ''
 
-        preferred_data_types = ["text/plain", "text/html"] if preferred_data_types is None else preferred_data_types
-        exclude_data_types = {'image/png'} if exclude_data_types is None else exclude_data_types
+        # Default Values
+        default_data_types = ['text/plain', 'text/html', 'image/png']
+        if readable:
+            default_data_types.reverse()
+
+        preferred_data_types = default_data_types if preferred_data_types is None else preferred_data_types
+        exclude_data_types = {} if exclude_data_types is None else exclude_data_types
+
         outputs = self.cell.get('outputs', [])
         processed_outputs = []
         for output in outputs:
@@ -67,11 +71,9 @@ class Cell:
                             output_text = data[data_type]
                             if text and not isinstance(output_text, str):
                                 output_text = '\n'.join(output_text)
-                            if readable and data_type == 'text/html':
-                                if callable(html2text):
-                                    output_text = html2text(output_text)
-                                else:
-                                    raise ModuleNotFoundError('You need to pip install html2txt for readable option')
+                            if readable:
+                                output_text = get_readable(output_text, data_type, **kwargs)
+
                             processed_outputs.append(output_text)
                             break
                 else:
@@ -80,11 +82,8 @@ class Cell:
                             continue
                         if text and not isinstance(output_text, str):
                             output_text = '\n'.join(output_text)
-                        if readable and data_type == 'text/html':
-                            if callable(html2text):
-                                output_text = html2text(output_text)
-                            else:
-                                raise ModuleNotFoundError('You need to pip install html2txt for readable option')
+                        if readable:
+                            output_text = get_readable(output_text, data_type, **kwargs)
                         processed_outputs.append(output_text)
                         break
             elif output['output_type'] == 'error':
@@ -119,14 +118,25 @@ class Cell:
             search_target = search_target.lower()
         return text in search_target
 
+    def to_str(self, width=None, style='single', color=None, img_color=None, img_width=None):
+        if self.type == 'code':
+            width = width or (shutil.get_terminal_size().columns - 1)
+            img_width = img_width if img_width else int(width*0.8)
+            sources = [printable_cell(self.source, width=width, style=style, color=color)]
+
+            img_color = bool(color) if img_color is None else img_color
+            output = self.get_output(text=True, readable=True, colorful=img_color, width=img_width).strip()
+            if output:
+                sources.append(output)
+            return '\n'.join(sources)
+        else:
+            return self.source
+
+    def show(self):
+        print(self)
+
     def __repr__(self):
         return f"<Cell {self.num}>" if self.num else "<Cell>"
 
     def __str__(self):
-        if self.type == 'code':
-            sources = [printable_cell(self.source)]
-            if self.output:
-                sources.append(self.output)
-            return '\n'.join(sources)
-        else:
-            return self.source
+        return self.to_str(width=None, style='single', color=None, img_color=None)
