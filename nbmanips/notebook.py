@@ -59,8 +59,19 @@ class Notebook(SlideShowMixin, NotebookBase):
 
         return self.find_all('contains', text=text, case=case, output=output)
 
+    def show(self, selector=None, *args,  width=None, style='single', color=None,
+             img_color=None, img_width=None, **kwargs):
+        print(self.to_str(selector, *args, width=width, style=style, color=color, img_color=img_color,
+                          img_width=img_width, **kwargs))
+
     def to_ipynb(self, path):
         write_ipynb(self.nb, path)
+
+    def to_str(self, selector, *args,  width=None, style='single', color=None,
+               img_color=None, img_width=None, **kwargs):
+        sel = Selector(selector, *args, **kwargs)
+        return '\n'.join(cell.to_str(width=width, style=style, color=color, img_color=img_color, img_width=img_width)
+                         for cell in sel.iter_cells(self.nb['cells']))
 
     @classmethod
     def read_ipynb(cls, path):

@@ -1,13 +1,12 @@
 import sys
-from nbmanips import *
+from nbmanips import Notebook
 
 
 def main():
     if sys.argv[1] == 'show':
         nb = Notebook.read_ipynb(sys.argv[2])
 
-        for i, cell in enumerate(nb.cells):
-            print(Cell(cell, i))
+        nb.show()
     else:
         ...
 

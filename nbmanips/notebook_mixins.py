@@ -1,4 +1,5 @@
 import copy
+from nbmanips import Cell
 
 
 class NotebookBase:
@@ -30,6 +31,9 @@ class NotebookBase:
             return f'<Notebook "{self.name}">'
         else:
             return f"<Notebook>"
+
+    def __str__(self):
+        return '\n'.join(str(Cell(cell, i)) for i, cell in enumerate(self.cells))
 
     @property
     def cells(self):
