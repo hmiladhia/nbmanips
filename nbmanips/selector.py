@@ -148,7 +148,7 @@ def has_slide_type(cell, slide_type):
 # Default Selectors
 Selector.register_selector('contains', contains)
 Selector.register_selector('has_output', has_output)
-Selector.register_selector('is_empty', has_output)
+Selector.register_selector('empty', is_empty)
 
 # Cell Types
 Selector.register_selector('has_type', has_type)
