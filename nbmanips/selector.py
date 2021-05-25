@@ -131,6 +131,10 @@ def has_output(cell, value=True):
     return (cell.output != "") == value
 
 
+def is_empty(cell):
+    return cell.source == '' and has_output(cell, False)
+
+
 def has_slide_type(cell, slide_type):
     if isinstance(slide_type, str):
         slide_type = {slide_type}
@@ -144,6 +148,7 @@ def has_slide_type(cell, slide_type):
 # Default Selectors
 Selector.register_selector('contains', contains)
 Selector.register_selector('has_output', has_output)
+Selector.register_selector('is_empty', has_output)
 
 # Cell Types
 Selector.register_selector('has_type', has_type)

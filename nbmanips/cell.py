@@ -25,7 +25,7 @@ class Cell:
 
     @property
     def source(self):
-        return self.get_source()
+        return self.get_source().strip()
 
     @property
     def output(self):
