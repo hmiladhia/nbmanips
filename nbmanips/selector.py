@@ -131,6 +131,25 @@ def has_output(cell, value=True):
     return (cell.output != "") == value
 
 
+def has_output_type(cell, output_type):
+    if not is_code(cell):
+        return False
+
+    outputs = cell['outputs']
+    for output in outputs:
+        if output['output_type'] == 'stream':
+            if output_type in {'text/plain', 'text'}:
+                return True
+        elif output['output_type'] in {'execute_result', 'display_data'}:
+            data = output['data']
+            if output_type in data.keys():
+                return True
+        elif output['output_type'] == 'error':
+            if output_type == 'error':
+                return True
+    return False
+
+
 def is_empty(cell):
     return cell.source == '' and has_output(cell, False)
 
@@ -147,8 +166,9 @@ def has_slide_type(cell, slide_type):
 
 # Default Selectors
 Selector.register_selector('contains', contains)
-Selector.register_selector('has_output', has_output)
 Selector.register_selector('empty', is_empty)
+Selector.register_selector('has_output', has_output)
+Selector.register_selector('has_output_type', has_output_type)
 
 # Cell Types
 Selector.register_selector('has_type', has_type)

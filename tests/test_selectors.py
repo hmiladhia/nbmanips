@@ -82,3 +82,15 @@ def test_none_selector(nb1):
 def test_selector_selector(nb1):
     selector = Selector('contains', 'hello', case=False)
     assert nb1.find(selector) == 1
+
+
+@pytest.mark.parametrize("output_type,expected",
+                         [('text/plain', [1, 3])])
+def test_has_output_type1(nb1, output_type, expected):
+    assert nb1.find_all('has_output_type', output_type) == expected
+
+
+# @pytest.mark.parametrize("output_type,expected",
+#                          [('text/plain', [1, 3])])
+# def test_has_output_type3(nb3, output_type, expected):
+#     assert nb1.find_all('has_output_type', output_type) == expected
