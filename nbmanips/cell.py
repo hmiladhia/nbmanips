@@ -5,9 +5,10 @@ from nbmanips.cell_utils import get_readable
 
 
 class Cell:
-    def __init__(self, content, num=None):
+    def __init__(self, content, num=None, nb=None):
         self.cell = content
         self.num = num
+        self.nb = nb
 
     def __getitem__(self, key):
         return self.cell[key]
@@ -18,6 +19,20 @@ class Cell:
     @property
     def type(self):
         return self.cell['cell_type']
+
+    @property
+    def previous_cell(self):
+        if self.num > 0 and self.nb is not None:
+            return Cell(self.nb['cells'][self.num-1], self.num-1, self.nb)
+        else:
+            raise ValueError
+
+    @property
+    def next_cell(self):
+        if self.nb is not None and self.num < (len(self.nb['cells'])-1):
+            return Cell(self.nb['cells'][self.num + 1], self.num + 1, self.nb)
+        else:
+            raise ValueError
 
     @property
     def metadata(self):

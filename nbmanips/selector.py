@@ -23,8 +23,8 @@ class Selector:
         else:
             return self._selector
 
-    def iter_cells(self, cells, neg=False):
-        return filter(self.get_selector(neg), (Cell(cell, i) for i, cell in enumerate(cells)))
+    def iter_cells(self, nb, neg=False):
+        return filter(self.get_selector(neg), (Cell(cell, i, nb) for i, cell in enumerate(nb["cells"])))
 
     @classmethod
     def register_selector(cls, key, selector):

@@ -33,7 +33,7 @@ class NotebookBase:
             return f"<Notebook>"
 
     def __str__(self):
-        return '\n'.join(str(Cell(cell, i)) for i, cell in enumerate(self.cells))
+        return '\n'.join(str(Cell(cell, i, self.nb)) for i, cell in enumerate(self.cells))
 
     @property
     def cells(self):
