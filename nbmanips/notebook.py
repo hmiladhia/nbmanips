@@ -18,9 +18,9 @@ class Notebook(SlideShowMixin, NotebookBase):
         for cell in self.iter_cells(selector, *args, **kwargs):
             value = deepcopy(tag_value)
             if tag_key in cell.cell['metadata'] and isinstance(cell.cell['metadata'][tag_key], dict):
-                cell.cell['metadata'][tag_key].update(value)
+                cell.metadata[tag_key].update(value)
             else:
-                cell.cell['metadata'][tag_key] = value
+                cell.metadata[tag_key] = value
 
     def erase(self, selector, *args, **kwargs):
         for cell in self.iter_cells(selector, *args, **kwargs):
