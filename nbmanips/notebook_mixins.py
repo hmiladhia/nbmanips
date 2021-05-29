@@ -1,4 +1,16 @@
 import copy
+import json
+
+try:
+    import nbformat
+except ImportError:
+    nbformat = None
+
+try:
+    import nbconvert
+except ImportError:
+    nbconvert = None
+
 from nbmanips import Cell
 from nbmanips import Selector
 from nbmanips.selector import is_new_slide, has_slide_type, has_output_type
@@ -42,6 +54,25 @@ class NotebookBase:
 
     def iter_neg_cells(self, selector, *args, **kwargs):
         return Selector(selector, *args, **kwargs).iter_cells(self._nb, neg=True)
+
+    def to_notebook_node(self):
+        if nbformat:
+            return nbformat.reads(json.dumps(self._nb), as_version=4)
+        else:
+            raise ModuleNotFoundError('You need to pip install nbformat to get NotebookNode object')
+
+    def to_html(self, path, template=None):
+        notebook_node = self.to_notebook_node()
+        slides_exporter = nbconvert.HTMLExporter()
+
+        if template is not None:
+            NotImplemented('Template is not supported yet')
+
+        (body, resources) = slides_exporter.from_notebook_node(notebook_node)
+
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(body)
+
 
     @property
     def cells(self):
@@ -112,3 +143,15 @@ class SlideShowMixin(NotebookBase):
 
         # Set max cells per slide
         self.max_cells_per_slide(max_cells_per_slide, max_images_per_slide)
+
+    def to_slides(self, path, template=None):
+        notebook_node = self.to_notebook_node()
+        slides_exporter = nbconvert.SlidesExporter()
+
+        if template is not None:
+            NotImplemented('Template is not supported yet')
+
+        (body, resources) = slides_exporter.from_notebook_node(notebook_node)
+
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(body)
