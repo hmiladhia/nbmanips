@@ -57,7 +57,8 @@ class NotebookBase:
 
     def to_notebook_node(self):
         if nbformat:
-            return nbformat.reads(json.dumps(self._nb), as_version=4)
+            version = self._nb.get('nbformat', 4)
+            return nbformat.reads(json.dumps(self._nb), as_version=version)
         else:
             raise ModuleNotFoundError('You need to pip install nbformat to get NotebookNode object')
 
