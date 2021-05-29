@@ -154,6 +154,13 @@ def has_slide_type(cell, slide_type):
                 ])
 
 
+def is_new_slide(cell, subslide=True):
+    slide_types = {'slide'}
+    if subslide:
+        slide_types.add('subslide')
+    return has_slide_type(cell, slide_types)
+
+
 # Default Selectors
 Selector.register_selector('contains', contains)
 Selector.register_selector('empty', is_empty)
@@ -168,3 +175,4 @@ Selector.register_selector('code_cells', is_code)
 
 # Slide cells
 Selector.register_selector('has_slide_type', has_slide_type)
+Selector.register_selector('is_new_slide', is_new_slide)
