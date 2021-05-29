@@ -24,7 +24,7 @@ def nb3():
 
 
 def test_read(nb1):
-    assert len(nb1.nb['cells']) == 4
+    assert len(nb1._nb['cells']) == 4
 
 
 def test_name(nb1):

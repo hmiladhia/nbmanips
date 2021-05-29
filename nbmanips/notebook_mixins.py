@@ -4,27 +4,27 @@ from nbmanips import Cell
 
 class NotebookBase:
     def __init__(self, content, name=None):
-        self.nb = copy.deepcopy(content)
+        self._nb = copy.deepcopy(content)
         self.name = name
 
-    def __add__(self, other):
+    def __add__(self, other: 'NotebookBase'):
         # Copying the notebook
-        nb = copy.deepcopy(self.nb)
+        nb = copy.deepcopy(self._nb)
 
         # Concatenating the notebooks
-        nb['cells'] = nb['cells'] + other.nb['cells']
+        nb['cells'] = nb['cells'] + other._nb['cells']
         return self.__class__(nb)
 
     def __getitem__(self, item):
-        return self.nb[item]
+        return self._nb[item]
 
     def __setitem__(self, item, value):
-        self.nb[item] = value
+        self._nb[item] = value
 
     def __len__(self):
-        if self.nb is None or 'cells' not in self.nb:
+        if self._nb is None or 'cells' not in self._nb:
             return 0
-        return len(self.nb['cells'])
+        return len(self._nb['cells'])
 
     def __repr__(self):
         if self.name:
@@ -33,16 +33,16 @@ class NotebookBase:
             return f"<Notebook>"
 
     def __str__(self):
-        return '\n'.join(str(Cell(cell, i, self.nb)) for i, cell in enumerate(self.cells))
+        return '\n'.join(str(Cell(cell, i, self._nb)) for i, cell in enumerate(self.cells))
 
     @property
     def cells(self):
-        return self.nb['cells']
+        return self._nb['cells']
 
 
 class SlideShowMixin(NotebookBase):
     def mark_slideshow(self):
-        self.nb['metadata']["celltoolbar"] = "Slideshow"
+        self._nb['metadata']["celltoolbar"] = "Slideshow"
 
     def set_slide(self, selector, *args, **kwargs):
         self.tag_slide('slide', selector, *args, **kwargs)
