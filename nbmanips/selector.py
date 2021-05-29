@@ -149,10 +149,9 @@ def has_slide_type(cell, slide_type):
     if isinstance(slide_type, str):
         slide_type = {slide_type}
 
-    return all(['slideshow' in cell.metadata,
-                'slide_type' in cell.metadata['slideshow'],
-                cell.metadata['slideshow']['slide_type'] in slide_type
-                ])
+    return all(f(cell) for f in [lambda c: 'slideshow' in c.metadata,
+               lambda c: 'slide_type' in c.metadata['slideshow'],
+               lambda c: c.metadata['slideshow']['slide_type'] in slide_type])
 
 
 def is_new_slide(cell, subslide=True):
@@ -171,8 +170,11 @@ Selector.register_selector('has_output_type', has_output_type)
 # Cell Types
 Selector.register_selector('has_type', has_type)
 Selector.register_selector('raw_cells', is_raw)
+Selector.register_selector('is_raw', is_raw)
 Selector.register_selector('markdown_cells', is_markdown)
+Selector.register_selector('is_markdown', is_markdown)
 Selector.register_selector('code_cells', is_code)
+Selector.register_selector('is_code', is_code)
 
 # Slide cells
 Selector.register_selector('has_slide_type', has_slide_type)
