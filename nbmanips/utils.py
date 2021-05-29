@@ -1,5 +1,6 @@
 import os
 import json
+from functools import wraps
 
 
 def get_ipynb_name(path):
@@ -14,3 +15,11 @@ def read_ipynb(notebook_path):
 def write_ipynb(notebook, notebook_path):
     with open(notebook_path, 'w', encoding='utf-8') as f:
         json.dump(notebook, f)
+
+
+def partial(func, *args, **keywords):
+    @wraps(func)
+    def new_func(*f_args, **f_keywords):
+        new_keywords = {**f_keywords, **keywords}
+        return func(*f_args, *args, **new_keywords)
+    return new_func
