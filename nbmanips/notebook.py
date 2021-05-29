@@ -1,7 +1,6 @@
 from copy import deepcopy
 
 from nbmanips import read_ipynb, write_ipynb, get_ipynb_name
-from nbmanips import Selector
 from nbmanips import NotebookBase, SlideShowMixin
 
 
@@ -10,15 +9,13 @@ class Notebook(SlideShowMixin, NotebookBase):
         if not case:
             raise NotImplemented("case support is not implemented yet")
 
-        sel = Selector('contains', text=old, case=case)
-        for cell in sel.iter_cells(self._nb):
+        for cell in self.iter_cells('contains', text=old, case=case):
             cell.set_source([line.replace(old, new) for line in cell.get_source(text=False)])
             if first:
                 break
 
     def tag(self, tag_key, tag_value, selector, *args, **kwargs):
-        sel = Selector(selector, *args, **kwargs)
-        for cell in sel.iter_cells(self._nb):
+        for cell in self.iter_cells(selector, *args, **kwargs):
             value = deepcopy(tag_value)
             if tag_key in cell.cell['metadata'] and isinstance(cell.cell['metadata'][tag_key], dict):
                 cell.cell['metadata'][tag_key].update(value)
@@ -26,26 +23,21 @@ class Notebook(SlideShowMixin, NotebookBase):
                 cell.cell['metadata'][tag_key] = value
 
     def erase(self, selector, *args, **kwargs):
-        sel = Selector(selector, *args, **kwargs)
-        for cell in sel.iter_cells(self._nb):
+        for cell in self.iter_cells(selector, *args, **kwargs):
             cell.set_source([])
 
     def delete(self, selector, *args, **kwargs):
-        selector = Selector(selector, *args, **kwargs)
-        self._nb['cells'] = [cell.cell for cell in selector.iter_cells(self._nb, neg=True)]
+        self._nb['cells'] = [cell.cell for cell in self.iter_neg_cells(selector, *args, **kwargs)]
 
     def keep(self, selector, *args, **kwargs):
-        selector = Selector(selector, *args, **kwargs)
-        self._nb['cells'] = [cell.cell for cell in selector.iter_cells(self._nb)]
+        self._nb['cells'] = [cell.cell for cell in self.iter_cells(selector, *args, **kwargs)]
 
     def find(self, selector, *args, **kwargs):
-        sel = Selector(selector, *args, **kwargs)
-        for cell in sel.iter_cells(self._nb):
+        for cell in self.iter_cells(selector, *args, **kwargs):
             return cell.num
 
     def find_all(self, selector, *args, **kwargs):
-        sel = Selector(selector, *args, **kwargs)
-        return [cell.num for cell in sel.iter_cells(self._nb)]
+        return [cell.num for cell in self.iter_cells(selector, *args, **kwargs)]
 
     def search(self, text, case=False, output=False, regex=False):
         if regex:
@@ -69,9 +61,8 @@ class Notebook(SlideShowMixin, NotebookBase):
 
     def to_str(self, selector, *args,  width=None, style='single', color=None,
                img_color=None, img_width=None, **kwargs):
-        sel = Selector(selector, *args, **kwargs)
         return '\n'.join(cell.to_str(width=width, style=style, color=color, img_color=img_color, img_width=img_width)
-                         for cell in sel.iter_cells(self._nb))
+                         for cell in self.iter_cells(selector, *args, **kwargs))
 
     @classmethod
     def read_ipynb(cls, path):

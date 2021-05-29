@@ -1,5 +1,6 @@
 import copy
 from nbmanips import Cell
+from nbmanips import Selector
 
 
 class NotebookBase:
@@ -34,6 +35,12 @@ class NotebookBase:
 
     def __str__(self):
         return '\n'.join(str(Cell(cell, i, self._nb)) for i, cell in enumerate(self.cells))
+
+    def iter_cells(self, selector=None, *args, **kwargs):
+        return Selector(selector, *args, **kwargs).iter_cells(self._nb)
+
+    def iter_neg_cells(self, selector, *args, **kwargs):
+        return Selector(selector, *args, **kwargs).iter_cells(self._nb, neg=True)
 
     @property
     def cells(self):
