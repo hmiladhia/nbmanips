@@ -1,6 +1,7 @@
 import copy
 from nbmanips import Cell
 from nbmanips import Selector
+from nbmanips.selector import is_new_slide, has_slide_type
 
 
 class NotebookBase:
@@ -72,3 +73,36 @@ class SlideShowMixin(NotebookBase):
 
     def tag(self, tag_key, tag, selector, *args, **kwargs):
         raise NotImplemented()
+
+    def max_cells_per_slide(self, n_cells=3):
+        slides_count = 0
+        for cell in self.iter_cells():
+            if is_new_slide(cell):
+                slides_count = 0
+            elif has_slide_type(cell, {'skip', 'fragment', 'notes'}):
+                # Don't count
+                pass
+            else:
+                slides_count += 1
+
+            if slides_count > n_cells:
+                if 'slideshow' in cell.cell['metadata']:
+                    cell.metadata['slideshow']['slide_type'] = 'subslide'
+                else:
+                    cell.metadata['slideshow'] = {'slide_type': 'subslide'}
+                slides_count = 0
+
+    def auto_slide(self, max_cells_per_slide=3):
+        # Each title represents
+        self.set_slide(['is_markdown', 'contains'], [], '#')
+
+        # Create a new slide only
+        for cell in reversed(list(self.iter_cells())):
+            if cell.num > 0 and is_new_slide(cell.previous_cell):
+                if 'slideshow' in cell.cell['metadata']:
+                    cell.metadata['slideshow']['slide_type'] = '-'
+                else:
+                    cell.metadata['slideshow'] = {'slide_type': '-'}
+
+        # Set max cells per slide
+        self.max_cells_per_slide(max_cells_per_slide)
