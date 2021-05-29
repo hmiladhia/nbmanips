@@ -1,7 +1,7 @@
 import copy
 from nbmanips import Cell
 from nbmanips import Selector
-from nbmanips.selector import is_new_slide, has_slide_type
+from nbmanips.selector import is_new_slide, has_slide_type, has_output_type
 
 
 class NotebookBase:
@@ -74,25 +74,31 @@ class SlideShowMixin(NotebookBase):
     def tag(self, tag_key, tag, selector, *args, **kwargs):
         raise NotImplemented()
 
-    def max_cells_per_slide(self, n_cells=3):
-        slides_count = 0
+    def max_cells_per_slide(self, n_cells=3, n_images=1):
+        cells_count = 0
+        img_count = 0
         for cell in self.iter_cells():
+            is_image = has_output_type(cell, 'image/png')
             if is_new_slide(cell):
-                slides_count = 0
+                cells_count = 1
+                img_count = 0
             elif has_slide_type(cell, {'skip', 'fragment', 'notes'}):
                 # Don't count
                 pass
             else:
-                slides_count += 1
+                cells_count += 1
+            if is_image:
+                img_count += 1
 
-            if slides_count > n_cells:
+            if (n_cells is not None and cells_count > n_cells) or (n_images is not None and img_count > n_images):
                 if 'slideshow' in cell.cell['metadata']:
                     cell.metadata['slideshow']['slide_type'] = 'subslide'
                 else:
                     cell.metadata['slideshow'] = {'slide_type': 'subslide'}
-                slides_count = 0
+                cells_count = 1
+                img_count = 1 if is_image else 0
 
-    def auto_slide(self, max_cells_per_slide=3):
+    def auto_slide(self, max_cells_per_slide=3, max_images_per_slide=1):
         # Each title represents
         self.set_slide(['is_markdown', 'contains'], [], '#')
 
@@ -105,4 +111,4 @@ class SlideShowMixin(NotebookBase):
                     cell.metadata['slideshow'] = {'slide_type': '-'}
 
         # Set max cells per slide
-        self.max_cells_per_slide(max_cells_per_slide)
+        self.max_cells_per_slide(max_cells_per_slide, max_images_per_slide)
