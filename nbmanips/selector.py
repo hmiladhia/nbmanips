@@ -1,4 +1,5 @@
 from nbmanips import Cell
+from nbmanips.utils import partial
 
 
 class Selector:
