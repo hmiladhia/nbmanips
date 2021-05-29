@@ -1,7 +1,8 @@
 from copy import deepcopy
 
-from nbmanips import read_ipynb, write_ipynb, get_ipynb_name
-from nbmanips import NotebookBase, SlideShowMixin
+from nbmanips.notebook_base import NotebookBase
+from nbmanips.notebook_mixins import SlideShowMixin
+from nbmanips.utils import read_ipynb, write_ipynb, get_ipynb_name
 
 
 class Notebook(SlideShowMixin, NotebookBase):

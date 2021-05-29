@@ -1,4 +1,4 @@
-from nbmanips import Cell
+from nbmanips.cell import Cell
 from nbmanips.utils import partial
 
 

@@ -1,6 +1,7 @@
 import pytest
 
-from nbmanips import Notebook, Selector
+from nbmanips import Notebook
+from nbmanips.selector import Selector
 
 
 @pytest.fixture(scope='function')
@@ -29,7 +30,7 @@ def nb3():
 ])
 def test_has_output(nb3, cell_num, expected):
     from nbmanips.selector import has_output
-    from nbmanips import Cell
+    from nbmanips.cell import Cell
 
     cell = Cell(nb3.cells[cell_num], cell_num)
     assert has_output(cell) == expected
