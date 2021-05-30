@@ -63,12 +63,12 @@ class NotebookBase:
 
     def to_html(self, path, template=None):
         notebook_node = self.to_notebook_node()
-        slides_exporter = nbconvert.HTMLExporter()
+        exporter = nbconvert.HTMLExporter()
 
         if template is not None:
             NotImplemented('Template is not supported yet')
 
-        (body, resources) = slides_exporter.from_notebook_node(notebook_node)
+        (body, resources) = exporter.from_notebook_node(notebook_node)
 
         with open(path, 'w', encoding='utf-8') as f:
             f.write(body)
