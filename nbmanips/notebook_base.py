@@ -61,12 +61,9 @@ class NotebookBase:
         else:
             raise ModuleNotFoundError('You need to pip install nbformat to get NotebookNode object')
 
-    def to_html(self, path, template=None):
+    def to_html(self, path):
         notebook_node = self.to_notebook_node()
         exporter = nbconvert.HTMLExporter()
-
-        if template is not None:
-            NotImplemented('Template is not supported yet')
 
         (body, resources) = exporter.from_notebook_node(notebook_node)
 

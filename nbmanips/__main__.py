@@ -6,7 +6,7 @@ def main():
     if sys.argv[1] == 'show':
         nb = Notebook.read_ipynb(sys.argv[2])
 
-        nb.show()
+        nb.show(*sys.argv[3:])
     else:
         ...
 

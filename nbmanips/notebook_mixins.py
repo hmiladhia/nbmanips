@@ -7,7 +7,7 @@ from nbmanips.notebook_base import NotebookBase
 from nbmanips.selector import is_new_slide, has_slide_type, has_output_type
 
 
-class SlideShowMixin(NotebookBase):
+class tSlideShowMixin(NotebookBase):
     def mark_slideshow(self):
         self._nb['metadata']["celltoolbar"] = "Slideshow"
 
@@ -72,14 +72,11 @@ class SlideShowMixin(NotebookBase):
         # Set max cells per slide
         self.max_cells_per_slide(max_cells_per_slide, max_images_per_slide)
 
-    def to_slides(self, path, template=None):
+    def to_slides(self, path):
         notebook_node = self.to_notebook_node()
-        slides_exporter = nbconvert.SlidesExporter()
+        exporter = nbconvert.SlidesExporter()
 
-        if template is not None:
-            NotImplemented('Template is not supported yet')
-
-        (body, resources) = slides_exporter.from_notebook_node(notebook_node)
+        (body, resources) = exporter.from_notebook_node(notebook_node)
 
         with open(path, 'w', encoding='utf-8') as f:
             f.write(body)
