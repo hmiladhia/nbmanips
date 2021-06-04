@@ -164,6 +164,7 @@ def is_new_slide(cell, subslide=True):
 # Default Selectors
 Selector.register_selector('contains', contains)
 Selector.register_selector('empty', is_empty)
+Selector.register_selector('is_empty', is_empty)
 Selector.register_selector('has_output', has_output)
 Selector.register_selector('has_output_type', has_output_type)
 

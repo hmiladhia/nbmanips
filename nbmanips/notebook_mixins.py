@@ -33,6 +33,9 @@ class SlideShowMixin(NotebookBase):
     def tag(self, tag_key, tag, selector, *args, **kwargs):
         raise NotImplemented()
 
+    def delete(self, selector, *args, **kwargs):
+        raise NotImplemented()
+
     def max_cells_per_slide(self, n_cells=3, n_images=1):
         cells_count = 0
         img_count = 0
@@ -57,7 +60,11 @@ class SlideShowMixin(NotebookBase):
                 cells_count = 1
                 img_count = 1 if is_image else 0
 
-    def auto_slide(self, max_cells_per_slide=3, max_images_per_slide=1):
+    def auto_slide(self, max_cells_per_slide=3, max_images_per_slide=1, *_, delete_empty=True):
+        # Delete Empty
+        if delete_empty:
+            self.delete('is_empty')
+
         # Each title represents
         self.set_slide(['is_markdown', 'contains'], [], '#')
 
