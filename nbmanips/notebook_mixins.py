@@ -7,7 +7,7 @@ from nbmanips.notebook_base import NotebookBase
 from nbmanips.selector import is_new_slide, has_slide_type, has_output_type
 
 
-class tSlideShowMixin(NotebookBase):
+class SlideShowMixin(NotebookBase):
     def mark_slideshow(self):
         self._nb['metadata']["celltoolbar"] = "Slideshow"
 
