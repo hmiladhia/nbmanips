@@ -1,3 +1,10 @@
+import json
+
+try:
+    import nbformat
+except ImportError:
+    nbformat = None
+
 try:
     import nbconvert
 except ImportError:
@@ -79,8 +86,59 @@ class SlideShowMixin(NotebookBase):
         # Set max cells per slide
         self.max_cells_per_slide(max_cells_per_slide, max_images_per_slide)
 
+
+class ExportMixin(NotebookBase):
+    __exporters = {}
+
+    @classmethod
+    def register_exporter(cls, exporter_name: str, exporter, exporter_type='nbconvert'):
+        exporters = cls.__exporters.setdefault(exporter_type, {})
+        exporters[exporter_name] = exporter
+
+    @classmethod
+    def get_exporter(cls, exporter_name, *args, exporter_type='nbconvert', **kwargs):
+        return cls.__exporters[exporter_type][exporter_name](*args, **kwargs)
+
+    def to_json(self):
+        return json.dumps(self._nb)
+
+    def to_notebook_node(self):
+        if nbformat:
+            version = self._nb.get('nbformat', 4)
+            return nbformat.reads(self.to_json(), as_version=version)
+        else:
+            raise ModuleNotFoundError('You need to pip install nbformat to get NotebookNode object')
+
+    def nbconvert(self, exporter_name, path, *args, **kwargs):
+        notebook_node = self.to_notebook_node()
+        exporter = self.get_exporter(exporter_name, *args, exporter_type='nbconvert', **kwargs)
+
+        (body, resources) = exporter.from_notebook_node(notebook_node)
+
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(body)
+
+    def to_html(self, path, exclude_code_cell=False, exclude_markdown=False, exclude_raw=False,
+                exclude_unknown=False, exclude_input=False, exclude_output=False, **kwargs):
+        """
+        Exports a basic HTML document.
+
+        :param path: path to export to
+        :param exclude_code_cell: This allows you to exclude code cells from all templates if set to True.
+        :param exclude_markdown: This allows you to exclude markdown cells from all templates if set to True.
+        :param exclude_raw: This allows you to exclude raw cells from all templates if set to True.
+        :param exclude_unknown: This allows you to exclude unknown cells from all templates if set to True.
+        :param exclude_input: This allows you to exclude input prompts from all templates if set to True.
+        :param exclude_output: This allows you to exclude code cell outputs from all templates if set to True.
+        :param kwargs: exclude_input_prompt, exclude_output_prompt, ...
+        """
+        return self.nbconvert('html', path, exclude_code_cell=exclude_code_cell, exclude_markdown=exclude_markdown,
+                              exclude_raw=exclude_raw, exclude_unknown=exclude_unknown, exclude_input=exclude_input,
+                              exclude_output=exclude_output, **kwargs)
+
     def to_slides(self, path, scroll=True, transition='slide', theme='simple', **kwargs):
         """
+        Exports HTML slides with reveal.js
 
         :param path:
         :param scroll: If True, enable scrolling within each slide
@@ -91,11 +149,14 @@ class SlideShowMixin(NotebookBase):
         See https://github.com/hakimel/reveal.js/tree/master/css/theme
         :type theme: beige, black, blood, league, moon, night, serif, simple, sky, solarized, white
         """
-        notebook_node = self.to_notebook_node()
-        exporter = nbconvert.SlidesExporter(reveal_scroll=scroll, reveal_transition=transition,
-                                            reveal_theme=theme, **kwargs)
+        return self.nbconvert('slides', path, reveal_scroll=scroll, reveal_transition=transition,
+                              reveal_theme=theme, **kwargs)
 
-        (body, resources) = exporter.from_notebook_node(notebook_node)
+    def to_str(self, selector=None, *args,  width=None, style='single', color=None,
+               img_color=None, img_width=None, **kwargs):
+        return '\n'.join(cell.to_str(width=width, style=style, color=color, img_color=img_color, img_width=img_width)
+                         for cell in self.iter_cells(selector, *args, **kwargs))
 
-        with open(path, 'w', encoding='utf-8') as f:
-            f.write(body)
+
+ExportMixin.register_exporter('html', nbconvert.HTMLExporter)
+ExportMixin.register_exporter('slides', nbconvert.SlidesExporter)

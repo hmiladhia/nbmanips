@@ -2,10 +2,11 @@ from copy import deepcopy
 
 from nbmanips.notebook_base import NotebookBase
 from nbmanips.notebook_mixins import SlideShowMixin
+from nbmanips.notebook_mixins import ExportMixin
 from nbmanips.utils import read_ipynb, write_ipynb, get_ipynb_name
 
 
-class Notebook(SlideShowMixin, NotebookBase):
+class Notebook(ExportMixin, SlideShowMixin, NotebookBase):
     def replace(self, old, new, first=False, case=True):
         if not case:
             raise NotImplemented("case support is not implemented yet")
@@ -59,11 +60,6 @@ class Notebook(SlideShowMixin, NotebookBase):
 
     def to_ipynb(self, path):
         write_ipynb(self._nb, path)
-
-    def to_str(self, selector, *args,  width=None, style='single', color=None,
-               img_color=None, img_width=None, **kwargs):
-        return '\n'.join(cell.to_str(width=width, style=style, color=color, img_color=img_color, img_width=img_width)
-                         for cell in self.iter_cells(selector, *args, **kwargs))
 
     @classmethod
     def read_ipynb(cls, path):
