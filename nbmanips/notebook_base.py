@@ -43,7 +43,7 @@ class NotebookBase:
         if self.name:
             return f'<Notebook "{self.name}">'
         else:
-            return f"<Notebook>"
+            return "<Notebook>"
 
     def __str__(self):
         return '\n'.join(str(Cell(cell, i, self._nb)) for i, cell in enumerate(self.cells))
@@ -61,9 +61,26 @@ class NotebookBase:
         else:
             raise ModuleNotFoundError('You need to pip install nbformat to get NotebookNode object')
 
-    def to_html(self, path):
+    def to_html(self, path, exclude_code_cell=False, exclude_markdown=False, exclude_raw=False,
+                exclude_unknown=False, exclude_input=False, exclude_output=False, **kwargs):
+        """
+        :param path:
+        :param exclude_code_cell: This allows you to exclude code cells from all templates if set to True.
+        :param exclude_markdown: This allows you to exclude markdown cells from all templates if set to True.
+        :param exclude_raw: This allows you to exclude raw cells from all templates if set to True.
+        :param exclude_unknown: This allows you to exclude unknown cells from all templates if set to True.
+        :param exclude_input: This allows you to exclude input prompts from all templates if set to True.
+        :param exclude_output: This allows you to exclude code cell outputs from all templates if set to True.
+        :param kwargs: exclude_input_prompt, exclude_output_prompt, ...
+        """
         notebook_node = self.to_notebook_node()
-        exporter = nbconvert.HTMLExporter()
+        exporter = nbconvert.HTMLExporter(exclude_code_cell=exclude_code_cell,
+                                          exclude_markdown=exclude_markdown,
+                                          exclude_raw=exclude_raw,
+                                          exclude_unknown=exclude_unknown,
+                                          exclude_input=exclude_input,
+                                          exclude_output=exclude_output,
+                                          **kwargs)
 
         (body, resources) = exporter.from_notebook_node(notebook_node)
 
