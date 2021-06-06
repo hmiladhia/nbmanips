@@ -79,9 +79,21 @@ class SlideShowMixin(NotebookBase):
         # Set max cells per slide
         self.max_cells_per_slide(max_cells_per_slide, max_images_per_slide)
 
-    def to_slides(self, path):
+    def to_slides(self, path, scroll=True, transition='slide', theme='simple', **kwargs):
+        """
+
+        :param path:
+        :param scroll: If True, enable scrolling within each slide
+        :type scroll: bool
+        :param transition: Name of the reveal.js transition to use.
+        :type transition: none, fade, slide, convex, concave and zoom.
+        :param theme: Name of the reveal.js theme to use.
+        See https://github.com/hakimel/reveal.js/tree/master/css/theme
+        :type theme: beige, black, blood, league, moon, night, serif, simple, sky, solarized, white
+        """
         notebook_node = self.to_notebook_node()
-        exporter = nbconvert.SlidesExporter()
+        exporter = nbconvert.SlidesExporter(reveal_scroll=scroll, reveal_transition=transition,
+                                            reveal_theme=theme, **kwargs)
 
         (body, resources) = exporter.from_notebook_node(notebook_node)
 
