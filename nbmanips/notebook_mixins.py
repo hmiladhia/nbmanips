@@ -109,8 +109,12 @@ class ExportMixin(NotebookBase):
         else:
             raise ModuleNotFoundError('You need to pip install nbformat to get NotebookNode object')
 
-    def nbconvert(self, exporter_name, path, *args, **kwargs):
+    def nbconvert(self, exporter_name, path, *args, template_name=None, **kwargs):
         notebook_node = self.to_notebook_node()
+
+        if template_name is not None:
+            kwargs['template_name'] = template_name
+
         exporter = self.get_exporter(exporter_name, *args, exporter_type='nbconvert', **kwargs)
 
         (body, resources) = exporter.from_notebook_node(notebook_node)
