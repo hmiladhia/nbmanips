@@ -140,11 +140,21 @@ class ExportMixin(NotebookBase):
                               exclude_raw=exclude_raw, exclude_unknown=exclude_unknown, exclude_input=exclude_input,
                               exclude_output=exclude_output, **kwargs)
 
+    def to_py(self, path, **kwargs):
+        """
+        Exports a Python code file.
+        Note that the file produced will have a shebang of '#!/usr/bin/env python'
+        regardless of the actual python version used in the notebook.
+
+        :param path: path to export to
+        """
+        return self.nbconvert('python', path, **kwargs)
+
     def to_slides(self, path, scroll=True, transition='slide', theme='simple', **kwargs):
         """
         Exports HTML slides with reveal.js
 
-        :param path:
+        :param path: path to export to
         :param scroll: If True, enable scrolling within each slide
         :type scroll: bool
         :param transition: Name of the reveal.js transition to use.
@@ -152,6 +162,8 @@ class ExportMixin(NotebookBase):
         :param theme: Name of the reveal.js theme to use.
         See https://github.com/hakimel/reveal.js/tree/master/css/theme
         :type theme: beige, black, blood, league, moon, night, serif, simple, sky, solarized, white
+        :param kwargs: any additional keyword arguments to nbconvert exporter
+        :type kwargs: exclude_code_cell, exclude_markdown, exclude_input, exclude_output, ...
         """
         return self.nbconvert('slides', path, reveal_scroll=scroll, reveal_transition=transition,
                               reveal_theme=theme, **kwargs)
@@ -164,3 +176,4 @@ class ExportMixin(NotebookBase):
 
 ExportMixin.register_exporter('html', nbconvert.HTMLExporter)
 ExportMixin.register_exporter('slides', nbconvert.SlidesExporter)
+ExportMixin.register_exporter('python', nbconvert.PythonExporter)
