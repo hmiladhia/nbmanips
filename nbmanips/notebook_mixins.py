@@ -206,3 +206,9 @@ class ExportMixin(NotebookBase):
                img_color=None, img_width=None, **kwargs):
         return '\n'.join(cell.to_str(width=width, style=style, color=color, img_color=img_color, img_width=img_width)
                          for cell in self.iter_cells(selector, *args, **kwargs))
+
+    def to_text(self, path, *args, **kwargs):
+        content = self.to_str(*args, color=False, img_color=False, **kwargs)
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(content)
+
