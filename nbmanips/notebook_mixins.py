@@ -1,3 +1,4 @@
+import os
 import json
 
 try:
@@ -119,8 +120,15 @@ class ExportMixin(NotebookBase):
 
         (body, resources) = exporter.from_notebook_node(notebook_node)
 
-        with open(path, 'w', encoding='utf-8') as f:
-            f.write(body)
+        # Exporting result
+        build_directory, file_name = os.path.split(path)
+        writer = nbconvert.writers.files.FilesWriter(build_directory=build_directory)
+
+        _, ext = os.path.splitext(file_name)
+        if ext:
+            resources.pop('output_extension')
+
+        writer.write(body, resources, file_name)
 
     def to_html(self, path, exclude_code_cell=False, exclude_markdown=False, exclude_raw=False,
                 exclude_unknown=False, exclude_input=False, exclude_output=False, **kwargs):
