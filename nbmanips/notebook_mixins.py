@@ -89,7 +89,14 @@ class SlideShowMixin(NotebookBase):
 
 
 class ExportMixin(NotebookBase):
-    __exporters = {}
+    __exporters = {
+        'nbconvert': {
+            'html': nbconvert.HTMLExporter,
+            'slides': nbconvert.SlidesExporter,
+            'python': nbconvert.PythonExporter,
+            'markdown': nbconvert.MarkdownExporter
+        }
+    }
 
     @classmethod
     def register_exporter(cls, exporter_name: str, exporter, exporter_type='nbconvert'):
@@ -198,9 +205,3 @@ class ExportMixin(NotebookBase):
                img_color=None, img_width=None, **kwargs):
         return '\n'.join(cell.to_str(width=width, style=style, color=color, img_color=img_color, img_width=img_width)
                          for cell in self.iter_cells(selector, *args, **kwargs))
-
-
-ExportMixin.register_exporter('html', nbconvert.HTMLExporter)
-ExportMixin.register_exporter('slides', nbconvert.SlidesExporter)
-ExportMixin.register_exporter('python', nbconvert.PythonExporter)
-ExportMixin.register_exporter('markdown', nbconvert.MarkdownExporter)
