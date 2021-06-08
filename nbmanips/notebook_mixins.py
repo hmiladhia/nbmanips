@@ -158,6 +158,24 @@ class ExportMixin(NotebookBase):
         """
         return self.nbconvert('python', path, **kwargs)
 
+    def to_md(self, path, exclude_code_cell=False, exclude_markdown=False, exclude_raw=False,
+              exclude_unknown=False, exclude_input=False, exclude_output=False, **kwargs):
+        """
+        Exports to a markdown document (.md)
+
+        :param path: path to export to
+        :param exclude_code_cell: This allows you to exclude code cells from all templates if set to True.
+        :param exclude_markdown: This allows you to exclude markdown cells from all templates if set to True.
+        :param exclude_raw: This allows you to exclude raw cells from all templates if set to True.
+        :param exclude_unknown: This allows you to exclude unknown cells from all templates if set to True.
+        :param exclude_input: This allows you to exclude input prompts from all templates if set to True.
+        :param exclude_output: This allows you to exclude code cell outputs from all templates if set to True.
+        :param kwargs: exclude_input_prompt, exclude_output_prompt, ...
+        """
+        return self.nbconvert('markdown', path, exclude_code_cell=exclude_code_cell, exclude_markdown=exclude_markdown,
+                              exclude_raw=exclude_raw, exclude_unknown=exclude_unknown, exclude_input=exclude_input,
+                              exclude_output=exclude_output, **kwargs)
+
     def to_slides(self, path, scroll=True, transition='slide', theme='simple', **kwargs):
         """
         Exports HTML slides with reveal.js
@@ -185,3 +203,4 @@ class ExportMixin(NotebookBase):
 ExportMixin.register_exporter('html', nbconvert.HTMLExporter)
 ExportMixin.register_exporter('slides', nbconvert.SlidesExporter)
 ExportMixin.register_exporter('python', nbconvert.PythonExporter)
+ExportMixin.register_exporter('markdown', nbconvert.MarkdownExporter)
