@@ -94,7 +94,8 @@ class ExportMixin(NotebookBase):
             'html': nbconvert.HTMLExporter,
             'slides': nbconvert.SlidesExporter,
             'python': nbconvert.PythonExporter,
-            'markdown': nbconvert.MarkdownExporter
+            'markdown': nbconvert.MarkdownExporter,
+            'script': nbconvert.ScriptExporter
         }
     }
 
