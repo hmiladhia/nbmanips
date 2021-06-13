@@ -1,11 +1,12 @@
 # nbmanips
-[![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/tterb/atomic-design-ui/blob/master/LICENSEs)
+![MIT License](https://img.shields.io/badge/license-MIT-green)
 
 A collections of utilities to manipulate IPython/Jupyter Notebooks via a python script.
 
 ## Usage/Examples
 ### Basic usage
-A simple Example of using nbmanips:
+A simple example of using nbmanips:
+
 ```python
 from nbmanips import Notebook
 
@@ -31,11 +32,52 @@ Examples of operations you can perform on a Notebook:
 To select cells on which to apply the previous operations, you can use:
 
 - The cell number
+
+```python
+nb.show(0)
+```
 - A slice object
-- A predefined selector
+
+```python
+selected_cells = slice(1, 6, 2)
+
+nb.show(selected_cells)
+```
+- A predefined selector. Available predefined selectors are the following:
+
+    - `code_cells` / `markdown_cells` / `raw_cells`: Selects cells with the given type
+    - `contains`: Selects Cells containing a certain text.
+    - `is_empty` / `empty`: Selects empty cells
+    - `has_output`: Checks if the cell has any output
+    - `has_output_type`: Select cells that have a given output_type
+    - `has_slide_type`: Select cells that have a given slide type
+    - `is_new_slide`: Selects cells where a new slide/subslide starts
+
+```python
+# Show Markdown Cells
+nb.show('markdown_cells')
+
+# Show Cells containing the equal sign
+nb.show('contains', '=')
+```
+
+
+
 - A function that takes a Cell object and returns True if the cell should be selected
+```python
+# Show Cells with length > 10
+nb.show(lambda cell: len(cell.source) > 10)
+```
+- A list of Selectors
+```python
+# Show Empty Markdown Cells
+nb.show(['markdown_cells', 'is_empty'])
+
+# Show Markdown or Code Cells
+nb.show(['markdown_cells', 'code_cells'], type='or')
+```
  
-### Export Format
+### Export Formats
 You can export the notebooks to these formats:
 
 - to_ipynb
