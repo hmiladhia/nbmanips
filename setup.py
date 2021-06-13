@@ -3,6 +3,9 @@ import setuptools
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+with open("requirements.txt", "r", encoding="utf-8") as fh:
+    requirements = fh.read().strip().split()
+
 with open("nbmanips/VERSION", "r", encoding="utf-8") as fh:
     version = fh.read()
 
@@ -21,7 +24,7 @@ setuptools.setup(
     entry_points={
         'console_scripts': ['nbmanips=nbmanips.__main__:main'],
     },
-    # install_requires=['scikit-learn==0.24.0'],
+    install_requires=requirements,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
