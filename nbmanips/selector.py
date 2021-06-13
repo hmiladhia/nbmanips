@@ -99,30 +99,81 @@ class Selector:
 
 
 def contains(cell, text, case=True, output=False):
+    """
+    Selects Cells containing a certain text.
+
+    :param cell: Cell object to select
+    :param text: a string to find in cell
+    :param case: True if the search is case sensitive
+    :type case: default True
+    :param output: True if you want the search in the output of the cell too
+    :type output: default False
+    :return: a bool object (True if cell should be selected)
+    """
     return cell.contains(text, case=case, output=output)
 
 
 def has_type(cell, type):
+    """
+    Selects cells with the given type
+
+    :param cell: Cell object to select
+    :param type:
+    :return: a bool object (True if cell should be selected)
+    """
     return cell.type == type
 
 
 def is_code(cell):
+    """
+    Selects code cells
+
+    :param cell: Cell object to select
+    :return: a bool object (True if cell should be selected)
+    """
     return has_type(cell, 'code')
 
 
 def is_markdown(cell):
+    """
+    Selects markdown cells
+
+    :param cell: Cell object to select
+    :return: a bool object (True if cell should be selected)
+    """
     return has_type(cell, 'markdown')
 
 
 def is_raw(cell):
+    """
+    Selects raw cells
+
+    :param cell: Cell object to select
+    :return: a bool object (True if cell should be selected)
+    """
     return has_type(cell, 'raw')
 
 
 def has_output(cell, value=True):
+    """
+    Checks if the cell has any output
+
+    :param cell: Cell object to select
+    :param value: set to False if you want to select cells with no output
+    :return: a bool object (True if cell should be selected)
+    """
     return (cell.output != "") == value
 
 
 def has_output_type(cell, output_type):
+    """
+    Select cells that have a given output_type
+
+    :param cell: Cell object to select
+    :param output_type: Output Type(MIME type) to select: text/plain, text/html, image/png, ...
+    :type output_type: str
+    :return: a bool object (True if cell should be selected)
+    """
     if not is_code(cell):
         return False
 
@@ -142,10 +193,24 @@ def has_output_type(cell, output_type):
 
 
 def is_empty(cell):
+    """
+    Selects empty cells
+
+    :param cell: Cell object to select
+    :return: a bool object (True if cell should be selected)
+    """
     return cell.source == '' and has_output(cell, False)
 
 
 def has_slide_type(cell, slide_type):
+    """
+    Select cells that have a given slide type
+
+    :param cell: Cell object to select
+    :param slide_type: Slide Type(s): '-', 'skip', 'slide', 'subslide', 'fragment', 'notes'
+    :type slide_type: str / set / list
+    :return: a bool object (True if cell should be selected)
+    """
     if isinstance(slide_type, str):
         slide_type = {slide_type}
 
@@ -155,6 +220,12 @@ def has_slide_type(cell, slide_type):
 
 
 def is_new_slide(cell, subslide=True):
+    """
+    Selects cells where a new slide/subslide starts
+    :param cell: Cell object to select
+    :param subslide: False if subslides should not be selected
+    :return: a bool object (True if cell should be selected)
+    """
     slide_types = {'slide'}
     if subslide:
         slide_types.add('subslide')
