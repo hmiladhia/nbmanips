@@ -1,5 +1,6 @@
 import os
 import json
+from copy import deepcopy
 
 try:
     import nbformat
@@ -15,33 +16,106 @@ from nbmanips.notebook_base import NotebookBase
 from nbmanips.selector import is_new_slide, has_slide_type, has_output_type
 
 
+class ClassicNotebook(NotebookBase):
+    def tag(self, tag_key, tag_value):
+        """
+        Add metadata to the selected cells
+        :param tag_key:
+        :param tag_value:
+        """
+        for cell in self.iter_cells():
+            value = deepcopy(tag_value)
+            if tag_key in cell.cell['metadata'] and isinstance(cell.cell['metadata'][tag_key], dict):
+                cell.metadata[tag_key].update(value)
+            else:
+                cell.metadata[tag_key] = value
+
+    def erase(self):
+        """
+        Erase the content of the selected cells
+        """
+        for cell in self.iter_cells():
+            cell.set_source([])
+
+    def delete(self):
+        """
+        Delete the selected cells
+        """
+        self.raw_nb['cells'] = [cell.cell for cell in self.iter_cells(neg=True)]
+
+    def keep(self):
+        """
+        Delete all the non-selected cells
+        """
+        self.raw_nb['cells'] = [cell.cell for cell in self.iter_cells()]
+
+    def first(self):
+        """
+        Return the number of the first selected cell
+        :return:
+        """
+        for cell in self.iter_cells():
+            return cell.num
+
+    def last(self):
+        """
+        Return the number of the last selected cell
+        :return:
+        """
+        for cell in reversed(list(self.iter_cells())):
+            return cell.num
+
+    def list(self):
+        """
+        Return the numbers of the selected cells
+        :return:
+        """
+        return [cell.num for cell in self.iter_cells()]
+
+    def show(self, selector=None, *args,  width=None, style='single', color=None,
+             img_color=None, img_width=None, **kwargs):
+        """
+        Show the selected cells
+        :param selector:
+        :param args:
+        :param width:
+        :param style:
+        :param color:
+        :param img_color:
+        :param img_width:
+        :param kwargs:
+        """
+        print(self.to_str(selector, *args, width=width, style=style, color=color, img_color=img_color,
+                          img_width=img_width, **kwargs))
+
+
 class SlideShowMixin(NotebookBase):
     def mark_slideshow(self):
-        self._nb['metadata']["celltoolbar"] = "Slideshow"
+        self.raw_nb['metadata']["celltoolbar"] = "Slideshow"
 
-    def set_slide(self, selector, *args, **kwargs):
-        self.tag_slide('slide', selector, *args, **kwargs)
+    def set_slide(self):
+        self.tag_slide('slide')
 
-    def set_skip(self, selector, *args, **kwargs):
-        self.tag_slide('skip', selector, *args, **kwargs)
+    def set_skip(self):
+        self.tag_slide('skip')
 
-    def set_subslide(self, selector, *args, **kwargs):
-        self.tag_slide('subslide', selector, *args, **kwargs)
+    def set_subslide(self):
+        self.tag_slide('subslide')
 
-    def set_fragment(self, selector, *args, **kwargs):
-        self.tag_slide('fragment', selector, *args, **kwargs)
+    def set_fragment(self):
+        self.tag_slide('fragment')
 
     def set_notes(self, selector, *args, **kwargs):
-        self.tag_slide('notes', selector, *args, **kwargs)
+        self.tag_slide('notes')
 
-    def tag_slide(self, tag, selector, *args, **kwargs):
+    def tag_slide(self, tag):
         assert tag in {'-', 'skip', 'slide', 'subslide', 'fragment', 'notes'}
-        self.tag('slideshow', {'slide_type': tag}, selector, *args, **kwargs)
+        self.tag('slideshow', {'slide_type': tag})
 
-    def tag(self, tag_key, tag, selector, *args, **kwargs):
+    def tag(self, tag_key, tag):
         raise NotImplemented()
 
-    def delete(self, selector, *args, **kwargs):
+    def delete(self):
         raise NotImplemented()
 
     def max_cells_per_slide(self, n_cells=3, n_images=1):
@@ -71,10 +145,11 @@ class SlideShowMixin(NotebookBase):
     def auto_slide(self, max_cells_per_slide=3, max_images_per_slide=1, *_, delete_empty=True):
         # Delete Empty
         if delete_empty:
-            self.delete('is_empty')
+            self.select('is_empty').delete()
 
         # Each title represents
-        self.set_slide(['is_markdown', 'contains'], [], '#')
+        # TODO: replace using double select
+        self.select(['is_markdown', 'contains'], [], '#').set_slide()
 
         # Create a new slide only
         for cell in reversed(list(self.iter_cells())):
@@ -109,11 +184,11 @@ class ExportMixin(NotebookBase):
         return cls.__exporters[exporter_type][exporter_name](*args, **kwargs)
 
     def to_json(self):
-        return json.dumps(self._nb)
+        return json.dumps(self.raw_nb)
 
     def to_notebook_node(self):
         if nbformat:
-            version = self._nb.get('nbformat', 4)
+            version = self.raw_nb.get('nbformat', 4)
             return nbformat.reads(self.to_json(), as_version=version)
         else:
             raise ModuleNotFoundError('You need to pip install nbformat to get NotebookNode object')
@@ -202,10 +277,9 @@ class ExportMixin(NotebookBase):
         return self.nbconvert('slides', path, reveal_scroll=scroll, reveal_transition=transition,
                               reveal_theme=theme, **kwargs)
 
-    def to_str(self, selector=None, *args,  width=None, style='single', color=None,
-               img_color=None, img_width=None, **kwargs):
+    def to_str(self,  width=None, style='single', color=None, img_color=None, img_width=None):
         return '\n'.join(cell.to_str(width=width, style=style, color=color, img_color=img_color, img_width=img_width)
-                         for cell in self.iter_cells(selector, *args, **kwargs))
+                         for cell in self.iter_cells())
 
     def to_text(self, path, *args, **kwargs):
         content = self.to_str(*args, color=False, img_color=False, **kwargs)

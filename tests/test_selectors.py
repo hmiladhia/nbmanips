@@ -43,7 +43,7 @@ def test_has_output(nb3, cell_num, expected):
     ('contains', ('hello', True), None),  # case=True
 ])
 def test_selector_args(nb1, selector, args, expected):
-    assert nb1.find(selector, *args) == expected
+    assert nb1.select(selector, *args).first() == expected
 
 
 @pytest.mark.parametrize("selector,args,expected", [
@@ -63,32 +63,32 @@ def test_selector_args(nb1, selector, args, expected):
     (['has_output', 'contains'], ([True], (('hello',), {'case': False})), 1),
 ])
 def test_list_selector_args(nb1, selector, args, expected):
-    assert nb1.find(selector, *args) == expected
+    assert nb1.select(selector, *args).first() == expected
 
 
 @pytest.mark.parametrize("slice_", [(0, 3), (1, 3), (1, 1), (0,), (1, 3, 2)])
 def test_slice_selector(nb1, slice_: list):
-    assert nb1.find_all(slice(*slice_)) == list(range(*slice_))
+    assert nb1.select(slice(*slice_)).list() == list(range(*slice_))
 
 
 @pytest.mark.parametrize("value,expected", [(0, 0), (3, 3), (5, None)])
 def test_int_selector(nb1, value, expected):
-    assert nb1.find(value) == expected
+    assert nb1.select(value).first() == expected
 
 
 def test_none_selector(nb1):
-    assert nb1.find_all(None) == [i for i in range(len(nb1))]
+    assert nb1.select(None).list() == [i for i in range(len(nb1))]
 
 
 def test_selector_selector(nb1):
     selector = Selector('contains', 'hello', case=False)
-    assert nb1.find(selector) == 1
+    assert nb1.select(selector).first() == 1
 
 
 @pytest.mark.parametrize("output_type,expected",
                          [('text/plain', [1, 3])])
 def test_has_output_type1(nb1, output_type, expected):
-    assert nb1.find_all('has_output_type', output_type) == expected
+    assert nb1.select('has_output_type', output_type).list() == expected
 
 
 # @pytest.mark.parametrize("output_type,expected",

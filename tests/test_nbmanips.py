@@ -24,7 +24,7 @@ def nb3():
 
 
 def test_read(nb1):
-    assert len(nb1._nb['cells']) == 4
+    assert len(nb1.raw_nb['cells']) == 4
 
 
 def test_name(nb1):
@@ -87,7 +87,7 @@ def test_replace(nb0, old, new, case, first, expected_old, expected_new):
     ('contains', {'text': 'a '}, 'a', [0, 3]),
 ])
 def test_erase(nb0, selector, selector_kwargs, search_term, expected):
-    nb0.erase(selector, **selector_kwargs)
+    nb0.select(selector, **selector_kwargs).erase()
     assert nb0.search_all(search_term, case=True) == expected
     assert len(nb0) == 4
 
@@ -98,7 +98,7 @@ def test_erase(nb0, selector, selector_kwargs, search_term, expected):
     ('contains', {'text': 'a '}, 'a', [0, 2], 3),
 ])
 def test_delete(nb0, selector, selector_kwargs, search_term, expected, expected_length):
-    nb0.delete(selector, **selector_kwargs)
+    nb0.select(selector, **selector_kwargs).delete()
     assert nb0.search_all(search_term, case=True) == expected
     assert len(nb0) == expected_length
 
@@ -110,14 +110,14 @@ def test_delete(nb0, selector, selector_kwargs, search_term, expected, expected_
     ('contains', {'text': 'a '}, 'a', [0], 1),
 ])
 def test_keep(nb0, selector, selector_kwargs, search_term, expected, expected_length):
-    nb0.keep(selector, **selector_kwargs)
+    nb0.select(selector, **selector_kwargs).keep()
     assert nb0.search_all(search_term, case=True) == expected
     assert len(nb0) == expected_length
 
 
 def test_tag(nb0):
-    nb0.tag('test', {"key": "value"}, lambda cell: cell.num in {0, 1, 2})
-    nb0.tag('test', {"key": "new_value"}, lambda cell: cell.num == 1)
+    nb0.select(lambda cell: cell.num in {0, 1, 2}).tag('test', {"key": "value"})
+    nb0.select(lambda cell: cell.num == 1).tag('test', {"key": "new_value"})
     assert nb0.cells[1]['metadata']['test']['key'] == "new_value"
     assert nb0.cells[0]['metadata']['test']['key'] == "value"
 

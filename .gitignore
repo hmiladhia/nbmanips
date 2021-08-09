@@ -12,4 +12,6 @@ __pycache__
 .vscode
 
 # packages
+build
+dist
 nbmanips.egg-info

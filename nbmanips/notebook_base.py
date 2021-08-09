@@ -6,27 +6,57 @@ from nbmanips.selector import Selector
 
 class NotebookBase:
     def __init__(self, content, name=None):
-        self._nb = copy.deepcopy(content)
+        self.raw_nb = copy.deepcopy(content)
         self.name = name
+        self._selector = None
+
+    def select(self, selector, *args, **kwargs) -> 'NotebookBase':
+        notebook_selection = self.__class__(None, self.name)
+        notebook_selection.raw_nb = self.raw_nb
+        notebook_selection.__add_selector(selector, *args, **kwargs)
+        return notebook_selection
+
+    def iter_cells(self, neg=False):
+        return Selector(self._selector).iter_cells(self.raw_nb, neg=neg)
+
+    @property
+    def cells(self):
+        return self.raw_nb['cells']
+
+    @property
+    def metadata(self):
+        return self.raw_nb['metadata']
 
     def __add__(self, other: 'NotebookBase'):
+        if not isinstance(other, NotebookBase):
+            raise ValueError('Expected Notebook object, got %s' % type(other))
+
         # Copying the notebook
-        nb = copy.deepcopy(self._nb)
+        raw_nb = copy.deepcopy(self.raw_nb)
 
         # Concatenating the notebooks
-        nb['cells'] = nb['cells'] + other._nb['cells']
-        return self.__class__(nb)
+        raw_nb['cells'] = raw_nb['cells'] + copy.deepcopy(other.raw_nb['cells'])
+        return self.__class__(raw_nb)
+
+    def __mul__(self, other: int):
+        if not isinstance(other, int):
+            raise ValueError('Expected int, got %s' % type(other))
+
+        # Copying the notebook
+        raw_nb = copy.deepcopy(self.raw_nb)
+
+        # Concatenating the notebooks
+        raw_nb['cells'] = [].extend(copy.deepcopy(raw_nb['cells']) for _ in range(other))
+        return self.__class__(raw_nb)
 
     def __getitem__(self, item):
-        return self._nb[item]
-
-    def __setitem__(self, item, value):
-        self._nb[item] = value
+        # todo: check if this works correctly
+        return self.select(item)
 
     def __len__(self):
-        if self._nb is None or 'cells' not in self._nb:
+        if self.raw_nb is None or 'cells' not in self.raw_nb:
             return 0
-        return len(self._nb['cells'])
+        return len(self.raw_nb['cells'])
 
     def __repr__(self):
         if self.name:
@@ -35,14 +65,10 @@ class NotebookBase:
             return "<Notebook>"
 
     def __str__(self):
-        return '\n'.join(str(Cell(cell, i, self._nb)) for i, cell in enumerate(self.cells))
+        return '\n'.join(str(Cell(cell, i, self.raw_nb)) for i, cell in enumerate(self.cells))
 
-    def iter_cells(self, selector=None, *args, **kwargs):
-        return Selector(selector, *args, **kwargs).iter_cells(self._nb)
-
-    def iter_neg_cells(self, selector, *args, **kwargs):
-        return Selector(selector, *args, **kwargs).iter_cells(self._nb, neg=True)
-
-    @property
-    def cells(self):
-        return self._nb['cells']
+    def __add_selector(self, selector, *args, **kwargs):
+        selector = selector if isinstance(selector, Selector) else Selector(selector, *args, **kwargs)
+        if self._selector is None:
+            self._selector = []
+        self._selector.append(selector)
