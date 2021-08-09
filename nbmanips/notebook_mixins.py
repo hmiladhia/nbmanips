@@ -281,3 +281,40 @@ class ExportMixin(NotebookBase):
         :param img_width:
         """
         print(self.to_str(width=width, style=style, color=color, img_color=img_color, img_width=img_width))
+
+
+class NotebookMetadata(NotebookBase):
+    def add_author(self, name, **kwargs):
+        """
+        Add author to metadata
+        :param name: name of the author
+        :param kwargs: any additional information about the author
+        """
+        if 'authors' not in self.metadata:
+            self.metadata['authors'] = []
+
+        # Create author info
+        author_inf = {'name': name}
+        author_inf.update(kwargs)
+
+        # add author
+        self.metadata['authors'].append(author_inf)
+
+    def set_kernelspec(self, argv, display_name, language, **kwargs):
+        """
+        set the kernel specs.
+        See https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernelspecs for more information
+        :param argv: A list of command line arguments used to start the kernel.
+        :param display_name:The kernel’s name as it should be displayed in the UI. Unlike the kernel name used in
+        the API, this can contain arbitrary unicode characters.
+        :param language: The name of the language of the kernel.
+        :param kwargs: optional keyword arguments
+        """
+        # Create kernelspec
+        kernelspec = {'argv': argv,
+                      'display_name': display_name,
+                      'language': language}
+        kernelspec.update(kwargs)
+
+        # set kernelspec
+        self.metadata['kernelspec'] = kernelspec

@@ -2,10 +2,11 @@ from nbmanips.notebook_base import NotebookBase
 from nbmanips.notebook_mixins import SlideShowMixin
 from nbmanips.notebook_mixins import ClassicNotebook
 from nbmanips.notebook_mixins import ExportMixin
+from nbmanips.notebook_mixins import NotebookMetadata
 from nbmanips.utils import read_ipynb, get_ipynb_name
 
 
-class Notebook(ExportMixin, SlideShowMixin, ClassicNotebook, NotebookBase):
+class Notebook(SlideShowMixin, ClassicNotebook, NotebookMetadata, ExportMixin, NotebookBase):
     def search(self, text, case=False, output=False, regex=False):
         """
         Return the number of the first cell containing the given text
