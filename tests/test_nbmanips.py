@@ -116,8 +116,8 @@ def test_keep(nb0, selector, selector_kwargs, search_term, expected, expected_le
 
 
 def test_tag(nb0):
-    nb0.select(lambda cell: cell.num in {0, 1, 2}).tag('test', {"key": "value"})
-    nb0.select(lambda cell: cell.num == 1).tag('test', {"key": "new_value"})
+    nb0.select(lambda cell: cell.num in {0, 1, 2}).update_cell_metadata('test', {"key": "value"})
+    nb0.select(lambda cell: cell.num == 1).update_cell_metadata('test', {"key": "new_value"})
     assert nb0.cells[1]['metadata']['test']['key'] == "new_value"
     assert nb0.cells[0]['metadata']['test']['key'] == "value"
 

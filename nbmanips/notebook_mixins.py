@@ -18,7 +18,7 @@ from nbmanips.utils import write_ipynb
 
 
 class ClassicNotebook(NotebookBase):
-    def tag(self, tag_key, tag_value):
+    def update_cell_metadata(self, tag_key, tag_value):
         """
         Add metadata to the selected cells
         :param tag_key:
@@ -74,7 +74,7 @@ class ClassicNotebook(NotebookBase):
         return [cell.num for cell in self.iter_cells()]
 
 
-class SlideShowMixin(NotebookBase):
+class SlideShowMixin(ClassicNotebook):
     def mark_slideshow(self):
         self.raw_nb['metadata']["celltoolbar"] = "Slideshow"
 
@@ -90,18 +90,12 @@ class SlideShowMixin(NotebookBase):
     def set_fragment(self):
         self.tag_slide('fragment')
 
-    def set_notes(self, selector, *args, **kwargs):
+    def set_notes(self):
         self.tag_slide('notes')
 
     def tag_slide(self, tag):
         assert tag in {'-', 'skip', 'slide', 'subslide', 'fragment', 'notes'}
-        self.tag('slideshow', {'slide_type': tag})
-
-    def tag(self, tag_key, tag):
-        raise NotImplemented()
-
-    def delete(self):
-        raise NotImplemented()
+        self.update_cell_metadata('slideshow', {'slide_type': tag})
 
     def max_cells_per_slide(self, n_cells=3, n_images=1):
         cells_count = 0
