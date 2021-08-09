@@ -14,6 +14,7 @@ except ImportError:
 
 from nbmanips.notebook_base import NotebookBase
 from nbmanips.selector import is_new_slide, has_slide_type, has_output_type
+from nbmanips.utils import write_ipynb
 
 
 class ClassicNotebook(NotebookBase):
@@ -71,22 +72,6 @@ class ClassicNotebook(NotebookBase):
         :return:
         """
         return [cell.num for cell in self.iter_cells()]
-
-    def show(self, selector=None, *args,  width=None, style='single', color=None,
-             img_color=None, img_width=None, **kwargs):
-        """
-        Show the selected cells
-        :param selector:
-        :param args:
-        :param width:
-        :param style:
-        :param color:
-        :param img_color:
-        :param img_width:
-        :param kwargs:
-        """
-        print(self.to_str(selector, *args, width=width, style=style, color=color, img_color=img_color,
-                          img_width=img_width, **kwargs))
 
 
 class SlideShowMixin(NotebookBase):
@@ -148,8 +133,7 @@ class SlideShowMixin(NotebookBase):
             self.select('is_empty').delete()
 
         # Each title represents
-        # TODO: replace using double select
-        self.select(['is_markdown', 'contains'], [], '#').set_slide()
+        self.select('is_markdown').select('contains', '#').set_slide()
 
         # Create a new slide only
         for cell in reversed(list(self.iter_cells())):
@@ -286,3 +270,20 @@ class ExportMixin(NotebookBase):
         with open(path, 'w', encoding='utf-8') as f:
             f.write(content)
 
+    def to_ipynb(self, path):
+        """
+        Export to ipynb file
+        :param path: target path
+        """
+        write_ipynb(self.raw_nb, path)
+
+    def show(self, width=None, style='single', color=None, img_color=None, img_width=None):
+        """
+        Show the selected cells
+        :param width:
+        :param style:
+        :param color:
+        :param img_color:
+        :param img_width:
+        """
+        print(self.to_str(width=width, style=style, color=color, img_color=img_color, img_width=img_width))

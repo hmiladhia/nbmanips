@@ -2,7 +2,7 @@ from nbmanips.notebook_base import NotebookBase
 from nbmanips.notebook_mixins import SlideShowMixin
 from nbmanips.notebook_mixins import ClassicNotebook
 from nbmanips.notebook_mixins import ExportMixin
-from nbmanips.utils import read_ipynb, write_ipynb, get_ipynb_name
+from nbmanips.utils import read_ipynb, get_ipynb_name
 
 
 class Notebook(ClassicNotebook, ExportMixin, SlideShowMixin, NotebookBase):
@@ -51,13 +51,6 @@ class Notebook(ClassicNotebook, ExportMixin, SlideShowMixin, NotebookBase):
             cell.set_source([line.replace(old, new) for line in cell.get_source(text=False)])
             if first:
                 break
-
-    def to_ipynb(self, path):
-        """
-        Export to ipynb file
-        :param path: target path
-        """
-        write_ipynb(self.raw_nb, path)
 
     @classmethod
     def read_ipynb(cls, path):
