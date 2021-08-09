@@ -1,3 +1,5 @@
+from itertools import filterfalse
+
 from nbmanips.cell import Cell
 from nbmanips.utils import partial
 
@@ -8,14 +10,9 @@ class Selector:
     def __init__(self, selector, *args, **kwargs):
         self._selector = self._get_selector(selector, *args, **kwargs)
 
-    def get_selector(self, neg=False) -> callable:
-        if neg:
-            return lambda cell: not self._selector(cell)
-        else:
-            return self._selector
-
     def iter_cells(self, nb, neg=False):
-        return filter(self.get_selector(neg), (Cell(cell, i, nb) for i, cell in enumerate(nb["cells"])))
+        filter_method = filterfalse if neg else filter
+        return filter_method(self._selector, (Cell(cell, i, nb) for i, cell in enumerate(nb["cells"])))
 
     @classmethod
     def register_selector(cls, key, selector):
@@ -34,7 +31,7 @@ class Selector:
             assert not kwargs and not args
             return self.__get_slice_selector(selector)
         elif isinstance(selector, Selector):
-            return selector.get_selector()
+            return selector._selector
         elif selector is None:
             return lambda cell: True
         else:
