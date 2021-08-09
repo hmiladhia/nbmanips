@@ -1,6 +1,7 @@
 import os
 import json
 from copy import deepcopy
+from typing import Union, Any
 
 try:
     import nbformat
@@ -18,18 +19,15 @@ from nbmanips.utils import write_ipynb
 
 
 class ClassicNotebook(NotebookBase):
-    def update_cell_metadata(self, tag_key, tag_value):
+    def update_cell_metadata(self, key: str, value: Any):
         """
         Add metadata to the selected cells
-        :param tag_key:
-        :param tag_value:
+        :param key: metadata key
+        :param value: metadata value
         """
         for cell in self.iter_cells():
-            value = deepcopy(tag_value)
-            if tag_key in cell.cell['metadata'] and isinstance(cell.cell['metadata'][tag_key], dict):
-                cell.metadata[tag_key].update(value)
-            else:
-                cell.metadata[tag_key] = value
+            value = deepcopy(value)
+            cell.update_metadata(key, value)
 
     def erase(self):
         """
@@ -318,3 +316,79 @@ class NotebookMetadata(NotebookBase):
 
         # set kernelspec
         self.metadata['kernelspec'] = kernelspec
+
+
+class NotebookCellMetadata(ClassicNotebook):
+    def add_tag(self, tag: str):
+        """
+        Add tag to cell metadata.
+        :param tag: tag to add
+        """
+        for cell in self.iter_cells():
+            cell.add_tag(tag)
+
+    def remove_tag(self, tag: str):
+        """
+        remove tag to cell metadata.
+        :param tag: tag to remove
+        """
+        for cell in self.iter_cells():
+            cell.remove_tag(tag)
+
+    def set_collapsed(self, value: bool = True):
+        """
+        Whether the cell’s output container should be collapsed
+        :param value: boolean
+        """
+        self.update_cell_metadata('collapsed', value)
+
+    def set_scrolled(self, value: Union[bool, str] = False):
+        """
+        Whether the cell’s output is scrolled, unscrolled, or autoscrolled
+        :param value: bool or ‘auto’
+        """
+        self.update_cell_metadata('scrolled', value)
+
+    def set_deletable(self, value: bool = False):
+        """
+        If False, prevent deletion of the cell
+        :param value: boolean
+        """
+        self.update_cell_metadata('deletable', value)
+
+    def set_editable(self, value: bool = False):
+        """
+        If False, prevent editing of the cell (by definition, this also prevents deleting the cell)
+        :param value: boolean
+        """
+        self.update_cell_metadata('editable', value)
+
+    def set_format(self, value: str):
+        """
+        The mime-type of a Raw NBConvert Cell
+        :param value: ‘mime/type’
+        """
+        self.update_cell_metadata('format', value)
+
+    def set_name(self, value: str):
+        """
+        A name for the cell. Should be unique across the notebook.
+        Uniqueness must be verified outside of the json schema.
+        :param value: name of the cell
+        """
+        # TODO: check name is unique
+        self.update_cell_metadata('name', value)
+
+    def hide_source(self, value=True):
+        """
+        Whether the cell’s source should be shown
+        :param value: boolean
+        """
+        self.update_cell_metadata('jupyter', {'source_hidden': value})
+
+    def hide_output(self, value=True):
+        """
+        Whether the cell’s outputs should be shown
+        :param value: boolean
+        """
+        self.update_cell_metadata('jupyter', {'outputs_hidden': value})

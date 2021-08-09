@@ -1,4 +1,5 @@
 import shutil
+from typing import Any
 
 from nbmanips.cell_utils import printable_cell
 from nbmanips.cell_utils import get_readable
@@ -155,3 +156,46 @@ class Cell:
 
     def __str__(self):
         return self.to_str(width=None, style='single', color=None, img_color=None)
+
+    # metadata
+    def update_metadata(self, key: str, value: Any):
+        """
+        Add metadata to the selected cells
+        :param key: metadata key
+        :param value: metadata value
+        """
+        if 'metadata' not in self.cell:
+            self.cell['metadata'] = {}
+
+        if key in self.cell['metadata'] and isinstance(self.cell['metadata'][key], dict):
+            self.metadata[key].update(value)
+        else:
+            self.metadata[key] = value
+
+    def add_tag(self, tag: str):
+        """
+        Add tag to cell metadata.
+        :param tag: tag to add
+        """
+        if 'metadata' not in self.cell:
+            self.cell['metadata'] = {}
+
+        if 'tags' not in self.metadata:
+            self.metadata['tags'] = []
+
+        if tag in self.metadata['tags']:
+            return
+
+        self.metadata['tags'].append(tag)
+
+    def remove_tag(self, tag: str):
+        """
+        remove tag to cell metadata.
+        :param tag: tag to remove
+        """
+
+        if 'metadata' not in self.cell or 'tags' not in self.metadata:
+            return
+
+        while tag in self.metadata['tags']:
+            self.metadata['tags'].remove(tag)
