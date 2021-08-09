@@ -46,7 +46,10 @@ class NotebookBase:
         raw_nb = copy.deepcopy(self.raw_nb)
 
         # Concatenating the notebooks
-        raw_nb['cells'] = [].extend(copy.deepcopy(raw_nb['cells']) for _ in range(other))
+        raw_nb['cells'] = []
+        for _ in range(other):
+            raw_nb['cells'].extend(copy.deepcopy(self.raw_nb['cells']))
+
         return self.__class__(raw_nb)
 
     def __getitem__(self, item):

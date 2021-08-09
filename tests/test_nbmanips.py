@@ -160,6 +160,18 @@ def test_list_selector_chaining(nb1, selector, args, expected):
     assert selection.first() == expected
     assert selection.first() == nb1.select(selector, *args).first()
 
+
+def test_nb_multiply(nb1):
+    result_nb = nb1 * 3
+    assert isinstance(result_nb, Notebook)
+    assert len(nb1)*3 == len(result_nb)
+
+
+def test_nb_add(nb1, nb2):
+    result_nb = nb1 + nb2
+    assert isinstance(result_nb, Notebook)
+    assert len(nb1) + len(nb2) == len(result_nb)
+
 # def test_selectors(nb0, selector, selector_kwargs):
 #     assert False
 # def test_get_item(nb1):
