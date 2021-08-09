@@ -349,14 +349,14 @@ class NotebookCellMetadata(ClassicNotebook):
         """
         self.update_cell_metadata('scrolled', value)
 
-    def set_deletable(self, value: bool = False):
+    def set_deletable(self, value: bool = True):
         """
         If False, prevent deletion of the cell
         :param value: boolean
         """
         self.update_cell_metadata('deletable', value)
 
-    def set_editable(self, value: bool = False):
+    def set_editable(self, value: bool = True):
         """
         If False, prevent editing of the cell (by definition, this also prevents deleting the cell)
         :param value: boolean
