@@ -122,6 +122,16 @@ def test_tag(nb0):
     assert nb0.cells[0]['metadata']['test']['key'] == "value"
 
 
+# @pytest.mark.parametrize("slice_", [(0, 3), (1, 3), (1, 1), (0,), (1, 3, 2)])
+def test_get_item_selector(nb1):
+    assert nb1[0:3].list() == list(range(0, 3))
+    assert nb1[1:3].list() == list(range(1, 3))
+    assert nb1[1:1].list() == list(range(1, 1))
+    assert nb1[:0].list() == list(range(0))
+    assert nb1[1:3:2].list() == list(range(1, 3, 2))
+    assert nb1['has_output'].first() == 1
+    assert nb1['contains', 'hello', False].first() == 1
+
 # def test_selectors(nb0, selector, selector_kwargs):
 #     assert False
 # def test_get_item(nb1):

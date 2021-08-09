@@ -50,7 +50,8 @@ class NotebookBase:
         return self.__class__(raw_nb)
 
     def __getitem__(self, item):
-        # todo: check if this works correctly
+        if isinstance(item, tuple):
+            return self.select(*item)
         return self.select(item)
 
     def __len__(self):
