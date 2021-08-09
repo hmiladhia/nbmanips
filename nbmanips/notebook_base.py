@@ -13,7 +13,7 @@ class NotebookBase:
     def select(self, selector, *args, **kwargs) -> 'NotebookBase':
         notebook_selection = self.__class__(None, self.name)
         notebook_selection.raw_nb = self.raw_nb
-        notebook_selection.__add_selector(selector, *args, **kwargs)
+        notebook_selection._selector = self.__get_new_selector(selector, *args, **kwargs)
         return notebook_selection
 
     def iter_cells(self, neg=False):
@@ -68,8 +68,11 @@ class NotebookBase:
     def __str__(self):
         return '\n'.join(str(Cell(cell, i, self.raw_nb)) for i, cell in enumerate(self.cells))
 
-    def __add_selector(self, selector, *args, **kwargs):
+    def __get_new_selector(self, selector, *args, **kwargs):
         selector = selector if isinstance(selector, Selector) else Selector(selector, *args, **kwargs)
         if self._selector is None:
-            self._selector = []
-        self._selector.append(selector)
+            new_selector = []
+        else:
+            new_selector = self._selector.copy()
+        new_selector.append(selector)
+        return new_selector

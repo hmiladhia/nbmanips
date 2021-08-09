@@ -132,6 +132,34 @@ def test_get_item_selector(nb1):
     assert nb1['has_output'].first() == 1
     assert nb1['contains', 'hello', False].first() == 1
 
+
+@pytest.mark.parametrize("selector,args,expected", [
+    (['has_output', 'contains'], ({'value': False}, {'text': '5'}), 2),
+    (['has_output', 'contains'], ([{'value': False}, {'text': '5'}]), 2),
+    (['has_output', 'contains'], ([{'value': True}, {'text': '5'}]), None),
+    (['has_output', 'contains'], ([{'value': True}, {'text': 'a'}]), 3),
+    (['has_output', 'contains'], ([{}, {'text': 'a'}]), 3),
+    (['has_output', 'contains'], ({}, {'text': '5'}), None),
+    (['has_output', 'contains'], ([True], ['a']), 3),
+    (['has_output', 'contains'], ({'value': True}, ['a']), 3),
+    (['has_output', 'contains'], ({'value': False}, ['5']), 2),
+    (['has_output', 'contains'], ([True], (['hello'], {'case': True})), None),
+    (['has_output', 'contains'], ([True], (('hello',), {'case': True})), None),
+    (['has_output', 'contains'], ([True], (['hello'], {'case': False})), 1),
+    (['has_output', 'contains'], ([True], (('hello',), {'case': False})), 1),
+])
+def test_list_selector_chaining(nb1, selector, args, expected):
+    selection = nb1.select(None)
+    for sel, sel_args in zip(selector, args):
+        if isinstance(sel_args, dict):
+            selection = selection.select(sel, **sel_args)
+        elif isinstance(sel_args, tuple) and len(sel_args) == 2:
+            selection = selection.select(sel, *sel_args[0], **sel_args[1])
+        else:
+            selection = selection.select(sel, *sel_args)
+    assert selection.first() == expected
+    assert selection.first() == nb1.select(selector, *args).first()
+
 # def test_selectors(nb0, selector, selector_kwargs):
 #     assert False
 # def test_get_item(nb1):
