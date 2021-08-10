@@ -101,6 +101,12 @@ def test_erase(nb0, selector, selector_kwargs, search_term, expected):
     assert len(nb0) == 4
 
 
+def test_erase_output(nb3):
+    assert nb3.select('has_output_type', 'image/png').count() == 2
+    nb3.erase_output('image/png')
+    assert nb3.select('has_output_type', 'image/png').count() == 0
+
+
 @pytest.mark.parametrize("selector, selector_kwargs, search_term, expected, expected_length", [
     ('contains', {'text': 'Hello'}, 'World', [], 3),
     ('contains', {'text': 'Hllo'}, 'World', [1], 4),

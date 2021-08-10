@@ -138,6 +138,42 @@ class Cell:
             search_target = search_target.lower()
         return text in search_target
 
+    def erase_output(self, output_types: Optional[Union[str, set]] = None):
+        """
+        erase output of cells that have a given output_type
+
+        :param output_types: Output Type(MIME type) to delete: text/plain, text/html, image/png, ...
+        :type output_types: set or str or None to delete all output
+        """
+        if self.type != "code":
+            return
+
+        if output_types is None:
+            self['outputs'] = []
+            return
+        elif isinstance(output_types, str):
+            output_types = {output_types}
+        else:
+            output_types = set(output_types)
+
+        outputs = self['outputs']
+        new_outputs = []
+        for output in outputs:
+            if output['output_type'] == 'stream':
+                if output_types & {'text/plain', 'text'}:
+                    continue
+            elif output['output_type'] in {'execute_result', 'display_data'}:
+                data = output['data']
+                for output_type in output_types:
+                    data.pop(output_type, None)
+                if not data:
+                    continue
+            elif output['output_type'] == 'error':
+                if 'error' in output_types:
+                    continue
+            new_outputs.append(output)
+        self['outputs'] = new_outputs
+
     def to_str(self, width=None, style='single', color=None, img_color=None, img_width=None):
         if self.type == 'code':
             width = width or (shutil.get_terminal_size().columns - 1)

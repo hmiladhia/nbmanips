@@ -36,6 +36,13 @@ class ClassicNotebook(NotebookBase):
         for cell in self.iter_cells():
             cell.set_source([])
 
+    def erase_output(self, output_types=None):
+        """
+        Erase the output content of the selected cells
+        """
+        for cell in self.iter_cells():
+            cell.erase_output(output_types)
+
     def delete(self):
         """
         Delete the selected cells
