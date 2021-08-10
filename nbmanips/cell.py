@@ -1,10 +1,10 @@
 import shutil
+import uuid
 from copy import deepcopy
 from typing import Any, Optional, Union
 
 from nbmanips.cell_utils import printable_cell
 from nbmanips.cell_utils import get_readable
-from nbformat.corpus.words import generate_corpus_id
 
 
 class Cell:
@@ -243,5 +243,5 @@ class Cell:
 
     @staticmethod
     def generate_id_candidate():
-        return generate_corpus_id()
+        return uuid.uuid4().hex[:8]
 

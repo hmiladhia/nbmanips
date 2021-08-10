@@ -56,14 +56,16 @@ class ClassicNotebook(NotebookBase):
         Return the number of the first selected cell
         :return:
         """
-        return self.first_cell().num
+        for cell in self.iter_cells():
+            return cell.num
 
     def last(self):
         """
         Return the number of the last selected cell
         :return:
         """
-        return self.last_cell().num
+        for cell in reversed(list(self.iter_cells())):
+            return cell.num
 
     def list(self):
         """

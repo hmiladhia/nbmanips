@@ -97,10 +97,10 @@ def test_search_all(nb1, search_term, case, output, expected):
     ('a', 'Test', True, False, [], [0, 2, 3]),
     ('a', 'Test', True, True, [2, 3], [0]),
 ])
-def test_replace(nb0, old, new, case, first, expected_old, expected_new):
-    nb0.replace(old, new, first=first, case=case)
-    assert nb0.search_all(old, case=case) == expected_old
-    assert nb0.search_all(new, case=True) == expected_new
+def test_replace(nb1_0, old, new, case, first, expected_old, expected_new):
+    nb1_0.replace(old, new, first=first, case=case)
+    assert nb1_0.search_all(old, case=case) == expected_old
+    assert nb1_0.search_all(new, case=True) == expected_new
 
 
 @pytest.mark.parametrize("selector, selector_kwargs, search_term, expected", [
@@ -108,10 +108,10 @@ def test_replace(nb0, old, new, case, first, expected_old, expected_new):
     ('contains', {'text': 'Hllo'}, 'World', [1]),
     ('contains', {'text': 'a '}, 'a', [0, 3]),
 ])
-def test_erase(nb0, selector, selector_kwargs, search_term, expected):
-    nb0.select(selector, **selector_kwargs).erase()
-    assert nb0.search_all(search_term, case=True) == expected
-    assert len(nb0) == 4
+def test_erase(nb1_0, selector, selector_kwargs, search_term, expected):
+    nb1_0.select(selector, **selector_kwargs).erase()
+    assert nb1_0.search_all(search_term, case=True) == expected
+    assert len(nb1_0) == 4
 
 
 def test_erase_output(nb3_0):
@@ -125,10 +125,10 @@ def test_erase_output(nb3_0):
     ('contains', {'text': 'Hllo'}, 'World', [1], 4),
     ('contains', {'text': 'a '}, 'a', [0, 2], 3),
 ])
-def test_delete(nb0, selector, selector_kwargs, search_term, expected, expected_length):
-    nb0.select(selector, **selector_kwargs).delete()
-    assert nb0.search_all(search_term, case=True) == expected
-    assert len(nb0) == expected_length
+def test_delete(nb1_0, selector, selector_kwargs, search_term, expected, expected_length):
+    nb1_0.select(selector, **selector_kwargs).delete()
+    assert nb1_0.search_all(search_term, case=True) == expected
+    assert len(nb1_0) == expected_length
 
 
 @pytest.mark.parametrize("selector, selector_kwargs, search_term, expected, expected_length", [
@@ -137,17 +137,17 @@ def test_delete(nb0, selector, selector_kwargs, search_term, expected, expected_
     ('contains', {'text': 'a'}, 'a', [0, 1, 2], 3),
     ('contains', {'text': 'a '}, 'a', [0], 1),
 ])
-def test_keep(nb0, selector, selector_kwargs, search_term, expected, expected_length):
-    nb0.select(selector, **selector_kwargs).keep()
-    assert nb0.search_all(search_term, case=True) == expected
-    assert len(nb0) == expected_length
+def test_keep(nb1_0, selector, selector_kwargs, search_term, expected, expected_length):
+    nb1_0.select(selector, **selector_kwargs).keep()
+    assert nb1_0.search_all(search_term, case=True) == expected
+    assert len(nb1_0) == expected_length
 
 
-def test_tag(nb0):
-    nb0.select(lambda cell: cell.num in {0, 1, 2}).update_cell_metadata('test', {"key": "value"})
-    nb0.select(lambda cell: cell.num == 1).update_cell_metadata('test', {"key": "new_value"})
-    assert nb0.cells[1]['metadata']['test']['key'] == "new_value"
-    assert nb0.cells[0]['metadata']['test']['key'] == "value"
+def test_tag(nb1_0):
+    nb1_0.select(lambda cell: cell.num in {0, 1, 2}).update_cell_metadata('test', {"key": "value"})
+    nb1_0.select(lambda cell: cell.num == 1).update_cell_metadata('test', {"key": "new_value"})
+    assert nb1_0.cells[1]['metadata']['test']['key'] == "new_value"
+    assert nb1_0.cells[0]['metadata']['test']['key'] == "value"
 
 
 # @pytest.mark.parametrize("slice_", [(0, 3), (1, 3), (1, 1), (0,), (1, 3, 2)])
@@ -209,7 +209,7 @@ def test_nb_add_45(nb1, nb5):
     assert isinstance(result_nb, Notebook)
     assert len(nb1) + 2*len(nb5) == len(result_nb)
 
-# def test_selectors(nb0, selector, selector_kwargs):
+# def test_selectors(nb1_0, selector, selector_kwargs):
 #     assert False
 # def test_get_item(nb1):
 #     assert nb1['cells'] == nb1.nb['cells']
