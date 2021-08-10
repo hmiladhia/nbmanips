@@ -3,10 +3,6 @@ import json
 from copy import deepcopy
 from typing import Union, Any
 
-try:
-    import nbformat
-except ImportError:
-    nbformat = None
 
 try:
     import nbconvert
@@ -15,7 +11,7 @@ except ImportError:
 
 from nbmanips.notebook_base import NotebookBase
 from nbmanips.selector import is_new_slide, has_slide_type, has_output_type
-from nbmanips.utils import write_ipynb
+from nbmanips.utils import write_ipynb, read_ipynb, dict_to_ipynb, get_ipynb_name
 
 
 class ClassicNotebook(NotebookBase):
@@ -174,14 +170,16 @@ class ExportMixin(NotebookBase):
         return cls.__exporters[exporter_type][exporter_name](*args, **kwargs)
 
     def to_json(self):
+        """
+        returns notebook as json string.
+        """
         return json.dumps(self.raw_nb)
 
     def to_notebook_node(self):
-        if nbformat:
-            version = self.raw_nb.get('nbformat', 4)
-            return nbformat.reads(self.to_json(), as_version=version)
-        else:
-            raise ModuleNotFoundError('You need to pip install nbformat to get NotebookNode object')
+        """
+        returns notebook as an nbformat NotebookNode
+        """
+        return dict_to_ipynb(self.raw_nb)
 
     def nbconvert(self, exporter_name, path, *args, template_name=None, **kwargs):
         notebook_node = self.to_notebook_node()
@@ -272,6 +270,13 @@ class ExportMixin(NotebookBase):
                          for cell in self.iter_cells())
 
     def to_text(self, path, *args, **kwargs):
+        """
+        Exports to visual text format
+        :param path: path to export to
+        :param args:
+        :param kwargs:
+        :return:
+        """
         content = self.to_str(*args, color=False, img_color=False, **kwargs)
         with open(path, 'w', encoding='utf-8') as f:
             f.write(content)
@@ -293,6 +298,16 @@ class ExportMixin(NotebookBase):
         :param img_width:
         """
         print(self.to_str(width=width, style=style, color=color, img_color=img_color, img_width=img_width))
+
+    @classmethod
+    def read_ipynb(cls, path):
+        """
+        Read ipynb file
+        :param path: path to the ipynb file
+        :return: Notebook object
+        """
+        nb = read_ipynb(path)
+        return cls(nb, get_ipynb_name(path))
 
 
 class NotebookMetadata(NotebookBase):

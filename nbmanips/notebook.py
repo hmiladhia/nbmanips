@@ -4,7 +4,6 @@ from nbmanips.notebook_mixins import ClassicNotebook
 from nbmanips.notebook_mixins import ExportMixin
 from nbmanips.notebook_mixins import NotebookMetadata
 from nbmanips.notebook_mixins import NotebookCellMetadata
-from nbmanips.utils import read_ipynb, get_ipynb_name
 
 
 class Notebook(NotebookCellMetadata, SlideShowMixin, ClassicNotebook, NotebookMetadata, ExportMixin, NotebookBase):
@@ -53,13 +52,3 @@ class Notebook(NotebookCellMetadata, SlideShowMixin, ClassicNotebook, NotebookMe
             cell.set_source([line.replace(old, new) for line in cell.get_source(text=False)])
             if first:
                 break
-
-    @classmethod
-    def read_ipynb(cls, path):
-        """
-        Read ipynb file
-        :param path: path to the ipynb file
-        :return: Notebook object
-        """
-        nb = read_ipynb(path)
-        return Notebook(nb, get_ipynb_name(path))
