@@ -65,13 +65,16 @@ class Selector:
     @classmethod
     def __get_slice_selector(cls, selector: slice) -> callable:
         start, stop, step = selector.start, selector.stop, selector.step
+        if step and step < 0:
+            start, stop = stop+1, start+1
+
         selector_list = []
         if start is not None:
             selector_list.append(lambda cell: cell.num >= start)
         if stop is not None:
             selector_list.append(lambda cell: cell.num < stop)
-        if step:
-            selector_list.append(lambda cell: (cell.num - start) % step == 0)
+        if step is not None:
+            selector_list.append(lambda cell: (cell.num - start) % abs(step) == 0)
         return cls.__get_multiple_selector(selector_list)
 
     @staticmethod

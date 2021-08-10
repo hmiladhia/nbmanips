@@ -121,8 +121,25 @@ class NotebookBase:
     def __str__(self):
         return '\n'.join(str(Cell(cell, i)) for i, cell in enumerate(self.cells))
 
+    def create_selector(self, selector, *args, **kwargs):
+        if isinstance(selector, int) and selector < 0:
+            selector = len(self) + selector
+        if isinstance(selector, slice):
+            start, stop, step = selector.start, selector.stop, selector.step
+            if stop is not None and stop < 0:
+                stop = stop + len(self)
+            if start is not None and start < 0:
+                start = start + len(self)
+
+            selector = slice(start, stop, step)
+
+        if not isinstance(selector, Selector):
+            selector = Selector(selector, *args, **kwargs)
+        return selector
+
     def __get_new_selector(self, selector, *args, **kwargs):
-        selector = selector if isinstance(selector, Selector) else Selector(selector, *args, **kwargs)
+        selector = self.create_selector(selector, *args, **kwargs)
+
         if self._selector is None:
             new_selector = []
         else:

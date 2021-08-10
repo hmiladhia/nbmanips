@@ -71,7 +71,17 @@ def test_slice_selector(nb1, slice_: list):
     assert nb1.select(slice(*slice_)).list() == list(range(*slice_))
 
 
-@pytest.mark.parametrize("value,expected", [(0, 0), (3, 3), (5, None)])
+def test_negative_slice_selector(nb1):
+    assert nb1[:-1].list() == [i for i in range(len(nb1))][:-1]
+    assert nb1[:-2].list() == [i for i in range(len(nb1))][:-2]
+    assert nb1[:-3].list() == [i for i in range(len(nb1))][:-3]
+    assert nb1[-3:-1].list() == [i for i in range(len(nb1))][-3:-1]
+    assert nb1[-3:-2].list() == [i for i in range(len(nb1))][-3:-2]
+    assert set(nb1[3:1:-1].list()) == set([i for i in range(len(nb1))][3:1:-1])
+    assert set(nb1[-1:-3:-1].list()) == set([i for i in range(len(nb1))][-1:-3:-1])
+
+
+@pytest.mark.parametrize("value,expected", [(0, 0), (3, 3), (5, None), (-1, 3)])
 def test_int_selector(nb1, value, expected):
     assert nb1.select(value).first() == expected
 
