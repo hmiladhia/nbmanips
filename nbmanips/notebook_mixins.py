@@ -56,23 +56,21 @@ class ClassicNotebook(NotebookBase):
         Return the number of the first selected cell
         :return:
         """
-        for cell in self.iter_cells():
-            return cell.num
+        return self.first_cell().num
 
     def last(self):
         """
         Return the number of the last selected cell
         :return:
         """
-        for cell in reversed(list(self.iter_cells())):
-            return cell.num
+        return self.last_cell().num
 
     def list(self):
         """
         Return the numbers of the selected cells
         :return:
         """
-        return [cell.num for cell in self.iter_cells()]
+        return [cell.num for cell in self.list_cells()]
 
     def count(self):
         """
@@ -139,7 +137,7 @@ class SlideShowMixin(ClassicNotebook):
 
         # Create a new slide only
         for cell in reversed(list(self.iter_cells())):
-            if cell.num > 0 and is_new_slide(cell.previous_cell):
+            if cell.num > 0 and is_new_slide(self[cell.num-1].first()):  # previous cell is a new slide
                 if 'slideshow' in cell.cell['metadata']:
                     cell.metadata['slideshow']['slide_type'] = '-'
                 else:

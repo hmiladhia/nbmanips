@@ -1,15 +1,16 @@
 import shutil
+from copy import deepcopy
 from typing import Any, Optional, Union
 
 from nbmanips.cell_utils import printable_cell
 from nbmanips.cell_utils import get_readable
+from nbformat.corpus.words import generate_corpus_id
 
 
 class Cell:
-    def __init__(self, content, num=None, nb=None):
+    def __init__(self, content, num=None):
         self.cell = content
         self._num = num
-        self.nb = nb
 
     def __getitem__(self, key):
         return self.cell[key]
@@ -22,22 +23,16 @@ class Cell:
         return self.cell['cell_type']
 
     @property
+    def id(self):
+        return self.cell.get('id', None)
+
+    @id.setter
+    def id(self, new_id):
+        self.cell['id'] = new_id
+
+    @property
     def num(self):
         return self._num
-
-    @property
-    def previous_cell(self):
-        if self.num > 0 and self.nb is not None:
-            return Cell(self.nb['cells'][self.num-1], self.num-1, self.nb)
-        else:
-            raise ValueError
-
-    @property
-    def next_cell(self):
-        if self.nb is not None and self.num < (len(self.nb['cells'])-1):
-            return Cell(self.nb['cells'][self.num + 1], self.num + 1, self.nb)
-        else:
-            raise ValueError
 
     @property
     def metadata(self):
@@ -50,6 +45,12 @@ class Cell:
     @property
     def output(self):
         return self.get_output(text=True, readable=True).strip()
+
+    def get_copy(self, new_id=None):
+        cell = self.__class__(deepcopy(self.cell), None)
+        if new_id is not None:
+            cell.id = new_id
+        return cell
 
     def get_output(self, text=True, readable=True, preferred_data_types=None, exclude_data_types=None,
                    exclude_errors=True, **kwargs):
@@ -239,3 +240,8 @@ class Cell:
 
         while tag in self.metadata['tags']:
             self.metadata['tags'].remove(tag)
+
+    @staticmethod
+    def generate_id_candidate():
+        return generate_corpus_id()
+

@@ -11,9 +11,13 @@ class NotebookBase:
         self._selector = None
 
     def select(self, selector, *args, **kwargs) -> 'NotebookBase':
+        notebook_selection = self.reset_selection()
+        notebook_selection._selector = self.__get_new_selector(selector, *args, **kwargs)
+        return notebook_selection
+
+    def reset_selection(self):
         notebook_selection = self.__class__(None, self.name)
         notebook_selection.raw_nb = self.raw_nb
-        notebook_selection._selector = self.__get_new_selector(selector, *args, **kwargs)
         return notebook_selection
 
     def iter_cells(self, neg=False):
@@ -27,6 +31,43 @@ class NotebookBase:
     def metadata(self):
         return self.raw_nb['metadata']
 
+    @property
+    def used_ids(self):
+        return {cell['id'] for cell in self.cells if 'id' in cell}
+
+    def first_cell(self):
+        """
+        Return the first selected cell
+        :return:
+        """
+        for cell in self.iter_cells():
+            return cell
+
+    def last_cell(self):
+        """
+        Return the last selected cell
+        :return:
+        """
+        for cell in reversed(list(self.iter_cells())):
+            return cell
+
+    def list_cells(self):
+        """
+        Return a list of the selected cells
+        :return:
+        """
+        return [cell for cell in self.iter_cells()]
+
+    def add_cell(self, cell, pos=None):
+        pos = len(self) if pos is None else pos
+
+        new_id = cell.id
+        while new_id in self.used_ids:
+            new_id = cell.generate_id_candidate()
+
+        cell = cell.get_copy(new_id)
+        self.cells.insert(pos, cell.cell)
+
     def __add__(self, other: 'NotebookBase'):
         if not isinstance(other, NotebookBase):
             raise ValueError('Expected Notebook object, got %s' % type(other))
@@ -34,9 +75,15 @@ class NotebookBase:
         # Copying the notebook
         raw_nb = copy.deepcopy(self.raw_nb)
 
+        # Creating empty Notebook
+        raw_nb['cells'] = []
+        new_nb = self.__class__(raw_nb)
+
         # Concatenating the notebooks
-        raw_nb['cells'] = raw_nb['cells'] + copy.deepcopy(other.raw_nb['cells'])
-        return self.__class__(raw_nb)
+        for cell in (self.list_cells() + other.list_cells()):
+            new_nb.add_cell(cell)
+
+        return new_nb
 
     def __mul__(self, other: int):
         if not isinstance(other, int):
@@ -45,12 +92,15 @@ class NotebookBase:
         # Copying the notebook
         raw_nb = copy.deepcopy(self.raw_nb)
 
-        # Concatenating the notebooks
+        # Creating empty Notebook
         raw_nb['cells'] = []
-        for _ in range(other):
-            raw_nb['cells'].extend(copy.deepcopy(self.raw_nb['cells']))
+        new_nb = self.__class__(raw_nb)
 
-        return self.__class__(raw_nb)
+        # Concatenating the notebooks
+        for _ in range(other):
+            for cell in self.iter_cells():
+                new_nb.add_cell(cell)
+        return new_nb
 
     def __getitem__(self, item):
         if isinstance(item, tuple):
@@ -69,7 +119,7 @@ class NotebookBase:
             return "<Notebook>"
 
     def __str__(self):
-        return '\n'.join(str(Cell(cell, i, self.raw_nb)) for i, cell in enumerate(self.cells))
+        return '\n'.join(str(Cell(cell, i)) for i, cell in enumerate(self.cells))
 
     def __get_new_selector(self, selector, *args, **kwargs):
         selector = selector if isinstance(selector, Selector) else Selector(selector, *args, **kwargs)

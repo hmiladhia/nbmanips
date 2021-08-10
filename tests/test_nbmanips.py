@@ -1,11 +1,17 @@
+import nbformat
 import pytest
 
 from nbmanips import Notebook
 
 
 @pytest.fixture(scope='function')
-def nb0():
+def nb1_0():
     return Notebook.read_ipynb('test_files/nb1.ipynb')
+
+
+@pytest.fixture(scope='function')
+def nb3_0():
+    return Notebook.read_ipynb('test_files/nb3.ipynb')
 
 
 @pytest.fixture(scope='session')
@@ -20,7 +26,14 @@ def nb2():
 
 @pytest.fixture(scope='session')
 def nb3():
+    """Notebook with images"""
     return Notebook.read_ipynb('test_files/nb3.ipynb')
+
+
+@pytest.fixture(scope='session')
+def nb5():
+    """Notebook in version 4.5"""
+    return Notebook.read_ipynb('test_files/nb5.ipynb')
 
 
 def test_read(nb1):
@@ -101,10 +114,10 @@ def test_erase(nb0, selector, selector_kwargs, search_term, expected):
     assert len(nb0) == 4
 
 
-def test_erase_output(nb3):
-    assert nb3.select('has_output_type', 'image/png').count() == 2
-    nb3.erase_output('image/png')
-    assert nb3.select('has_output_type', 'image/png').count() == 0
+def test_erase_output(nb3_0):
+    assert nb3_0.select('has_output_type', 'image/png').count() == 2
+    nb3_0.erase_output('image/png')
+    assert nb3_0.select('has_output_type', 'image/png').count() == 0
 
 
 @pytest.mark.parametrize("selector, selector_kwargs, search_term, expected, expected_length", [
@@ -176,16 +189,25 @@ def test_list_selector_chaining(nb1, selector, args, expected):
     assert selection.first() == nb1.select(selector, *args).first()
 
 
-def test_nb_multiply(nb1):
-    result_nb = nb1 * 3
+def test_nb_multiply(nb5):
+    result_nb = nb5 * 3
+    nbformat.validate(result_nb.raw_nb)
     assert isinstance(result_nb, Notebook)
-    assert len(nb1)*3 == len(result_nb)
+    assert len(nb5)*3 == len(result_nb)
 
 
 def test_nb_add(nb1, nb2):
     result_nb = nb1 + nb2
+    nbformat.validate(result_nb.raw_nb)
     assert isinstance(result_nb, Notebook)
     assert len(nb1) + len(nb2) == len(result_nb)
+
+
+def test_nb_add_45(nb1, nb5):
+    result_nb = nb5 + nb1 + nb5
+    nbformat.validate(result_nb.raw_nb)
+    assert isinstance(result_nb, Notebook)
+    assert len(nb1) + 2*len(nb5) == len(result_nb)
 
 # def test_selectors(nb0, selector, selector_kwargs):
 #     assert False

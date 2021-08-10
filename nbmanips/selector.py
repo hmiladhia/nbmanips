@@ -13,7 +13,7 @@ class Selector:
 
     def iter_cells(self, nb, neg=False):
         filter_method = filterfalse if neg else filter
-        return filter_method(self._selector, (Cell(cell, i, nb) for i, cell in enumerate(nb["cells"])))
+        return filter_method(self._selector, (Cell(cell, i) for i, cell in enumerate(nb["cells"])))
 
     @classmethod
     def register_selector(cls, key, selector):
@@ -207,6 +207,7 @@ def has_byte_size(cell, min_size=0, max_size: Optional[int] = None, ignore_sourc
     :param cell: Cell object to select
     :param min_size: int representing the minimum size
     :param max_size: int representing the maximum size
+    :param ignore_source: True if you want to get the size of the output only
     :return: a bool object (True if cell should be selected)
     """
     if ignore_source:
