@@ -91,6 +91,12 @@ def test_has_output_type1(nb1, output_type, expected):
     assert nb1.select('has_output_type', output_type).list() == expected
 
 
+def test_has_byte_size(nb3):
+    assert nb3.select('has_byte_size', min_size=15000).count() == 2
+    assert nb3.select('has_byte_size', min_size=15000, ignore_source=True).count() == 1
+    assert nb3.select('has_byte_size', min_size=15000, max_size=16000).count() == 1
+
+
 # @pytest.mark.parametrize("output_type,expected",
 #                          [('text/plain', [1, 3])])
 # def test_has_output_type3(nb3, output_type, expected):

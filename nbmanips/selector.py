@@ -1,7 +1,8 @@
 from itertools import filterfalse
+from typing import Optional
 
 from nbmanips.cell import Cell
-from nbmanips.utils import partial
+from nbmanips.utils import partial, total_size
 
 
 class Selector:
@@ -199,6 +200,23 @@ def is_empty(cell):
     return cell.source == '' and has_output(cell, False)
 
 
+def has_byte_size(cell, min_size=0, max_size: Optional[int] = None, ignore_source=False):
+    """
+    Selects cells with byte size less than max_size and more than min_size.
+
+    :param cell: Cell object to select
+    :param min_size: int representing the minimum size
+    :param max_size: int representing the maximum size
+    :return: a bool object (True if cell should be selected)
+    """
+    if ignore_source:
+        size = total_size(cell.cell['outputs']) if is_code(cell) else 0
+    else:
+        size = total_size(cell.cell)
+
+    return size >= min_size and (max_size is None or size < max_size)
+
+
 def has_slide_type(cell, slide_type):
     """
     Select cells that have a given slide type
@@ -235,6 +253,7 @@ Selector.register_selector('empty', is_empty)
 Selector.register_selector('is_empty', is_empty)
 Selector.register_selector('has_output', has_output)
 Selector.register_selector('has_output_type', has_output_type)
+Selector.register_selector('has_byte_size', has_byte_size)
 
 # Cell Types
 Selector.register_selector('has_type', has_type)
