@@ -71,6 +71,13 @@ class ClassicNotebook(NotebookBase):
         """
         return [cell.num for cell in self.iter_cells()]
 
+    def count(self):
+        """
+        Return the numbers of the selected cells
+        :return:
+        """
+        return len(self.list())
+
 
 class SlideShowMixin(ClassicNotebook):
     def mark_slideshow(self):

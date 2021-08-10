@@ -39,6 +39,15 @@ def test_len(nb2):
     assert len(nb2) == 5
 
 
+def test_count_all(nb2):
+    assert len(nb2) == nb2.count()
+
+
+def test_count(nb2):
+    assert nb2.select('contains', 'a').count() == 2
+    assert nb2.select('contains', 'hello', case=False).count()
+
+
 @pytest.mark.parametrize("search_term,case,output,expected", [
     ('b', False, False, None),
     ('Hello', False, False, 1),

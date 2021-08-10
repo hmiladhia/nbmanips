@@ -1,5 +1,5 @@
 import shutil
-from typing import Any
+from typing import Any, Optional, Union
 
 from nbmanips.cell_utils import printable_cell
 from nbmanips.cell_utils import get_readable
@@ -8,7 +8,7 @@ from nbmanips.cell_utils import get_readable
 class Cell:
     def __init__(self, content, num=None, nb=None):
         self.cell = content
-        self.num = num
+        self._num = num
         self.nb = nb
 
     def __getitem__(self, key):
@@ -20,6 +20,10 @@ class Cell:
     @property
     def type(self):
         return self.cell['cell_type']
+
+    @property
+    def num(self):
+        return self._num
 
     @property
     def previous_cell(self):
