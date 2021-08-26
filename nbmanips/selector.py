@@ -99,7 +99,7 @@ class Selector:
         return lambda cell: all(sel(cell) for sel in selector_list)
 
 
-def contains(cell, text, case=True, output=False):
+def contains(cell, text, case=True, output=False, regex=False):
     """
     Selects Cells containing a certain text.
 
@@ -109,9 +109,10 @@ def contains(cell, text, case=True, output=False):
     :type case: default True
     :param output: True if you want the search in the output of the cell too
     :type output: default False
+    :param regex: boolean whether to use regex or not
     :return: a bool object (True if cell should be selected)
     """
-    return cell.contains(text, case=case, output=output)
+    return cell.contains(text, case=case, output=output, regex=regex)
 
 
 def has_type(cell, type):

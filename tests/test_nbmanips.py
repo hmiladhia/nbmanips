@@ -72,8 +72,21 @@ def test_count(nb2):
     ('125', True, True, 3),
 ])
 def test_search(nb1, search_term, case, output, expected):
-    # TODO: Test regexes
     assert nb1.search(search_term, case=case, output=output) == expected
+
+
+@pytest.mark.parametrize("search_term,case,output,expected", [
+    ('b', False, False, None),
+    (r'H\w+o', False, False, 1),
+    (r'h\w+o', False, False, 1),
+    (r'h\w+o', True, False, None),
+    ('a', True, False, 0),
+    ('a ', True, False, 2),
+    ('125', True, False, None),
+    ('125', True, True, 3),
+])
+def test_regex_search(nb1, search_term, case, output, expected):
+    assert nb1.search(search_term, case=case, output=output, regex=True) == expected
 
 
 @pytest.mark.parametrize("search_term,case,output,expected", [

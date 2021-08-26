@@ -10,31 +10,29 @@ class Notebook(NotebookCellMetadata, SlideShowMixin, ClassicNotebook, NotebookMe
     def search(self, text, case=False, output=False, regex=False):
         """
         Return the number of the first cell containing the given text
-        :param text:
-        :param case:
-        :param output:
-        :param regex:
+        :param text: a string to find in cell
+        :param case: True if the search is case sensitive
+        :type case: default True
+        :param output: True if you want the search in the output of the cell too
+        :type output: default False
+        :param regex: boolean whether to use regex or not
         :return:
         """
-        if regex:
-            raise NotImplemented("regex support isn't implemented yet")
-
-        return self.select('contains', text=text, case=case, output=output).first()
+        return self.select('contains', text=text, case=case, output=output, regex=regex).first()
 
     def search_all(self, text, case=False, output=False, regex=False):
         """
         Return the numbers of the cells containing the given text
 
-        :param text:
-        :param case:
-        :param output:
-        :param regex:
+        :param text: a string to find in cell
+        :param case: True if the search is case sensitive
+        :type case: default True
+        :param output: True if you want the search in the output of the cell too
+        :type output: default False
+        :param regex: boolean whether to use regex or not
         :return:
         """
-        if regex:
-            raise NotImplemented("regex support isn't implemented yet")
-
-        return self.select('contains', text=text, case=case, output=output).list()
+        return self.select('contains', text=text, case=case, output=output, regex=regex).list()
 
     def replace(self, old, new, first=False, case=True):
         """
