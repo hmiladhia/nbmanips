@@ -34,19 +34,21 @@ class Notebook(NotebookCellMetadata, SlideShowMixin, ClassicNotebook, NotebookMe
         """
         return self.select('contains', text=text, case=case, output=output, regex=regex).list()
 
-    def replace(self, old, new, first=False, case=True):
+    def replace(self, old, new, count=None, case=True):
         """
         Replace matching text in the selected cells
 
         :param old:
         :param new:
-        :param first:
+        :param count:
         :param case:
         """
         if not case:
             raise NotImplemented("case support is not implemented yet")
 
+        n_cells = 0
         for cell in self.select('contains', text=old, case=case).iter_cells():
             cell.set_source([line.replace(old, new) for line in cell.get_source(text=False)])
-            if first:
+            n_cells += 1
+            if count is not None and n_cells == count:
                 break
