@@ -80,6 +80,19 @@ def replace(notebook_path, output, old, new, count):
     nb.to_ipynb(output)
 
 
+@nbmanips.command(help="replace string in all selected cells")
+@click.argument('notebook_path')
+@click.option('--output', '-o', default=None)
+@click.option('--output-type', 'output_types', multiple=True)
+def erase_output(notebook_path, output, output_types):
+    output = notebook_path if output is None else output
+    nb = Notebook.read_ipynb(notebook_path)
+    selector = get_selector()
+
+    nb.select(selector).erase_output(set(output_types))
+    nb.to_ipynb(output)
+
+
 @nbmanips.command()
 @click.argument('selector', required=True)
 @click.argument('arguments', nargs=-1, required=False)
