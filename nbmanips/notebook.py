@@ -1,3 +1,5 @@
+import re
+
 from nbmanips.notebook_base import NotebookBase
 from nbmanips.notebook_mixins import SlideShowMixin
 from nbmanips.notebook_mixins import ClassicNotebook
@@ -34,21 +36,22 @@ class Notebook(NotebookCellMetadata, SlideShowMixin, ClassicNotebook, NotebookMe
         """
         return self.select('contains', text=text, case=case, output=output, regex=regex).list()
 
-    def replace(self, old, new, count=None, case=True):
+    def replace(self, old, new, count=None, case=True, regex=False):
         """
         Replace matching text in the selected cells
 
-        :param old:
-        :param new:
+        :param old: a string to replace in cell
+        :param new: the replacement string
         :param count:
-        :param case:
+        :param case: True if the search is case sensitive
+        :type case: default True
+        :param regex: boolean whether to use regex or not
         """
-        if not case:
-            raise NotImplemented("case support is not implemented yet")
 
         n_cells = 0
-        for cell in self.select('contains', text=old, case=case).iter_cells():
-            cell.set_source([line.replace(old, new) for line in cell.get_source(text=False)])
+        compiled_regex = re.compile(old if regex else re.escape(old), flags=0 if case else re.IGNORECASE)
+        for cell in self.select('contains', text=old, case=case, regex=regex).iter_cells():
+            cell.set_source(compiled_regex.sub(new, cell.get_source()).split('\n'))
             n_cells += 1
-            if count is not None and n_cells == count:
+            if count is not None and n_cells >= count:
                 break

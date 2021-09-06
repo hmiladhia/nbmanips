@@ -103,15 +103,19 @@ def test_search_all(nb1, search_term, case, output, expected):
     assert nb1.search_all(search_term, case=case, output=output) == expected
 
 
-@pytest.mark.parametrize("old, new, case, first, expected_old, expected_new", [
-    ('jupyter', 'Test', True, False, [], []),
-    ('Hello', 'Test', True, False, [], [1]),
-    ('hello', 'Test', True, False, [], []),
-    ('a', 'Test', True, False, [], [0, 2, 3]),
-    ('a', 'Test', True, True, [2, 3], [0]),
+@pytest.mark.parametrize("old, new, case, count, regex, expected_old, expected_new", [
+    ('jupyter', 'Test', True, None, False, [], []),
+    ('Hello', 'Test', True, None, False, [], [1]),
+    ('hello', 'Test', True, None, False, [], []),
+    ('a', 'Test', True, None, False, [], [0, 2, 3]),
+    ('a', 'Test', True, 1, False, [2, 3], [0]),
+    ('a', 'Test', True, 2, False, [3], [0, 2]),
+    ('A', 'Test', False, None, False, [], [0, 2, 3]),
+    ('A', 'Test', True, None, False, [], []),
+    (r'[A-Za-z_]\w*\s*=\s*\d+\s*[+-\/*]\s*\d+', 'OPERATION', True, None, True, [], [2]),
 ])
-def test_replace(nb1_0, old, new, case, first, expected_old, expected_new):
-    nb1_0.replace(old, new, first=first, case=case)
+def test_replace(nb1_0, old, new, case, count, regex, expected_old, expected_new):
+    nb1_0.replace(old, new, count=count, case=case, regex=regex)
     assert nb1_0.search_all(old, case=case) == expected_old
     assert nb1_0.search_all(new, case=True) == expected_new
 
