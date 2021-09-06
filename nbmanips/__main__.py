@@ -1,9 +1,12 @@
+import colorama
 import cloudpickle
-
 import click
 
 from nbmanips import Notebook
 from nbmanips.selector import Selector
+from nbmanips.cell_utils import styles
+
+_COLORS = set(vars(colorama.Fore).keys()) - {'RESET'}
 
 
 def get_selector():
@@ -22,11 +25,16 @@ def nbmanips():
 
 @nbmanips.command(help="show notebook in human readable format")
 @click.argument('notebook_path')
-def show(notebook_path):
+@click.option('--style', '-s', type=click.Choice(styles.keys()), default='single')
+@click.option('--width', '-w', type=int, default=None)
+@click.option('--color', '-c', type=click.Choice(_COLORS), default=None)
+@click.option('--img-width', '-iw', type=int, default=None)
+@click.option('--img-color', '-ic', type=click.Choice(_COLORS), default=None)
+def show(notebook_path, width, style, color, img_color, img_width):
     nb = Notebook.read_ipynb(notebook_path)
     selector = get_selector()
 
-    nb.select(selector).show()
+    nb.select(selector).show(width, style, color, img_color, img_width)
 
 
 @nbmanips.command(help="count selected cells")
@@ -102,6 +110,9 @@ def select(selector, arguments, kwargs):
         selector = int(selector)
     elif selector.replace(':', '').isdigit():
         selector = slice(*[int(p) for p in selector.split(':')])
+
+    # import inspect
+    # inspect.signature(function).parameters['b'].annotation
 
     sel = Selector(selector, *arguments, **dict(kwargs))
     piped_selector = get_selector()
