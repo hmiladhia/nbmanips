@@ -210,7 +210,7 @@ def test_nb_multiply(nb5):
     result_nb = nb5 * 3
     nbformat.validate(result_nb.raw_nb)
     assert isinstance(result_nb, Notebook)
-    assert len(nb5)*3 == len(result_nb)
+    assert len(nb5) * 3 == len(result_nb)
 
 
 def test_nb_add(nb1, nb2):
@@ -225,6 +225,19 @@ def test_nb_add_45(nb1, nb5):
     nbformat.validate(result_nb.raw_nb)
     assert isinstance(result_nb, Notebook)
     assert len(nb1) + 2*len(nb5) == len(result_nb)
+
+
+def test_apply(nb1_0):
+    def replace(cell):
+        if 'Hello' in cell.get_source():
+            return None
+        cell.set_source(cell.get_source().replace('a', 'b').split('\n'))
+        return cell
+    sel = nb1_0.create_selector('contains', '=') | nb1_0.create_selector('contains', 'H')
+    nb1_0.select(sel).apply(replace)
+    assert nb1_0.select('contains', 'b').list() == [1]
+    assert nb1_0.select('contains', 'a').list() == [0, 2]
+    assert nb1_0.select('contains', 'Hello').list() == []
 
 # def test_selectors(nb1_0, selector, selector_kwargs):
 #     assert False

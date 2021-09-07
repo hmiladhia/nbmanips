@@ -1,4 +1,5 @@
 import copy
+from typing import Callable, Optional
 
 from nbmanips.cell import Cell
 from nbmanips.selector import Selector
@@ -14,6 +15,19 @@ class NotebookBase:
         notebook_selection = self.reset_selection()
         notebook_selection._selector = self.__get_new_selector(selector, *args, **kwargs)
         return notebook_selection
+
+    def apply(self, func: Callable[[Cell], Optional[Cell]], neg=False):
+        delete_list = []
+        for cell in self.iter_cells(neg):
+            num = cell.num
+            new_cell = func(cell)
+            if new_cell is None:
+                delete_list.append(num)
+            else:
+                self.cells[num] = new_cell.cell
+
+        for num in reversed(delete_list):
+            del self.cells[num]
 
     def reset_selection(self):
         notebook_selection = self.__class__(None, self.name)
