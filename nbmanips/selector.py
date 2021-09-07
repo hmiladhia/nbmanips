@@ -19,6 +19,15 @@ class Selector:
     def register_selector(cls, key, selector):
         cls.default_selectors[key] = selector
 
+    def __and__(self, selector):
+        return Selector([self, selector], type='and')
+
+    def __or__(self, selector):
+        return Selector([self, selector], type='or')
+
+    def __invert__(self):
+        return Selector(lambda cell: not self._selector(cell))
+
     def _get_selector(self, selector, *args, **kwargs):
         if callable(selector):
             return partial(selector, *args, **kwargs)

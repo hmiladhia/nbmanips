@@ -107,6 +107,20 @@ def test_has_byte_size(nb3):
     assert nb3.select('has_byte_size', min_size=15000, max_size=16000).count() == 1
 
 
+def test_and_operator(nb1):
+    selector = Selector('contains', 'a') & Selector('contains', '=')
+    assert nb1.select(selector).list() == [2]
+
+
+def test_or_operator(nb1):
+    selector = Selector('contains', 'o') | Selector('contains', '=')
+    assert nb1.select(selector).list() == [1, 2]
+
+
+def test_invert_operator(nb1):
+    selector = ~Selector('contains', 'o')
+    assert nb1.select(selector).list() == [0, 2, 3]
+
 # @pytest.mark.parametrize("output_type,expected",
 #                          [('text/plain', [1, 3])])
 # def test_has_output_type3(nb3, output_type, expected):
