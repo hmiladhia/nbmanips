@@ -17,7 +17,7 @@ from nbmanips import Notebook
 nb = Notebook.read_ipynb("my_notebook.ipynb")
 
 # delete empty cells
-nb.delete("empty")
+nb.select("empty").delete()
 
 # save ipynb file
 nb.to_ipynb("new_notebook.ipynb")
@@ -37,11 +37,17 @@ To select cells on which to apply the previous operations, you can use:
 - The cell number
 
 ```python
-nb.show(0)
+nb[0].show()
+
+# OR
+nb.select(0).show()
 ```
 - A slice object
 
 ```python
+nb[1:6:2].show()
+
+# OR 
 selected_cells = slice(1, 6, 2)
 
 nb.show(selected_cells)
@@ -58,10 +64,10 @@ nb.show(selected_cells)
 
 ```python
 # Show Markdown Cells
-nb.show('markdown_cells')
+nb.select('markdown_cells').show()
 
 # Show Cells containing the equal sign
-nb.show('contains', '=')
+nb.select('contains', '=').show()
 ```
 
 
@@ -69,15 +75,15 @@ nb.show('contains', '=')
 - A function that takes a Cell object and returns True if the cell should be selected
 ```python
 # Show Cells with length > 10
-nb.show(lambda cell: len(cell.source) > 10)
+nb.select(lambda cell: len(cell.source) > 10).show()
 ```
 - A list of Selectors
 ```python
 # Show Empty Markdown Cells
-nb.show(['markdown_cells', 'is_empty'])
+nb.select(['markdown_cells', 'is_empty']).show()
 
 # Show Markdown or Code Cells
-nb.show(['markdown_cells', 'code_cells'], type='or')
+nb.select(['markdown_cells', 'code_cells'], type='or').show()
 ```
  
 ### Export Formats
