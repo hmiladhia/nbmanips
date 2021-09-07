@@ -73,18 +73,85 @@ def list_(notebook_path):
     click.echo(nb.select(selector).list())
 
 
+@nbmanips.command(help="search string in all selected cells")
+@click.argument('notebook_path')
+@click.option('--output', '-o', default=None)
+@click.option('--text', required=True)
+@click.option('--case', type=bool, default=True)
+@click.option('--regex', type=bool, default=False)
+@click.option('--output', type=bool, default=False)
+def search(notebook_path, text, case, output, regex):
+    nb = Notebook.read_ipynb(notebook_path)
+    selector = get_selector()
+
+    nb.select(selector).search_all(text, case, output, regex)
+
+
+@nbmanips.command(help="Erase the content of the selected cells")
+@click.argument('notebook_path')
+@click.option('--output', '-o', default=None)
+def erase(notebook_path, output):
+    output = notebook_path if output is None else output
+    nb = Notebook.read_ipynb(notebook_path)
+    selector = get_selector()
+
+    nb.select(selector).erase()
+    nb.to_ipynb(output)
+
+
+@nbmanips.command(help="Delete the selected cells")
+@click.argument('notebook_path')
+@click.option('--output', '-o', default=None)
+def delete(notebook_path, output):
+    output = notebook_path if output is None else output
+    nb = Notebook.read_ipynb(notebook_path)
+    selector = get_selector()
+
+    nb.select(selector).delete()
+    nb.to_ipynb(output)
+
+
+@nbmanips.command(help="Delete all the non-selected cells")
+@click.argument('notebook_path')
+@click.option('--output', '-o', default=None)
+def keep(notebook_path, output):
+    output = notebook_path if output is None else output
+    nb = Notebook.read_ipynb(notebook_path)
+    selector = get_selector()
+
+    nb.select(selector).keep()
+    nb.to_ipynb(output)
+
+
 @nbmanips.command(help="replace string in all selected cells")
 @click.argument('notebook_path')
 @click.option('--output', '-o', default=None)
 @click.option('--old', required=True)
 @click.option('--new', required=True)
-@click.option('--count', type=int, default=None)
-def replace(notebook_path, output, old, new, count):
+@click.option('--count', 'count_', type=int, default=None)
+@click.option('--regex', type=bool, default=False)
+@click.option('--case', type=bool, default=True)
+def replace(notebook_path, output, old, new, case, count_, regex):
     output = notebook_path if output is None else output
     nb = Notebook.read_ipynb(notebook_path)
     selector = get_selector()
 
-    nb.select(selector).replace(old, new, count)
+    nb.select(selector).replace(old, new, count_, case, regex)
+    nb.to_ipynb(output)
+
+
+@nbmanips.command(help="replace string in all selected cells")
+@click.argument('notebook_path')
+@click.option('--output', '-o', default=None)
+@click.option('--max-cells', type=int, default=3)
+@click.option('--max-images', type=int, default=1)
+@click.option('--delete-empty/--keep-empty', 'delete_empty', type=bool, default=True)
+def auto_slide(notebook_path, output, max_cells, max_images, delete_empty):
+    output = notebook_path if output is None else output
+    nb = Notebook.read_ipynb(notebook_path)
+    selector = get_selector()
+
+    nb.select(selector).auto_slide(max_cells, max_images, delete_empty=delete_empty)
     nb.to_ipynb(output)
 
 

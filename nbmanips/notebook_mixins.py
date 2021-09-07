@@ -139,7 +139,7 @@ class SlideShowMixin(ClassicNotebook):
 
         # Create a new slide only
         for cell in reversed(list(self.iter_cells())):
-            if cell.num > 0 and is_new_slide(self[cell.num-1].first()):  # previous cell is a new slide
+            if cell.num > 0 and is_new_slide(self[cell.num-1].first_cell()):  # previous cell is a new slide
                 if 'slideshow' in cell.cell['metadata']:
                     cell.metadata['slideshow']['slide_type'] = '-'
                 else:
