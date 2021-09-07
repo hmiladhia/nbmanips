@@ -128,7 +128,7 @@ def keep(notebook_path, output):
 @click.option('--old', required=True)
 @click.option('--new', required=True)
 @click.option('--count', 'count_', type=int, default=None)
-@click.option('--regex', is_flah=True, default=False)
+@click.option('--regex', is_flag=True, default=False)
 @click.option('--case/--no-case', default=True)
 def replace(notebook_path, output, old, new, case, count_, regex):
     output = notebook_path if output is None else output
