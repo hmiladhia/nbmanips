@@ -22,7 +22,8 @@ setuptools.setup(
     packages=['nbmanips'],
     include_package_data=True,
     entry_points={
-        'console_scripts': ['nbmanips=nbmanips.__main__:nbmanips'],
+        'console_scripts': ['nbmanips=nbmanips.__main__:nbmanips',
+                            'nb=nbmanips.__main__:nbmanips'],
     },
     install_requires=requirements,
     classifiers=[
