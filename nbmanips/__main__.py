@@ -25,11 +25,11 @@ def nbmanips():
 
 @nbmanips.command(help="show notebook in human readable format")
 @click.argument('notebook_path')
-@click.option('--style', '-s', type=click.Choice(styles.keys()), default='single')
+@click.option('--style', '-s', type=click.Choice(styles.keys(), case_sensitive=False), default='single')
 @click.option('--width', '-w', type=int, default=None)
-@click.option('--color', '-c', type=click.Choice(_COLORS), default=None)
+@click.option('--color', '-c', type=click.Choice(_COLORS, case_sensitive=False), default=None)
 @click.option('--img-width', '-iw', type=int, default=None)
-@click.option('--img-color', '-ic', type=click.Choice(_COLORS), default=None)
+@click.option('--img-color', '-ic', type=click.Choice(_COLORS, case_sensitive=False), default=None)
 def show(notebook_path, width, style, color, img_color, img_width):
     nb = Notebook.read_ipynb(notebook_path)
     selector = get_selector()
