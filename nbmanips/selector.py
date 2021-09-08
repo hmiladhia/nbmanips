@@ -1,5 +1,5 @@
 from itertools import filterfalse
-from typing import Optional
+from typing import Optional, Union
 
 from nbmanips.cell import Cell
 from nbmanips.utils import partial, total_size
@@ -176,7 +176,7 @@ def has_output(cell, value=True):
     return (cell.output != "") == value
 
 
-def has_output_type(cell, output_type):
+def has_output_type(cell, output_type: Union[set, str]):
     """
     Select cells that have a given output_type
 
@@ -185,22 +185,12 @@ def has_output_type(cell, output_type):
     :type output_type: str
     :return: a bool object (True if cell should be selected)
     """
-    if not is_code(cell):
-        return False
+    if isinstance(output_type, str):
+        output_types = {output_type}
+    else:
+        output_types = set(output_type)
 
-    outputs = cell['outputs']
-    for output in outputs:
-        if output['output_type'] == 'stream':
-            if output_type in {'text/plain', 'text'}:
-                return True
-        elif output['output_type'] in {'execute_result', 'display_data'}:
-            data = output['data']
-            if output_type in data.keys():
-                return True
-        elif output['output_type'] == 'error':
-            if output_type == 'error':
-                return True
-    return False
+    return cell.has_output_type(output_types)
 
 
 def is_empty(cell):

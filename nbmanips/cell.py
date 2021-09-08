@@ -5,7 +5,7 @@ from copy import deepcopy
 from typing import Any, Optional, Union
 
 from nbmanips.cell_utils import printable_cell
-from nbmanips.cell_utils import get_readable
+from nbmanips.cell_output import CellOutput
 
 
 class Cell:
@@ -53,75 +53,29 @@ class Cell:
             cell.id = new_id
         return cell
 
-    def get_output(self, text=True, readable=True, preferred_data_types=None, exclude_data_types=None,
-                   exclude_errors=True, **kwargs):
+    def get_output(self, text=True, readable=True, exclude_data_types=None, exclude_errors=True, **kwargs):
         """
         Tries its best to return a readable output from cell
 
-        :param preferred_data_types:
         :param exclude_data_types:
         :param exclude_errors:
         :param text:
         :param readable:
         :return:
         """
-        if self.type != "code":
-            return ''
+        outputs = []
+        for output in self.cell.get('outputs', []):
+            cell_output = CellOutput.new(output)
+            outputs.append(cell_output.to_str(readable, exclude_data_types))
 
-        # Default Values
-        default_data_types = ['text/plain', 'text/html', 'image/png']
-        if readable:
-            default_data_types.reverse()
-
-        preferred_data_types = default_data_types if preferred_data_types is None else preferred_data_types
-        exclude_data_types = {} if exclude_data_types is None else exclude_data_types
-
-        outputs = self.cell.get('outputs', [])
-        processed_outputs = []
-        for output in outputs:
-            # output_type can be : (stream, execute_result, display_data, error)
-            if output['output_type'] == 'stream':
-                output_text = output['text']
-                if text and not isinstance(output_text, str):
-                    output_text = '\n'.join(output_text)
-                processed_outputs.append(output_text)
-            elif output['output_type'] in {'execute_result', 'display_data'}:
-                data = output['data']
-                if (set(preferred_data_types)-set(exclude_data_types)) & set(data.keys()):
-                    for data_type in preferred_data_types:
-                        if data_type not in exclude_data_types and data_type in data:
-                            output_text = data[data_type]
-                            if text and not isinstance(output_text, str):
-                                output_text = '\n'.join(output_text)
-                            if readable:
-                                output_text = get_readable(output_text, data_type, **kwargs)
-
-                            processed_outputs.append(output_text)
-                            break
-                else:
-                    for data_type, output_text in data.items():
-                        if data_type in exclude_data_types:
-                            continue
-                        if text and not isinstance(output_text, str):
-                            output_text = '\n'.join(output_text)
-                        if readable:
-                            output_text = get_readable(output_text, data_type, **kwargs)
-                        processed_outputs.append(output_text)
-                        break
-            elif output['output_type'] == 'error':
-                if not exclude_errors:
-                    raise NotImplemented("Errors aren't supported yet")
         if text:
-            return '\n'.join(processed_outputs)
-        return processed_outputs
+            return '\n'.join(outputs)
+        return outputs
 
     def get_source(self, text=True):
         source = self.cell['source']
 
-        if isinstance(source, str):
-            return source
-
-        if text:
+        if text and not isinstance(source, str):
             return '\n'.join(source)
         return source
 
@@ -162,23 +116,27 @@ class Cell:
         else:
             output_types = set(output_types)
 
-        outputs = self['outputs']
         new_outputs = []
-        for output in outputs:
-            if output['output_type'] == 'stream':
-                if output_types & {'text/plain', 'text'}:
-                    continue
-            elif output['output_type'] in {'execute_result', 'display_data'}:
-                data = output['data']
-                for output_type in output_types:
-                    data.pop(output_type, None)
-                if not data:
-                    continue
-            elif output['output_type'] == 'error':
-                if 'error' in output_types:
-                    continue
-            new_outputs.append(output)
+        for output in self['outputs']:
+            cell_output = CellOutput.new(output)
+            new_output = cell_output.erase_output(output_types)
+            if new_output:
+                new_outputs.append(new_output)
+
         self['outputs'] = new_outputs
+
+    def has_output_type(self, output_types: set):
+        """
+        Select cells that have a given output_type
+
+        :param output_types: Output Types(MIME type) to select: text/plain, text/html, image/png, ...
+        :type output_types: set
+        :return: a bool object (True if cell should be selected)
+        """
+        if self.type != "code":
+            return False
+
+        return any(CellOutput.new(output).has_output_type(output_types) for output in self['outputs'])
 
     def to_str(self, width=None, style='single', color=None, img_color=None, img_width=None):
         if self.type == 'code':
