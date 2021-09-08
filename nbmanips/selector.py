@@ -203,20 +203,19 @@ def is_empty(cell):
     return cell.source == '' and has_output(cell, False)
 
 
-def has_byte_size(cell, min_size=0, max_size: Optional[int] = None, ignore_source=False):
+def has_byte_size(cell, min_size=0, max_size: Optional[int] = None, output_types=None, ignore_source=False):
     """
     Selects cells with byte size less than max_size and more than min_size.
 
     :param cell: Cell object to select
     :param min_size: int representing the minimum size
     :param max_size: int representing the maximum size
+    :param output_types: Output Types(MIME type) to select: text/plain, text/html, image/png, ...
+    :type output_types: set
     :param ignore_source: True if you want to get the size of the output only
     :return: a bool object (True if cell should be selected)
     """
-    if ignore_source:
-        size = total_size(cell.cell['outputs']) if is_code(cell) else 0
-    else:
-        size = total_size(cell.cell)
+    size = cell.byte_size(output_types, ignore_source)
 
     return size >= min_size and (max_size is None or size < max_size)
 

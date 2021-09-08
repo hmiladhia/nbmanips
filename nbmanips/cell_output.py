@@ -1,4 +1,7 @@
+from typing import Optional
+
 from nbmanips.cell_utils import get_readable
+from nbmanips.utils import total_size
 
 
 class CellOutput:
@@ -24,6 +27,11 @@ class CellOutput:
         :return: a bool object (True if cell should be selected)
         """
         raise NotImplementedError()
+
+    def byte_size(self, output_types: Optional[set]):
+        if output_types is None or self.has_output_type(output_types):
+            return total_size(self.content)
+        return 0
 
     @classmethod
     def new(cls, content, build_output_types=False):
@@ -96,6 +104,14 @@ class DataOutput(CellOutput):
 
     def has_output_type(self, output_types: set):
         return output_types & set(self.content['data'])
+
+    def byte_size(self, output_types: Optional[set]):
+        if output_types is None:
+            return total_size(self.content)
+        elif not self.has_output_type(output_types):
+            return 0
+        else:
+            return total_size({key: value for key, value in self.content['data'].items() if key in output_types})
 
 
 class ErrorOutput(CellOutput):

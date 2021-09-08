@@ -6,6 +6,7 @@ from typing import Any, Optional, Union
 
 from nbmanips.cell_utils import printable_cell
 from nbmanips.cell_output import CellOutput
+from nbmanips.utils import total_size
 
 
 class Cell:
@@ -137,6 +138,19 @@ class Cell:
             return False
 
         return any(CellOutput.new(output).has_output_type(output_types) for output in self['outputs'])
+
+    def byte_size(self, output_types: Optional[set], ignore_source=False):
+        """
+        returns the byte size of the cell.
+
+        :param output_types: Output Types(MIME type) to select: text/plain, text/html, image/png, ...
+        :type output_types: set
+        :param ignore_source: True if you want to get the size of the output only
+        :return: a bool object (True if cell should be selected)
+        """
+        size = 0 if ignore_source else total_size(self['source'])
+        size += sum([CellOutput.new(output).byte_size(output_types) for output in self['outputs']])
+        return size
 
     def to_str(self, width=None, style='single', color=None, img_color=None, img_width=None):
         if self.type == 'code':
