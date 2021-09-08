@@ -1,5 +1,5 @@
 import copy
-from typing import Callable, Optional
+from typing import Callable, Optional, Any
 
 from nbmanips.cell import Cell
 from nbmanips.selector import Selector
@@ -28,6 +28,9 @@ class NotebookBase:
 
         for num in reversed(delete_list):
             del self.cells[num]
+
+    def map(self, func: Callable[[Cell], Any], neg=False):
+        return list(map(func, self.iter_cells(neg)))
 
     def reset_selection(self):
         notebook_selection = self.__class__(None, self.name)

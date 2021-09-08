@@ -215,6 +215,9 @@ def has_byte_size(cell, min_size=0, max_size: Optional[int] = None, output_types
     :param ignore_source: True if you want to get the size of the output only
     :return: a bool object (True if cell should be selected)
     """
+    if isinstance(output_types, str):
+        output_types = {output_types}
+
     size = cell.byte_size(output_types, ignore_source)
 
     return size >= min_size and (max_size is None or size < max_size)

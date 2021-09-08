@@ -102,9 +102,13 @@ def test_has_output_type1(nb1, output_type, expected):
 
 
 def test_has_byte_size(nb3):
-    assert nb3.select('has_byte_size', min_size=15000).count() == 2
-    assert nb3.select('has_byte_size', min_size=15000, ignore_source=True).count() == 1
-    assert nb3.select('has_byte_size', min_size=15000, max_size=16000).count() == 1
+    assert nb3.select('has_byte_size', min_size=13000).count() == 2
+    assert nb3.select('has_byte_size', min_size=13600, ignore_source=True).count() == 1
+    assert nb3.select('has_byte_size', min_size=13000, max_size=13700).count() == 1
+    assert nb3.select('has_byte_size', min_size=1, output_types='image/png', ignore_source=True).count() == 2
+    sel = nb3.select('has_byte_size', min_size=13455, max_size=13456, output_types='image/png', ignore_source=True)
+    assert sel.count() == 2
+    assert nb3.select('has_byte_size', min_size=1, output_types='image/jpeg', ignore_source=True).count() == 0
 
 
 def test_and_operator(nb1):

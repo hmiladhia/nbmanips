@@ -139,7 +139,7 @@ class Cell:
 
         return any(CellOutput.new(output).has_output_type(output_types) for output in self['outputs'])
 
-    def byte_size(self, output_types: Optional[set], ignore_source=False):
+    def byte_size(self, output_types: Optional[set] = None, ignore_source=False):
         """
         returns the byte size of the cell.
 
