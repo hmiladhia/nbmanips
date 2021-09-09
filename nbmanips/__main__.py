@@ -175,15 +175,15 @@ def convert():
 
 @convert.command(help="Exports a basic HTML document.")
 @click.argument('notebook_path')
-@click.option('--output', '-o', default=None)
-@click.option('--template-name', '-t', default=None)
-@click.option('--exclude-code-cell', is_flag=True, default=False)
-@click.option('--exclude-markdown', is_flag=True, default=False)
-@click.option('--exclude-raw', is_flag=True, default=False)
-@click.option('--exclude-unknown', is_flag=True, default=False)
-@click.option('--exclude-input', is_flag=True, default=False)
-@click.option('--exclude-output', is_flag=True, default=False)
-@click.option('--kwarg', 'kwargs', multiple=True, type=(str, str))
+@click.option('--output', '-o', help="path to export to", default=None)
+@click.option('--template-name', '-t', help="the name of the template to use", default=None)
+@click.option('--exclude-code-cell', is_flag=True, help="exclude code cells from all templates", default=False)
+@click.option('--exclude-markdown', is_flag=True, help="exclude markdown cells from all templates", default=False)
+@click.option('--exclude-raw', is_flag=True, help="exclude unknown cells from all templates", default=False)
+@click.option('--exclude-unknown', is_flag=True, help="exclude unknown cells from all templates", default=False)
+@click.option('--exclude-input', is_flag=True, help="exclude input prompts from all templates", default=False)
+@click.option('--exclude-output', is_flag=True, help="exclude output prompts from all templates", default=False)
+@click.option('--kwarg', 'kwargs', multiple=True, help="any additional parameters", type=(str, str))
 def html(
         notebook_path,
         output,
@@ -216,15 +216,15 @@ def html(
 
 @convert.command(help="Exports to a markdown document (.md)")
 @click.argument('notebook_path')
-@click.option('--output', '-o', default=None)
-@click.option('--template-name', '-t', default=None)
-@click.option('--exclude-code-cell', is_flag=True, default=False)
-@click.option('--exclude-markdown', is_flag=True, default=False)
-@click.option('--exclude-raw', is_flag=True, default=False)
-@click.option('--exclude-unknown', is_flag=True, default=False)
-@click.option('--exclude-input', is_flag=True, default=False)
-@click.option('--exclude-output', is_flag=True, default=False)
-@click.option('--kwarg', 'kwargs', multiple=True, type=(str, str))
+@click.option('--output', '-o', help="path to export to", default=None)
+@click.option('--template-name', '-t', help="the name of the template to use", default=None)
+@click.option('--exclude-code-cell', is_flag=True, help="exclude code cells from all templates", default=False)
+@click.option('--exclude-markdown', is_flag=True, help="exclude markdown cells from all templates", default=False)
+@click.option('--exclude-raw', is_flag=True, help="exclude unknown cells from all templates", default=False)
+@click.option('--exclude-unknown', is_flag=True, help="exclude unknown cells from all templates", default=False)
+@click.option('--exclude-input', is_flag=True, help="exclude input prompts from all templates", default=False)
+@click.option('--exclude-output', is_flag=True, help="exclude output prompts from all templates", default=False)
+@click.option('--kwarg', 'kwargs', multiple=True, help="any additional parameters", type=(str, str))
 def md(
         notebook_path,
         output,
@@ -257,9 +257,9 @@ def md(
 
 @convert.command(help="Exports a Python code file.")
 @click.argument('notebook_path')
-@click.option('--output', '-o', default=None)
-@click.option('--template-name', '-t', default=None)
-@click.option('--kwarg', 'kwargs', multiple=True, type=(str, str))
+@click.option('--output', '-o', help="path to export to", default=None)
+@click.option('--template-name', '-t', help="the name of the template to use", default=None)
+@click.option('--kwarg', 'kwargs', multiple=True, help="any additional parameters", type=(str, str))
 def py(notebook_path, output, template_name, kwargs):
     if output is None:
         output = os.path.splitext(notebook_path)[0] + '.py'
@@ -271,18 +271,18 @@ def py(notebook_path, output, template_name, kwargs):
 
 @convert.command(help="Exports HTML slides with reveal.js")
 @click.argument('notebook_path')
-@click.option('--output', '-o', default=None)
-@click.option('--template-name', '-t', default=None)
-@click.option('--exclude-code-cell', is_flag=True, default=False)
-@click.option('--exclude-markdown', is_flag=True, default=False)
-@click.option('--exclude-raw', is_flag=True, default=False)
-@click.option('--exclude-unknown', is_flag=True, default=False)
-@click.option('--exclude-input', is_flag=True, default=False)
-@click.option('--exclude-output', is_flag=True, default=False)
-@click.option('--theme', default='simple')
-@click.option('--transition', default='slide')
-@click.option('--scroll/--no-scroll', type=bool, default=True)
-@click.option('--kwarg', 'kwargs', multiple=True, type=(str, str))
+@click.option('--output', '-o', help="path to export to", default=None)
+@click.option('--template-name', '-t', help="the name of the template to use", default=None)
+@click.option('--exclude-code-cell', is_flag=True, help="exclude code cells from all templates", default=False)
+@click.option('--exclude-markdown', is_flag=True, help="exclude markdown cells from all templates", default=False)
+@click.option('--exclude-raw', is_flag=True, help="exclude unknown cells from all templates", default=False)
+@click.option('--exclude-unknown', is_flag=True, help="exclude unknown cells from all templates", default=False)
+@click.option('--exclude-input', is_flag=True, help="exclude input prompts from all templates", default=False)
+@click.option('--exclude-output', is_flag=True, help="exclude output prompts from all templates", default=False)
+@click.option('--theme', help="Name of the reveal.js theme to use.", default='simple')
+@click.option('--transition', help="Name of the reveal.js transition to use", default='slide')
+@click.option('--scroll/--no-scroll', type=bool, help="enable scrolling within each slide", default=True)
+@click.option('--kwarg', 'kwargs', multiple=True, help="any additional parameters", type=(str, str))
 def slides(
         notebook_path,
         output,
