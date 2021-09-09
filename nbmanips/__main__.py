@@ -214,6 +214,111 @@ def html(
     )
 
 
+@convert.command()
+@click.argument('notebook_path')
+@click.option('--output', '-o', default=None)
+@click.option('--template-name', '-t', default=None)
+@click.option('--exclude-code-cell', is_flag=True, default=False)
+@click.option('--exclude-markdown', is_flag=True, default=False)
+@click.option('--exclude-raw', is_flag=True, default=False)
+@click.option('--exclude-unknown', is_flag=True, default=False)
+@click.option('--exclude-input', is_flag=True, default=False)
+@click.option('--exclude-output', is_flag=True, default=False)
+@click.option('--kwarg', 'kwargs', multiple=True, type=(str, str))
+def md(
+        notebook_path,
+        output,
+        template_name,
+        exclude_code_cell,
+        exclude_markdown,
+        exclude_raw,
+        exclude_unknown,
+        exclude_input,
+        exclude_output,
+        kwargs
+):
+    if output is None:
+        output = os.path.splitext(notebook_path)[0] + '.md'
+    nb = Notebook.read_ipynb(notebook_path)
+    selector = get_selector()
+
+    nb.select(selector).to_md(
+        output,
+        template_name=template_name,
+        exclude_code_cell=exclude_code_cell,
+        exclude_markdown=exclude_markdown,
+        exclude_raw=exclude_raw,
+        exclude_unknown=exclude_unknown,
+        exclude_input=exclude_input,
+        exclude_output=exclude_output,
+        **kwargs
+    )
+
+
+@convert.command()
+@click.argument('notebook_path')
+@click.option('--output', '-o', default=None)
+@click.option('--template-name', '-t', default=None)
+@click.option('--kwarg', 'kwargs', multiple=True, type=(str, str))
+def py(notebook_path, output, template_name, kwargs):
+    if output is None:
+        output = os.path.splitext(notebook_path)[0] + '.py'
+    nb = Notebook.read_ipynb(notebook_path)
+    selector = get_selector()
+
+    nb.select(selector).to_py(output, template_name=template_name, **kwargs)
+
+
+@convert.command()
+@click.argument('notebook_path')
+@click.option('--output', '-o', default=None)
+@click.option('--template-name', '-t', default=None)
+@click.option('--exclude-code-cell', is_flag=True, default=False)
+@click.option('--exclude-markdown', is_flag=True, default=False)
+@click.option('--exclude-raw', is_flag=True, default=False)
+@click.option('--exclude-unknown', is_flag=True, default=False)
+@click.option('--exclude-input', is_flag=True, default=False)
+@click.option('--exclude-output', is_flag=True, default=False)
+@click.option('--theme', default='simple')
+@click.option('--transition', default='slide')
+@click.option('--scroll/--no-scroll', type=bool, default=True)
+@click.option('--kwarg', 'kwargs', multiple=True, type=(str, str))
+def slides(
+        notebook_path,
+        output,
+        template_name,
+        exclude_code_cell,
+        exclude_markdown,
+        exclude_raw,
+        exclude_unknown,
+        exclude_input,
+        exclude_output,
+        scroll,
+        transition,
+        theme,
+        kwargs
+):
+    if output is None:
+        output = os.path.splitext(notebook_path)[0] + '.slides.html'
+    nb = Notebook.read_ipynb(notebook_path)
+    selector = get_selector()
+
+    nb.select(selector).to_slides(
+        output,
+        template_name=template_name,
+        exclude_code_cell=exclude_code_cell,
+        exclude_markdown=exclude_markdown,
+        exclude_raw=exclude_raw,
+        exclude_unknown=exclude_unknown,
+        exclude_input=exclude_input,
+        exclude_output=exclude_output,
+        scroll=scroll,
+        transition=transition,
+        theme=theme,
+        **kwargs
+    )
+
+
 @nbmanips.command()
 @click.argument('selector', required=True)
 @click.argument('arguments', nargs=-1, required=False)
