@@ -119,9 +119,60 @@ nb.auto_slide()
 # Export to Reveal.js slides (HTML)
 nb.to_slides("new_slides.slides.html", theme='beige')
 ```
-  
+
+## CLI
+### Show a notebook
+To get a readable representation of the notebook 
+```bash
+nb show my_notebook.ipynb
+```
+
+To show a subset of the notebook cells, you can perform a select operation:
+```bash
+nb select 0:3 | nb show my_notebook.ipynb
+```
+### Basic usage
+A simple example of using nbmanips via the cli:
+
+```bash
+# delete empty cells
+nb select empty | nb delete my_notebook.ipynb --output new_notebook.ipynb
+
+# Or equivalently:
+nbmanips select empty | nbmanips delete my_notebook.ipynb --output new_notebook.ipynb
+```
+
+### Export Formats
+You can convert a notebook to the following formats:
+
+- html: `nb convert html my_notebook.ipynb --output my_notebook.html`
+- slides (using reveal.js): `nb convert slides my_notebook.ipynb --output my_notebook.slides.html`
+- md (to markdown): `nb convert md my_notebook.ipynb --output my_notebook.md`
+- py (to python): `nb convert py my_notebook.ipynb --output my_notebook.py`
+
+### Slide manipulations
+```bash
+# Automatically set slides
+nb auto-slide my_notebook.ipynb
+
+# Generate a my_notebook.slides.html file
+nb convert slides my_notebook.ipynb
+```
+
+Or if you do not wish to modify your original notebook:
+```bash
+# Automatically set slides
+nb auto-slide my_notebook.ipynb -o my_temp_notebook.ipynb
+
+# Generate a my_notebook.slides.html file
+nb convert slides my_temp_notebook.ipynb -o my_notebook.slides.html
+```
+
+If you need more details you can check the --help option:
+```
+nbmanips --help
+```
 ## Roadmap
 
 - Add Custom Templates
 
-- Add CLI
