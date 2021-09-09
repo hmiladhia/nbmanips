@@ -1,4 +1,6 @@
 import os
+import tempfile
+
 import pytest
 
 from nbmanips import Notebook
@@ -6,14 +8,8 @@ from nbmanips import Notebook
 
 @pytest.fixture(scope='session')
 def output_files():
-    # TODO: use temp folder
-    import shutil
-    directory = 'output_files'
-    if os.path.exists(directory):
-        shutil.rmtree(directory)
-    os.mkdir(directory)
-    yield directory
-    shutil.rmtree(directory)
+    with tempfile.TemporaryDirectory() as directory:
+        yield directory
 
 
 @pytest.fixture(scope='session')
