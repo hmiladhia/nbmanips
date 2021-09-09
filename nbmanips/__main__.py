@@ -210,7 +210,7 @@ def html(
         exclude_unknown=exclude_unknown,
         exclude_input=exclude_input,
         exclude_output=exclude_output,
-        **kwargs
+        **dict(kwargs)
     )
 
 
@@ -251,7 +251,7 @@ def md(
         exclude_unknown=exclude_unknown,
         exclude_input=exclude_input,
         exclude_output=exclude_output,
-        **kwargs
+        **dict(kwargs)
     )
 
 
@@ -266,7 +266,7 @@ def py(notebook_path, output, template_name, kwargs):
     nb = Notebook.read_ipynb(notebook_path)
     selector = get_selector()
 
-    nb.select(selector).to_py(output, template_name=template_name, **kwargs)
+    nb.select(selector).to_py(output, template_name=template_name, **dict(kwargs))
 
 
 @convert.command()
@@ -315,7 +315,7 @@ def slides(
         scroll=scroll,
         transition=transition,
         theme=theme,
-        **kwargs
+        **dict(kwargs)
     )
 
 
