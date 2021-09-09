@@ -239,6 +239,13 @@ def test_apply(nb1_0):
     assert nb1_0.select('contains', 'a').list() == [0, 2]
     assert nb1_0.select('contains', 'Hello').list() == []
 
+
+def test_cover_auto_slide(nb3_0):
+    nb3_0.auto_slide()
+    assert nb3_0.select('has_slide_type', 'slide').list() == []
+    assert nb3_0.select('has_slide_type', 'subslide').list() == [3, 4]
+
+
 # def test_selectors(nb1_0, selector, selector_kwargs):
 #     assert False
 # def test_get_item(nb1):
