@@ -66,6 +66,11 @@ def test_list_selector_args(nb1, selector, args, expected):
     assert nb1.select(selector, *args).first() == expected
 
 
+def test_list_or_selector(nb1):
+    selector = Selector(['contains', 'contains'], ('o',), {'text': '='}, type='or')
+    assert nb1.select(selector).list() == [1, 2]
+
+
 @pytest.mark.parametrize("slice_", [(0, 3), (1, 3), (1, 1), (0,), (1, 3, 2)])
 def test_slice_selector(nb1, slice_: list):
     assert nb1.select(slice(*slice_)).list() == list(range(*slice_))
@@ -99,6 +104,10 @@ def test_selector_selector(nb1):
                          [('text/plain', [1, 3])])
 def test_has_output_type1(nb1, output_type, expected):
     assert nb1.select('has_output_type', output_type).list() == expected
+
+
+def test_is_empty(nb3):
+    assert nb3.select('is_empty').list() == [5, 8]
 
 
 def test_has_byte_size(nb3):
