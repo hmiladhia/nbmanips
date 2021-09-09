@@ -121,7 +121,7 @@ class Cell:
         for output in self['outputs']:
             cell_output = CellOutput.new(output)
             new_output = cell_output.erase_output(output_types)
-            if new_output:
+            if new_output is not None:
                 new_outputs.append(new_output)
 
         self['outputs'] = new_outputs

@@ -95,12 +95,12 @@ class DataOutput(CellOutput):
 
     def erase_output(self, output_types: set):
         for key in output_types:
-            self.content['data'].pop(key)
+            self.content['data'].pop(key, None)
 
         if not self.content['data']:
             return None
 
-        return self.content['data']
+        return self.content
 
     def has_output_type(self, output_types: set):
         return output_types & set(self.content['data'])
