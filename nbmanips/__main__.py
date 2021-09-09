@@ -1,3 +1,4 @@
+import os
 import colorama
 import cloudpickle
 import click
@@ -165,6 +166,52 @@ def erase_output(notebook_path, output, output_types):
 
     nb.select(selector).erase_output(set(output_types))
     nb.to_ipynb(output)
+
+
+@nbmanips.group()
+def convert():
+    pass
+
+
+@convert.command()
+@click.argument('notebook_path')
+@click.option('--output', '-o', default=None)
+@click.option('--template-name', '-t', default=None)
+@click.option('--exclude-code-cell', is_flag=True, default=False)
+@click.option('--exclude-markdown', is_flag=True, default=False)
+@click.option('--exclude-raw', is_flag=True, default=False)
+@click.option('--exclude-unknown', is_flag=True, default=False)
+@click.option('--exclude-input', is_flag=True, default=False)
+@click.option('--exclude-output', is_flag=True, default=False)
+@click.option('--kwarg', 'kwargs', multiple=True, type=(str, str))
+def html(
+        notebook_path,
+        output,
+        template_name,
+        exclude_code_cell,
+        exclude_markdown,
+        exclude_raw,
+        exclude_unknown,
+        exclude_input,
+        exclude_output,
+        kwargs
+):
+    if output is None:
+        output = os.path.splitext(notebook_path)[0] + '.html'
+    nb = Notebook.read_ipynb(notebook_path)
+    selector = get_selector()
+
+    nb.select(selector).to_html(
+        output,
+        template_name=template_name,
+        exclude_code_cell=exclude_code_cell,
+        exclude_markdown=exclude_markdown,
+        exclude_raw=exclude_raw,
+        exclude_unknown=exclude_unknown,
+        exclude_input=exclude_input,
+        exclude_output=exclude_output,
+        **kwargs
+    )
 
 
 @nbmanips.command()
