@@ -47,7 +47,7 @@ def count(notebook_path):
     click.echo(nb.select(selector).count())
 
 
-@nbmanips.command()
+@nbmanips.command(help="Return the number of the first selected cell")
 @click.argument('notebook_path')
 def first(notebook_path):
     nb = Notebook.read_ipynb(notebook_path)
@@ -56,7 +56,7 @@ def first(notebook_path):
     click.echo(nb.select(selector).first())
 
 
-@nbmanips.command()
+@nbmanips.command(help="Return the number of the last selected cell")
 @click.argument('notebook_path')
 def last(notebook_path):
     nb = Notebook.read_ipynb(notebook_path)
@@ -65,7 +65,7 @@ def last(notebook_path):
     click.echo(nb.select(selector).last())
 
 
-@click.command()
+@click.command(help="Return the numbers of the selected cells")
 @click.argument('notebook_path')
 def list_(notebook_path):
     nb = Notebook.read_ipynb(notebook_path)
@@ -155,7 +155,7 @@ def auto_slide(notebook_path, output, max_cells, max_images, delete_empty):
     nb.to_ipynb(output)
 
 
-@nbmanips.command(help="replace string in all selected cells")
+@nbmanips.command(help="Erase the output content of the selected cells")
 @click.argument('notebook_path')
 @click.option('--output', '-o', default=None)
 @click.option('--output-type', 'output_types', multiple=True)
@@ -168,12 +168,12 @@ def erase_output(notebook_path, output, output_types):
     nb.to_ipynb(output)
 
 
-@nbmanips.group()
+@nbmanips.group(help="Convert a notebook to another format")
 def convert():
     pass
 
 
-@convert.command()
+@convert.command(help="Exports a basic HTML document.")
 @click.argument('notebook_path')
 @click.option('--output', '-o', default=None)
 @click.option('--template-name', '-t', default=None)
@@ -214,7 +214,7 @@ def html(
     )
 
 
-@convert.command()
+@convert.command(help="Exports to a markdown document (.md)")
 @click.argument('notebook_path')
 @click.option('--output', '-o', default=None)
 @click.option('--template-name', '-t', default=None)
@@ -255,7 +255,7 @@ def md(
     )
 
 
-@convert.command()
+@convert.command(help="Exports a Python code file.")
 @click.argument('notebook_path')
 @click.option('--output', '-o', default=None)
 @click.option('--template-name', '-t', default=None)
@@ -269,7 +269,7 @@ def py(notebook_path, output, template_name, kwargs):
     nb.select(selector).to_py(output, template_name=template_name, **dict(kwargs))
 
 
-@convert.command()
+@convert.command(help="Exports HTML slides with reveal.js")
 @click.argument('notebook_path')
 @click.option('--output', '-o', default=None)
 @click.option('--template-name', '-t', default=None)
