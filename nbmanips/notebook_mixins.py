@@ -300,10 +300,12 @@ class ExportMixin(NotebookBase):
         :param width:
         :param style:
         :param color:
+        :param exclude_output:
         :param img_color:
         :param img_width:
         """
-        print(self.to_str(width=width, style=style, color=color, exclude_output=exclude_output, img_color=img_color, img_width=img_width))
+        print(self.to_str(width=width, style=style, color=color, exclude_output=exclude_output, img_color=img_color,
+                          img_width=img_width))
 
     @classmethod
     def read_ipynb(cls, path):

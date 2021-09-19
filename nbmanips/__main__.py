@@ -26,17 +26,19 @@ def nbmanips():
 
 @nbmanips.command(help="show notebook in human readable format")
 @click.argument('notebook_path')
-@click.option('--style', '-s', type=click.Choice(styles.keys(), case_sensitive=False), default='single')
 @click.option('--width', '-w', type=int, default=None)
-@click.option('--color', '-c', type=click.Choice(_COLORS, case_sensitive=False), default=None)
 @click.option('--output/--no-output', '-o/-no', type=bool, default=True)
-@click.option('--img-width', '-iw', type=int, default=None)
-@click.option('--img-color', '-ic', type=click.Choice(_COLORS, case_sensitive=False), default=None)
-def show(notebook_path, width, style, color, output, img_color, img_width):
+@click.option('--color/--no-color', '-c/-nc', type=bool, default=None)
+@click.option('--style', '-s', type=click.Choice(styles.keys(), case_sensitive=False), default='single')
+@click.option('--border-color', '-bc', type=click.Choice(_COLORS, case_sensitive=False), default=None)
+@click.option('--image-text/--no-image-text', '-it/-nit', type=bool, default=True)
+@click.option('--image-width', '-iw', type=int, default=None)
+@click.option('--image-color/--no-image-color', '-ic/-nic', type=bool, default=None)
+def show(notebook_path, width, color, output, style, border_color, image_text, image_width, image_color):
     nb = Notebook.read_ipynb(notebook_path)
     selector = get_selector()
 
-    nb.select(selector).show(width, style, color, not output, img_color, img_width)
+    nb.select(selector).show(width, style, border_color, not output, image_color, image_width)
 
 
 @nbmanips.command(help="count selected cells")

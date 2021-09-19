@@ -3,6 +3,10 @@ from textwrap import wrap
 
 from nbmanips.color import supports_color
 
+from pygments import highlight
+from pygments.lexers import Python3Lexer
+from pygments.formatters import TerminalFormatter
+
 try:
     import colorama
 
@@ -44,19 +48,28 @@ def printable_cell(text, width=None, style='single', color=None):
     style_l, style_r, style_ul, style_u, style_ur, style_dl, style_d, style_dr = parse_style(styles[style])
 
     color_start, color_end = "", ""
-    if color:
-        color = 'BLACK' if color is None else color.upper()
-        color_start, color_end = (vars(colorama.Fore)[color], colorama.Fore.RESET)
+    if color is not None:
+        color = 'WHITE' if color is None else color.upper()
+        color_start, color_end = (vars(colorama.Fore)[color.upper()], colorama.Fore.RESET)
 
     text_width = width - 2 - len(style_l) - len(style_r)
 
-    result_list = []
-    for text_line in text.split('\n'):
-        result_list.extend(wrap(text_line, text_width, tabsize=4))
+    code_lines = []
+    for code_line in text.split('\n'):
+        code_lines.extend(wrap(code_line, text_width, tabsize=4))
+    diff = [text_width - len(code_line) for code_line in code_lines]
+
+    code = '\n'.join(code_lines)
+    if COLOR_SUPPORTED:
+        result_list = highlight(code, Python3Lexer(), TerminalFormatter())[:-1].split('\n')
 
     result = [color_start + style_ul + style_u * (width - len(style_ul) - len(style_ur)) + style_ur + color_end]
-    result.extend([f"{color_start}{style_l}{color_end} {line.ljust(text_width)} {color_start}{style_r}{color_end}"
-                   for line in result_list])
+    result.extend([
+        f"{color_start}{style_l}{color_end}"
+        f" {line}{' ' * d} "
+        f"{color_start}{style_r}{color_end}"
+        for line, d in zip(result_list, diff)
+    ])
     result.append(color_start + style_dl + style_d * (width - len(style_dl) - len(style_dr)) + style_dr + color_end)
     return '\n'.join(result)
 
