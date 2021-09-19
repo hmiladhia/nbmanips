@@ -76,7 +76,7 @@ class DataOutput(CellOutput):
     default_data_types = ['text/plain', 'text/html', 'image/png']
 
     def to_str(self, parse=False, exclude_data_types=None, *args, **kwargs):
-        preferred_data_types = self.default_data_types if parse else reversed(self.default_data_types)
+        preferred_data_types = list(reversed(self.default_data_types)) if parse else self.default_data_types
         exclude_data_types = {} if exclude_data_types is None else set(exclude_data_types)
 
         data = self.content['data']

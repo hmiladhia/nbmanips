@@ -67,7 +67,7 @@ class Cell:
         outputs = []
         for output in self.cell.get('outputs', []):
             cell_output = CellOutput.new(output)
-            outputs.append(cell_output.to_str(readable, exclude_data_types))
+            outputs.append(cell_output.to_str(readable, exclude_data_types, **kwargs))
 
         if text:
             return '\n'.join(outputs)
@@ -155,15 +155,21 @@ class Cell:
     def to_str(self, width=None, style='single', color=None, exclude_output=False, img_color=None, img_width=None):
         if self.type == 'code':
             width = width or (shutil.get_terminal_size().columns - 1)
-            img_width = img_width if img_width else int(width*0.8)
             sources = [printable_cell(self.source, width=width, style=style, color=color)]
 
-            img_color = bool(color) if img_color is None else img_color
             if not exclude_output:
+                img_color = bool(color) if img_color is None else img_color
+                img_width = img_width if img_width else int(width * 0.8)
                 output = self.get_output(text=True, readable=True, colorful=img_color, width=img_width).strip()
                 if output:
                     sources.append(output)
             return '\n'.join(sources)
+        elif self.type == 'markdown':
+            from pygments import highlight
+            from pygments.lexers import MarkdownLexer
+            from pygments.formatters import TerminalFormatter
+
+            return highlight(self.source, MarkdownLexer(), TerminalFormatter())[:-1]
         else:
             return self.source
 
