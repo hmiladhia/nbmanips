@@ -4,6 +4,9 @@
 __pycache__
 .pytest_cache
 
+#env
+.venv
+
 # Jupyter
 .ipynb_checkpoints
 
