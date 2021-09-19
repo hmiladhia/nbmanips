@@ -265,9 +265,15 @@ class ExportMixin(NotebookBase):
         return self.nbconvert('slides', path, reveal_scroll=scroll, reveal_transition=transition,
                               reveal_theme=theme, **kwargs)
 
-    def to_str(self,  width=None, style='single', color=None, img_color=None, img_width=None):
-        return '\n'.join(cell.to_str(width=width, style=style, color=color, img_color=img_color, img_width=img_width)
-                         for cell in self.iter_cells())
+    def to_str(self,  width=None, style='single', color=None, exclude_output=False, img_color=None, img_width=None):
+        return '\n'.join(cell.to_str(
+            width=width,
+            style=style,
+            color=color,
+            exclude_output=exclude_output,
+            img_color=img_color,
+            img_width=img_width
+        ) for cell in self.iter_cells())
 
     def to_text(self, path, *args, **kwargs):
         """
@@ -288,7 +294,7 @@ class ExportMixin(NotebookBase):
         """
         write_ipynb(self.raw_nb, path)
 
-    def show(self, width=None, style='single', color=None, img_color=None, img_width=None):
+    def show(self, width=None, style='single', color=None, exclude_output=False, img_color=None, img_width=None):
         """
         Show the selected cells
         :param width:
@@ -297,7 +303,7 @@ class ExportMixin(NotebookBase):
         :param img_color:
         :param img_width:
         """
-        print(self.to_str(width=width, style=style, color=color, img_color=img_color, img_width=img_width))
+        print(self.to_str(width=width, style=style, color=color, exclude_output=exclude_output, img_color=img_color, img_width=img_width))
 
     @classmethod
     def read_ipynb(cls, path):

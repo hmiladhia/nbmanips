@@ -29,13 +29,14 @@ def nbmanips():
 @click.option('--style', '-s', type=click.Choice(styles.keys(), case_sensitive=False), default='single')
 @click.option('--width', '-w', type=int, default=None)
 @click.option('--color', '-c', type=click.Choice(_COLORS, case_sensitive=False), default=None)
+@click.option('--output/--no-output', '-o/-no', type=bool, default=True)
 @click.option('--img-width', '-iw', type=int, default=None)
 @click.option('--img-color', '-ic', type=click.Choice(_COLORS, case_sensitive=False), default=None)
-def show(notebook_path, width, style, color, img_color, img_width):
+def show(notebook_path, width, style, color, output, img_color, img_width):
     nb = Notebook.read_ipynb(notebook_path)
     selector = get_selector()
 
-    nb.select(selector).show(width, style, color, img_color, img_width)
+    nb.select(selector).show(width, style, color, not output, img_color, img_width)
 
 
 @nbmanips.command(help="count selected cells")
