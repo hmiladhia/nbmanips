@@ -307,7 +307,7 @@ class ExportMixin(NotebookBase):
         :return: Notebook object
         """
         nb = read_ipynb(path)
-        return cls(nb, get_ipynb_name(path))
+        return cls(nb, get_ipynb_name(path), validate=False)
 
 
 class NotebookMetadata(NotebookBase):

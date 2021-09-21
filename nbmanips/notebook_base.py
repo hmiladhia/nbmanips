@@ -1,12 +1,16 @@
 import copy
 from typing import Callable, Optional, Any
 
+import nbformat
+
 from nbmanips.cell import Cell
 from nbmanips.selector import Selector
 
 
 class NotebookBase:
-    def __init__(self, content, name=None):
+    def __init__(self, content: dict, name=None, validate=True):
+        if validate:
+            self.__validate(content)
         self.raw_nb = copy.deepcopy(content)
         self.name = name
         self._selector = None
@@ -33,7 +37,7 @@ class NotebookBase:
         return list(map(func, self.iter_cells(neg)))
 
     def reset_selection(self):
-        notebook_selection = self.__class__(None, self.name)
+        notebook_selection = self.__class__(None, self.name, validate=False)
         notebook_selection.raw_nb = self.raw_nb
         return notebook_selection
 
@@ -163,3 +167,12 @@ class NotebookBase:
             new_selector = self._selector.copy()
         new_selector.append(selector)
         return new_selector
+
+    @staticmethod
+    def __validate(content: dict):
+        if not isinstance(content, dict):
+            message = f"'content' must be of type 'dict': {type(content).__name__!r} given"
+            if isinstance(content, str):
+                message += "\nUse Notebook.read_ipynb(path) to read notebook from file"
+            raise ValueError(message)
+        nbformat.validate(nbdict=content)

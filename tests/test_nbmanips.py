@@ -45,7 +45,22 @@ def test_name(nb1):
 
 
 def test_len_empty():
-    assert len(Notebook({})) == 0
+    assert len(Notebook({
+        'cells': [],
+        'nbformat': 4,
+        'nbformat_minor': 0,
+        'metadata': {},
+    })) == 0
+
+
+def test_schema():
+    from jsonschema.exceptions import ValidationError
+
+    with pytest.raises(ValidationError):
+        Notebook({})
+
+    with pytest.raises(ValueError):
+        Notebook('file.ipynb')
 
 
 def test_len(nb2):
