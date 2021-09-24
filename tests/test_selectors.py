@@ -32,7 +32,7 @@ def test_has_output(nb3, cell_num, expected):
     from nbmanips.selector import has_output
     from nbmanips.cell import Cell
 
-    cell = Cell(nb3.cells[cell_num], cell_num)
+    cell = Cell.new(nb3.cells[cell_num], cell_num)
     assert has_output(cell) == expected
 
 

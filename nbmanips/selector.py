@@ -13,7 +13,7 @@ class Selector:
 
     def iter_cells(self, nb, neg=False):
         filter_method = filterfalse if neg else filter
-        return filter_method(self._selector, (Cell(cell, i) for i, cell in enumerate(nb["cells"])))
+        return filter_method(self._selector, (Cell.new(cell, i) for i, cell in enumerate(nb["cells"])))
 
     @classmethod
     def register_selector(cls, key, selector):

@@ -43,12 +43,13 @@ def parse_style(style):
     return l, r, ul, u, ur, dl, d, dr
 
 
-def printable_cell(text, width=None, style='single', color=None):
+def printable_cell(text, width=None, style='single', color=None, use_pygments=None):
+    use_pygments = COLOR_SUPPORTED if use_pygments is None else use_pygments
     width = width or (shutil.get_terminal_size().columns - 1)
     style_l, style_r, style_ul, style_u, style_ur, style_dl, style_d, style_dr = parse_style(styles[style])
 
     color_start, color_end = "", ""
-    if color is not None:
+    if color:
         color = 'WHITE' if color is None else color.upper()
         color_start, color_end = (vars(colorama.Fore)[color.upper()], colorama.Fore.RESET)
 
@@ -60,15 +61,15 @@ def printable_cell(text, width=None, style='single', color=None):
     diff = [text_width - len(code_line) for code_line in code_lines]
 
     code = '\n'.join(code_lines)
-    if COLOR_SUPPORTED:
-        result_list = highlight(code, Python3Lexer(), TerminalFormatter())[:-1].split('\n')
+    if use_pygments:
+        code_lines = highlight(code, Python3Lexer(), TerminalFormatter())[:-1].split('\n')
 
     result = [color_start + style_ul + style_u * (width - len(style_ul) - len(style_ur)) + style_ur + color_end]
     result.extend([
         f"{color_start}{style_l}{color_end}"
         f" {line}{' ' * d} "
         f"{color_start}{style_r}{color_end}"
-        for line, d in zip(result_list, diff)
+        for line, d in zip(code_lines, diff)
     ])
     result.append(color_start + style_dl + style_d * (width - len(style_dl) - len(style_dr)) + style_dr + color_end)
     return '\n'.join(result)

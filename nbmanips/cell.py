@@ -10,9 +10,13 @@ from nbmanips.utils import total_size
 
 
 class Cell:
+    cell_type = None
+    _cell_types = None
+
     def __init__(self, content, num=None):
         self.cell = content
         self._num = num
+        assert self.type == self.cell_type
 
     def __getitem__(self, key):
         return self.cell[key]
@@ -48,6 +52,10 @@ class Cell:
     def output(self):
         return self.get_output(text=True, readable=True).strip()
 
+    @property
+    def outputs(self):
+        return map(CellOutput.new, self.cell.get('outputs', []))
+
     def get_copy(self, new_id=None):
         cell = self.__class__(deepcopy(self.cell), None)
         if new_id is not None:
@@ -64,9 +72,9 @@ class Cell:
         :param readable:
         :return:
         """
+
         outputs = []
-        for output in self.cell.get('outputs', []):
-            cell_output = CellOutput.new(output)
+        for cell_output in self.outputs:
             outputs.append(cell_output.to_str(readable, exclude_data_types, **kwargs))
 
         if text:
@@ -106,7 +114,8 @@ class Cell:
         :param output_types: Output Type(MIME type) to delete: text/plain, text/html, image/png, ...
         :type output_types: set or str or None to delete all output
         """
-        if self.type != "code":
+        outputs = list(self.outputs)
+        if len(outputs) == 0:
             return
 
         if output_types is None:
@@ -118,8 +127,7 @@ class Cell:
             output_types = set(output_types)
 
         new_outputs = []
-        for output in self['outputs']:
-            cell_output = CellOutput.new(output)
+        for cell_output in outputs:
             new_output = cell_output.erase_output(output_types)
             if new_output is not None:
                 new_outputs.append(new_output)
@@ -134,10 +142,7 @@ class Cell:
         :type output_types: set
         :return: a bool object (True if cell should be selected)
         """
-        if self.type != "code":
-            return False
-
-        return any(CellOutput.new(output).has_output_type(output_types) for output in self['outputs'])
+        return any(cell_output.has_output_type(output_types) for cell_output in self.outputs)
 
     def byte_size(self, output_types: Optional[set] = None, ignore_source=False):
         """
@@ -152,26 +157,9 @@ class Cell:
         size += sum([CellOutput.new(output).byte_size(output_types) for output in self['outputs']])
         return size
 
-    def to_str(self, width=None, style='single', color=None, exclude_output=False, img_color=None, img_width=None):
-        if self.type == 'code':
-            width = width or (shutil.get_terminal_size().columns - 1)
-            sources = [printable_cell(self.source, width=width, style=style, color=color)]
-
-            if not exclude_output:
-                img_color = bool(color) if img_color is None else img_color
-                img_width = img_width if img_width else int(width * 0.8)
-                output = self.get_output(text=True, readable=True, colorful=img_color, width=img_width).strip()
-                if output:
-                    sources.append(output)
-            return '\n'.join(sources)
-        elif self.type == 'markdown':
-            from pygments import highlight
-            from pygments.lexers import MarkdownLexer
-            from pygments.formatters import TerminalFormatter
-
-            return highlight(self.source, MarkdownLexer(), TerminalFormatter())[:-1]
-        else:
-            return self.source
+    def to_str(self, width=None, style='single', use_pygments=None, color=None,
+               exclude_output=False, img_color=None, img_width=None):
+        return self.source
 
     def show(self):
         print(self)
@@ -228,4 +216,62 @@ class Cell:
     @staticmethod
     def generate_id_candidate():
         return uuid.uuid4().hex[:8]
+
+    @classmethod
+    def new(cls, content, num=None, build_cell_types=False):
+        if build_cell_types or cls._cell_types is None:
+            cls._cell_types = cls._get_cell_types()
+
+        cell_class = cls._cell_types[content['cell_type']]
+        return cell_class(content, num)
+
+    @classmethod
+    def _get_cell_types(cls):
+        cell_types = {}
+        for cell_class in cls.__subclasses__():
+            if cell_class.cell_type is None:
+                cell_types.update(cell_class._get_cell_types())
+            else:
+                cell_types[cell_class.cell_type] = cell_class
+        return cell_types
+
+
+class CodeCell(Cell):
+    cell_type = "code"
+
+    def to_str(self, width=None, style='single', use_pygments=None, color=None, exclude_output=False, img_color=None,
+               img_width=None):
+        sources = [printable_cell(self.source, width=width, style=style, color=color, use_pygments=use_pygments)]
+
+        if not exclude_output:
+            img_color = bool(color) if img_color is None else img_color
+            width = width or (shutil.get_terminal_size().columns - 1)
+            img_width = img_width if img_width else int(width * 0.7)
+            output = self.get_output(text=True, readable=True, colorful=img_color, width=img_width).strip()
+            if output:
+                sources.append(output)
+
+        return '\n'.join(sources)
+
+
+class MarkdownCell(Cell):
+    cell_type = "markdown"
+
+    def to_str(self, width=None, style='single', use_pygments=None, color=None, exclude_output=False, img_color=None,
+               img_width=None):
+        import pygments
+        import pygments.lexers as lexers
+        import pygments.formatters as formatters
+
+        use_pygments = pygments is not None if use_pygments is None else use_pygments
+
+        # noinspection PyUnresolvedReferences
+        if use_pygments:
+            return pygments.highlight(self.source, lexers.MarkdownLexer(), formatters.TerminalFormatter())[:-1]
+        else:
+            return self.source
+
+
+class RawCell(Cell):
+    cell_type = "raw"
 
