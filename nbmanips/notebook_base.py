@@ -136,7 +136,7 @@ class NotebookBase:
             return "<Notebook>"
 
     def __str__(self):
-        return '\n'.join(str(Cell(cell, i)) for i, cell in enumerate(self.cells))
+        return '\n'.join(str(cell) for cell in self.iter_cells())
 
     def create_selector(self, selector, *args, **kwargs):
         if isinstance(selector, int) and selector < 0:
