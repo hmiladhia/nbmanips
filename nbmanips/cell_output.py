@@ -145,3 +145,7 @@ class DisplayData(DataOutput):
 
 class ExecuteResult(DataOutput):
     output_type = 'execute_result'
+
+    @property
+    def execution_count(self):
+        return self.content.get("execution_count", None)
