@@ -12,6 +12,7 @@ except ImportError:
 from nbmanips.notebook_base import NotebookBase
 from nbmanips.selector import is_new_slide, has_slide_type, has_output_type
 from nbmanips.utils import write_ipynb, read_ipynb, dict_to_ipynb, get_ipynb_name
+from nbmanips.cell_utils import PYGMENTS_SUPPORTED
 
 
 class ClassicNotebook(NotebookBase):
@@ -265,10 +266,20 @@ class ExportMixin(NotebookBase):
         return self.nbconvert('slides', path, reveal_scroll=scroll, reveal_transition=transition,
                               reveal_theme=theme, **kwargs)
 
-    def to_str(self,  width=None, style='single', color=None, exclude_output=False, img_color=None, img_width=None):
+    def to_str(self,  width=None, style='single', use_pygments=None, color=None, exclude_output=False, img_color=None, img_width=None):
+        use_pygments = PYGMENTS_SUPPORTED if use_pygments is None else use_pygments
+        if use_pygments:
+            pygments_lexer = self.metadata.get('language_info', {}).get('pygments_lexer', None)
+            pygments_lexer = pygments_lexer or self.metadata.get('language_info', {}).get('name', None)
+            pygments_lexer = pygments_lexer or self.metadata.get('kernelspec', {}).get('language', None)
+        else:
+            pygments_lexer = None
+
         return '\n'.join(cell.to_str(
             width=width,
             style=style,
+            use_pygments=use_pygments,
+            pygments_lexer=pygments_lexer,
             color=color,
             exclude_output=exclude_output,
             img_color=img_color,

@@ -4,6 +4,11 @@ import re
 from copy import deepcopy
 from typing import Any, Optional, Union
 
+try:
+    import pygments
+except ImportError:
+    pygments = None
+
 from nbmanips.cell_utils import printable_cell
 from nbmanips.cell_output import CellOutput
 from nbmanips.utils import total_size
@@ -157,7 +162,7 @@ class Cell:
         size += sum([CellOutput.new(output).byte_size(output_types) for output in self['outputs']])
         return size
 
-    def to_str(self, width=None, style='single', use_pygments=None, color=None,
+    def to_str(self, width=None, style='single', use_pygments=None, pygments_lexer=None, color=None,
                exclude_output=False, img_color=None, img_width=None):
         return self.source
 
@@ -239,9 +244,9 @@ class Cell:
 class CodeCell(Cell):
     cell_type = "code"
 
-    def to_str(self, width=None, style='single', use_pygments=None, color=None, exclude_output=False, img_color=None,
-               img_width=None):
-        sources = [printable_cell(self.source, width=width, style=style, color=color, use_pygments=use_pygments)]
+    def to_str(self, width=None, style='single', use_pygments=None, pygments_lexer=None, color=None,
+               exclude_output=False, img_color=None, img_width=None):
+        sources = [printable_cell(self.source, width=width, style=style, color=color, pygments_lexer=pygments_lexer)]
 
         if not exclude_output:
             img_color = bool(color) if img_color is None else img_color
@@ -257,17 +262,16 @@ class CodeCell(Cell):
 class MarkdownCell(Cell):
     cell_type = "markdown"
 
-    def to_str(self, width=None, style='single', use_pygments=None, color=None, exclude_output=False, img_color=None,
+    def to_str(self, width=None, style='single', use_pygments=None, pygments_lexer=None, color=None, exclude_output=False, img_color=None,
                img_width=None):
-        import pygments
-        import pygments.lexers as lexers
-        import pygments.formatters as formatters
-
         use_pygments = pygments is not None if use_pygments is None else use_pygments
 
-        # noinspection PyUnresolvedReferences
         if use_pygments:
-            return pygments.highlight(self.source, lexers.MarkdownLexer(), formatters.TerminalFormatter())[:-1]
+            if pygments is None:
+                raise ModuleNotFoundError("You need to install pygments first.\n pip install nbmanips[pygments]")
+            formatter = getattr(pygments.formatters, 'TerminalFormatter')
+            lexer = getattr(pygments.lexers, 'MarkdownLexer')
+            return pygments.highlight(self.source, lexer(), formatter())[:-1]
         else:
             return self.source
 

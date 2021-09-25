@@ -3,9 +3,15 @@ from textwrap import wrap
 
 from nbmanips.color import supports_color
 
-from pygments import highlight
-from pygments.lexers import Python3Lexer
-from pygments.formatters import TerminalFormatter
+try:
+    import pygments
+    from pygments.lexers import get_lexer_by_name
+    from pygments.formatters import TerminalFormatter
+except ImportError:
+    pygments = None
+    get_lexer_by_name = None
+    TerminalFormatter = object
+    Terminal256Formatter = object
 
 try:
     import colorama
@@ -35,18 +41,12 @@ styles = {"single": "││┌─┐└─┘",
           }
 
 COLOR_SUPPORTED = supports_color()
+PYGMENTS_SUPPORTED = COLOR_SUPPORTED and pygments is not None
 
 
-def parse_style(style):
-    l, r, ul, u, ur, dl, d, dr = style
-
-    return l, r, ul, u, ur, dl, d, dr
-
-
-def printable_cell(text, width=None, style='single', color=None, use_pygments=None):
-    use_pygments = COLOR_SUPPORTED if use_pygments is None else use_pygments
+def printable_cell(text, width=None, style='single', color=None, pygments_lexer=None):
     width = width or (shutil.get_terminal_size().columns - 1)
-    style_l, style_r, style_ul, style_u, style_ur, style_dl, style_d, style_dr = parse_style(styles[style])
+    style_l, style_r, style_ul, style_u, style_ur, style_dl, style_d, style_dr = styles[style]
 
     color_start, color_end = "", ""
     if color:
@@ -61,8 +61,13 @@ def printable_cell(text, width=None, style='single', color=None, use_pygments=No
     diff = [text_width - len(code_line) for code_line in code_lines]
 
     code = '\n'.join(code_lines)
-    if use_pygments:
-        code_lines = highlight(code, Python3Lexer(), TerminalFormatter())[:-1].split('\n')
+    if pygments_lexer:
+        if pygments is None:
+            raise ModuleNotFoundError("You need to install pygments first.\n pip install nbmanips[pygments]")
+
+        formatter = TerminalFormatter()
+        lexer = get_lexer_by_name(pygments_lexer)
+        code_lines = pygments.highlight(code, lexer, formatter)[:-1].split('\n')
 
     result = [color_start + style_ul + style_u * (width - len(style_ul) - len(style_ur)) + style_ur + color_end]
     result.extend([
