@@ -59,7 +59,7 @@ class Cell:
 
     @property
     def outputs(self):
-        return map(CellOutput.new, self.cell.get('outputs', []))
+        return map(CellOutput, self.cell.get('outputs', []))
 
     def get_copy(self, new_id=None):
         cell = self.__class__(deepcopy(self.cell), None)
@@ -159,7 +159,7 @@ class Cell:
         :return: a bool object (True if cell should be selected)
         """
         size = 0 if ignore_source else total_size(self['source'])
-        size += sum([CellOutput.new(output).byte_size(output_types) for output in self['outputs']])
+        size += sum([cell_output.byte_size(output_types) for cell_output in self.outputs])
         return size
 
     def to_str(self, width=None, style='single', use_pygments=None, pygments_lexer=None, color=None,

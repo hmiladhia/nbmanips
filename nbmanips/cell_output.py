@@ -6,11 +6,10 @@ from nbmanips.utils import total_size
 
 class CellOutput:
     output_type = None
-    output_types = None
+    _output_types = {}
 
     def __init__(self, content):
         self.content = content
-        assert self.content['output_type'] == self.output_type
 
     def to_str(self, *args, **kwargs):
         return ''
@@ -33,28 +32,21 @@ class CellOutput:
             return total_size(self.content)
         return 0
 
-    @classmethod
-    def new(cls, content, build_output_types=False):
-        if build_output_types or cls.output_types is None:
-            cls.output_types = cls._get_output_types()
+    def __new__(cls, content, *args, **kwargs):
+        output_type = content['output_type']
+        output_class = cls._output_types[output_type]
+        obj = super().__new__(output_class)
+        output_class.__init__(obj, content, *args, **kwargs)
+        return obj
 
-        output_class = cls.output_types[content['output_type']]
-        return output_class(content)
-
-    @classmethod
-    def _get_output_types(cls):
-        output_types = {}
-        for output_class in cls.__subclasses__():
-            if output_class.output_type is None:
-                output_types.update(output_class._get_output_types())
-            else:
-                output_types[output_class.output_type] = output_class
-        return output_types
+    def __init_subclass__(cls, output_type=None, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if output_type:
+            cls._output_types[output_type] = cls
+        cls.output_type = output_type
 
 
-class StreamOutput(CellOutput):
-    output_type = 'stream'
-
+class StreamOutput(CellOutput, output_type='stream'):
     @property
     def text(self):
         return self.content['text']
@@ -114,9 +106,7 @@ class DataOutput(CellOutput):
             return total_size({key: value for key, value in self.content['data'].items() if key in output_types})
 
 
-class ErrorOutput(CellOutput):
-    output_type = 'error'
-
+class ErrorOutput(CellOutput, output_type='error'):
     @property
     def ename(self):
         return self.content['ename']
@@ -139,13 +129,11 @@ class ErrorOutput(CellOutput):
         return output_types & {'text/error', 'error'}
 
 
-class DisplayData(DataOutput):
-    output_type = 'display_data'
+class DisplayData(DataOutput, output_type='display_data'):
+    pass
 
 
-class ExecuteResult(DataOutput):
-    output_type = 'execute_result'
-
+class ExecuteResult(DataOutput, output_type='execute_result'):
     @property
     def execution_count(self):
         return self.content.get("execution_count", None)
