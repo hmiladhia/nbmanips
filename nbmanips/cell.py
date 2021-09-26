@@ -15,13 +15,11 @@ from nbmanips.utils import total_size
 
 
 class Cell:
-    cell_type = None
-    _cell_types = None
+    _cell_types = {}
 
     def __init__(self, content, num=None):
         self.cell = content
         self._num = num
-        assert self.type == self.cell_type
 
     def __getitem__(self, key):
         return self.cell[key]
@@ -222,28 +220,20 @@ class Cell:
     def generate_id_candidate():
         return uuid.uuid4().hex[:8]
 
-    @classmethod
-    def new(cls, content, num=None, build_cell_types=False):
-        if build_cell_types or cls._cell_types is None:
-            cls._cell_types = cls._get_cell_types()
+    def __new__(cls, content, *args, **kwargs):
+        cell_type = content['cell_type']
+        cell_class = cls._cell_types[cell_type]
+        obj = super().__new__(cell_class)
+        cell_class.__init__(obj, content, *args, **kwargs)
+        return obj
 
-        cell_class = cls._cell_types[content['cell_type']]
-        return cell_class(content, num)
-
-    @classmethod
-    def _get_cell_types(cls):
-        cell_types = {}
-        for cell_class in cls.__subclasses__():
-            if cell_class.cell_type is None:
-                cell_types.update(cell_class._get_cell_types())
-            else:
-                cell_types[cell_class.cell_type] = cell_class
-        return cell_types
+    def __init_subclass__(cls, cell_type=None, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if cell_type:
+            cls._cell_types[cell_type] = cls
 
 
-class CodeCell(Cell):
-    cell_type = "code"
-
+class CodeCell(Cell, cell_type="code"):
     def to_str(self, width=None, style='single', use_pygments=None, pygments_lexer=None, color=None,
                exclude_output=False, img_color=None, img_width=None):
         sources = [printable_cell(self.source, width=width, style=style, color=color, pygments_lexer=pygments_lexer)]
@@ -259,9 +249,7 @@ class CodeCell(Cell):
         return '\n'.join(sources)
 
 
-class MarkdownCell(Cell):
-    cell_type = "markdown"
-
+class MarkdownCell(Cell, cell_type="markdown"):
     def to_str(self, width=None, style='single', use_pygments=None, pygments_lexer=None, color=None, exclude_output=False, img_color=None,
                img_width=None):
         use_pygments = pygments is not None if use_pygments is None else use_pygments
@@ -276,6 +264,5 @@ class MarkdownCell(Cell):
             return self.source
 
 
-class RawCell(Cell):
-    cell_type = "raw"
-
+class RawCell(Cell, cell_type="raw"):
+    pass
