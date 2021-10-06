@@ -3,7 +3,7 @@ import colorama
 import cloudpickle
 import click
 
-from nbmanips import Notebook
+from nbmanips import Notebook, __version__
 from nbmanips.selector import Selector
 from nbmanips.cell_utils import styles
 
@@ -20,6 +20,7 @@ def get_selector():
 
 
 @click.group()
+@click.version_option(__version__, prog_name='nbmanips')
 def nbmanips():
     pass
 
@@ -38,7 +39,8 @@ def show(notebook_path, width, color, output, style, border_color, image_text, i
     nb = Notebook.read_ipynb(notebook_path)
     selector = get_selector()
 
-    nb.select(selector).show(width, style, border_color, not output, image_color, image_width)
+    # image_color, image_width
+    nb.select(selector).show(width, style, border_color, exclude_output=not output)
 
 
 @nbmanips.command(help="count selected cells")

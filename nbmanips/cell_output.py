@@ -1,12 +1,14 @@
 from typing import Optional
 
-from nbmanips.cell_utils import get_readable
+from nbmanips.cell_utils import HtmlParser
+from nbmanips.cell_utils import ImageParser
 from nbmanips.utils import total_size
 
 
 class CellOutput:
     output_type = None
     _output_types = {}
+    _parsers = {}
 
     def __init__(self, content):
         self.content = content
@@ -31,6 +33,14 @@ class CellOutput:
         if output_types is None or self.has_output_type(output_types):
             return total_size(self.content)
         return 0
+
+    @classmethod
+    def register_parser(cls, output_type, func):
+        cls._parsers[output_type] = func
+
+    @property
+    def default_parsers(self):
+        return {key for key, value in self._parsers.items() if value.default_state}
 
     def __new__(cls, content, *args, **kwargs):
         output_type = content['output_type']
@@ -65,14 +75,15 @@ class StreamOutput(CellOutput, output_type='stream'):
 
 
 class DataOutput(CellOutput):
-    default_data_types = ['text/plain', 'text/html', 'image/png']
+    default_data_types = ['image/png', 'text/html', 'text/plain']
 
-    def to_str(self, parse=False, exclude_data_types=None, *args, **kwargs):
-        preferred_data_types = list(reversed(self.default_data_types)) if parse else self.default_data_types
-        exclude_data_types = {} if exclude_data_types is None else set(exclude_data_types)
+    def to_str(self, parsers=None, parsers_config=None, excluded_data_types=None):
+        parsers = self.default_parsers if parsers is None else parsers
+        parsers_config = parsers_config or {}
+        exclude_data_types = {} if excluded_data_types is None else set(excluded_data_types)
 
         data = self.content['data']
-        data_types = preferred_data_types + list(data.keys())
+        data_types = self.default_data_types + list(data.keys())
         for data_type in data_types:
             if data_type in exclude_data_types or data_type not in data:
                 continue
@@ -81,8 +92,9 @@ class DataOutput(CellOutput):
             if not isinstance(output_text, str):
                 output_text = '\n'.join(output_text)
 
-            if parse:
-                output_text = get_readable(output_text, data_type, **kwargs)
+            if data_type in parsers and data_type in self._parsers:
+                parser = self._parsers[data_type]
+                output_text = parser.parse(output_text, **parsers_config.get(data_type, {}))
             return output_text
 
     def erase_output(self, output_types: set):
@@ -137,3 +149,7 @@ class ExecuteResult(DataOutput, output_type='execute_result'):
     @property
     def execution_count(self):
         return self.content.get("execution_count", None)
+
+
+CellOutput.register_parser('text/html', HtmlParser())
+CellOutput.register_parser('image/png', ImageParser())

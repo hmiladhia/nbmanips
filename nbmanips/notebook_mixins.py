@@ -266,7 +266,8 @@ class ExportMixin(NotebookBase):
         return self.nbconvert('slides', path, reveal_scroll=scroll, reveal_transition=transition,
                               reveal_theme=theme, **kwargs)
 
-    def to_str(self,  width=None, style='single', use_pygments=None, color=None, exclude_output=False, img_color=None, img_width=None):
+    def to_str(self,  width=None, style='single', use_pygments=None, color=None, exclude_output=False, parsers=None,
+               parsers_config=None, excluded_data_types=None):
         use_pygments = PYGMENTS_SUPPORTED if use_pygments is None else use_pygments
         if use_pygments:
             pygments_lexer = self.metadata.get('language_info', {}).get('pygments_lexer', None)
@@ -282,8 +283,9 @@ class ExportMixin(NotebookBase):
             pygments_lexer=pygments_lexer,
             color=color,
             exclude_output=exclude_output,
-            img_color=img_color,
-            img_width=img_width
+            parsers=parsers,
+            parsers_config=parsers_config,
+            excluded_data_types=excluded_data_types,
         ) for cell in self.iter_cells())
 
     def to_text(self, path, *args, **kwargs):
@@ -294,7 +296,7 @@ class ExportMixin(NotebookBase):
         :param kwargs:
         :return:
         """
-        content = self.to_str(*args, color=False, img_color=False, **kwargs)
+        content = self.to_str(*args, color=False, **kwargs)
         with open(path, 'w', encoding='utf-8') as f:
             f.write(content)
 
@@ -305,7 +307,7 @@ class ExportMixin(NotebookBase):
         """
         write_ipynb(self.raw_nb, path)
 
-    def show(self, width=None, style='single', color=None, exclude_output=False, img_color=None, img_width=None):
+    def show(self, width=None, style='single', color=None, exclude_output=False, parsers=None, parsers_config=None, excluded_data_types=None):
         """
         Show the selected cells
         :param width:
@@ -315,8 +317,7 @@ class ExportMixin(NotebookBase):
         :param img_color:
         :param img_width:
         """
-        print(self.to_str(width=width, style=style, color=color, exclude_output=exclude_output, img_color=img_color,
-                          img_width=img_width))
+        print(self.to_str(width=width, style=style, color=color, exclude_output=exclude_output, parsers=parsers, parsers_config=parsers_config, excluded_data_types=excluded_data_types))
 
     @classmethod
     def read_ipynb(cls, path):

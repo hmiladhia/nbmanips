@@ -1,4 +1,5 @@
 import shutil
+from abc import ABCMeta, abstractmethod
 from textwrap import wrap
 
 from nbmanips.color import supports_color
@@ -11,7 +12,6 @@ except ImportError:
     pygments = None
     get_lexer_by_name = None
     TerminalFormatter = object
-    Terminal256Formatter = object
 
 try:
     import colorama
@@ -29,7 +29,6 @@ try:
     from img2text import img_to_ascii
 except ImportError:
     img_to_ascii = None
-
 
 styles = {"single": "││┌─┐└─┘",
           "double": "║║╔═╗╚═╝",
@@ -80,20 +79,36 @@ def printable_cell(text, width=None, style='single', color=None, pygments_lexer=
     return '\n'.join(result)
 
 
-def get_readable(text, data_type, width=80, reverse=True, **kwargs):
-    if data_type == 'text/html':
-        if callable(html2text):
-            return html2text(text)
-        else:
-            raise ModuleNotFoundError('You need to pip install html2txt for readable option')
+class ParserBase(metaclass=ABCMeta):
+    @abstractmethod
+    def parse(self, content, **kwargs):
+        return content
 
-    if data_type == 'image/png':
+    @property
+    def default_state(self):
+        return True
+
+
+class ImageParser(ParserBase):
+    def parse(self, content, width=80, colorful=COLOR_SUPPORTED, bright=COLOR_SUPPORTED, reverse=True, **kwargs):
         if callable(img_to_ascii):
-            colorful = kwargs.pop('colorful', COLOR_SUPPORTED)
-            bright = kwargs.pop('bright', COLOR_SUPPORTED)
-            return img_to_ascii(text, base64=True, colorful=colorful, reverse=reverse,
+            return img_to_ascii(content, base64=True, colorful=colorful, reverse=reverse,
                                 width=width, bright=bright, **kwargs)
         else:
             raise ModuleNotFoundError('You need to pip install img2text for readable option')
 
-    return text
+    @property
+    def default_state(self):
+        return img_to_ascii is not None
+
+
+class HtmlParser(ParserBase):
+    def parse(self, content, width=78, **kwargs):
+        if callable(html2text):
+            return html2text(content,  bodywidth=width, **kwargs)
+        else:
+            raise ModuleNotFoundError('You need to pip install html2txt for readable option')
+
+    @property
+    def default_state(self):
+        return html2text is not None

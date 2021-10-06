@@ -53,7 +53,7 @@ class Cell:
 
     @property
     def output(self):
-        return self.get_output(text=True, readable=True).strip()
+        return self.get_output(text=True).strip()
 
     @property
     def outputs(self):
@@ -65,20 +65,21 @@ class Cell:
             cell.id = new_id
         return cell
 
-    def get_output(self, text=True, readable=True, exclude_data_types=None, exclude_errors=True, **kwargs):
+    def get_output(self, text=True, parsers=None, parsers_config=None, excluded_data_types=None):
         """
         Tries its best to return a readable output from cell
 
-        :param exclude_data_types:
-        :param exclude_errors:
         :param text:
-        :param readable:
+        :param parsers: parsers to use
+        :param parsers_config: custom config for parsers
+        :param excluded_data_types: data types to exclude
         :return:
         """
 
         outputs = []
         for cell_output in self.outputs:
-            outputs.append(cell_output.to_str(readable, exclude_data_types, **kwargs))
+            text_output = cell_output.to_str(parsers, parsers_config, excluded_data_types)
+            outputs.append(text_output)
 
         if text:
             return '\n'.join(outputs)
@@ -160,8 +161,7 @@ class Cell:
         size += sum([cell_output.byte_size(output_types) for cell_output in self.outputs])
         return size
 
-    def to_str(self, width=None, style='single', use_pygments=None, pygments_lexer=None, color=None,
-               exclude_output=False, img_color=None, img_width=None):
+    def to_str(self, width=None, *args, **kwargs):
         return self.source
 
     def show(self):
@@ -171,7 +171,7 @@ class Cell:
         return f"<Cell {self.num}>" if self.num else "<Cell>"
 
     def __str__(self):
-        return self.to_str(width=None, style='single', color=None, img_color=None)
+        return self.to_str(width=None, style='single', color=None)
 
     # metadata
     def update_metadata(self, key: str, value: Any):
@@ -235,14 +235,16 @@ class Cell:
 
 class CodeCell(Cell, cell_type="code"):
     def to_str(self, width=None, style='single', use_pygments=None, pygments_lexer=None, color=None,
-               exclude_output=False, img_color=None, img_width=None):
+               exclude_output=False, parsers=None, parsers_config=None, excluded_data_types=None):
         sources = [printable_cell(self.source, width=width, style=style, color=color, pygments_lexer=pygments_lexer)]
 
         if not exclude_output:
-            img_color = bool(color) if img_color is None else img_color
-            width = width or (shutil.get_terminal_size().columns - 1)
-            img_width = img_width if img_width else int(width * 0.7)
-            output = self.get_output(text=True, readable=True, colorful=img_color, width=img_width).strip()
+            output = self.get_output(
+                text=True,
+                parsers=parsers,
+                parsers_config=parsers_config,
+                excluded_data_types=excluded_data_types,
+            ).strip()
             if output:
                 sources.append(output)
 
@@ -250,8 +252,7 @@ class CodeCell(Cell, cell_type="code"):
 
 
 class MarkdownCell(Cell, cell_type="markdown"):
-    def to_str(self, width=None, style='single', use_pygments=None, pygments_lexer=None, color=None, exclude_output=False, img_color=None,
-               img_width=None):
+    def to_str(self, width=None, style='single', use_pygments=None, pygments_lexer=None, color=None, **kwargs):
         use_pygments = pygments is not None if use_pygments is None else use_pygments
 
         if use_pygments:
