@@ -123,10 +123,7 @@ class SlideShowMixin(ClassicNotebook):
                 img_count += 1
 
             if (n_cells is not None and cells_count > n_cells) or (n_images is not None and img_count > n_images):
-                if 'slideshow' in cell.cell['metadata']:
-                    cell.metadata['slideshow']['slide_type'] = 'subslide'
-                else:
-                    cell.metadata['slideshow'] = {'slide_type': 'subslide'}
+                cell.update_metadata('slideshow', {'slide_type': 'subslide'})
                 cells_count = 1
                 img_count = 1 if is_image else 0
 
@@ -141,10 +138,7 @@ class SlideShowMixin(ClassicNotebook):
         # Create a new slide only
         for cell in reversed(list(self.iter_cells())):
             if cell.num > 0 and is_new_slide(self[cell.num-1].first_cell()):  # previous cell is a new slide
-                if 'slideshow' in cell.cell['metadata']:
-                    cell.metadata['slideshow']['slide_type'] = '-'
-                else:
-                    cell.metadata['slideshow'] = {'slide_type': '-'}
+                cell.update_metadata('slideshow', {'slide_type': '-'})
 
         # Set max cells per slide
         self.max_cells_per_slide(max_cells_per_slide, max_images_per_slide)
@@ -327,7 +321,7 @@ class ExportMixin(NotebookBase):
         :return: Notebook object
         """
         nb = read_ipynb(path)
-        return cls(nb, get_ipynb_name(path))
+        return cls(nb, get_ipynb_name(path), validate=False)
 
 
 class NotebookMetadata(NotebookBase):
