@@ -260,9 +260,7 @@ class ExportMixin(NotebookBase):
         return self.nbconvert('slides', path, reveal_scroll=scroll, reveal_transition=transition,
                               reveal_theme=theme, **kwargs)
 
-    def to_str(self,  width=None, style='single', use_pygments=None, color=None, exclude_output=False, parsers=None,
-               parsers_config=None, excluded_data_types=None):
-        use_pygments = PYGMENTS_SUPPORTED if use_pygments is None else use_pygments
+    def _get_pygments_lexer(self, use_pygments):
         if use_pygments:
             pygments_lexer = self.metadata.get('language_info', {}).get('pygments_lexer', None)
             pygments_lexer = pygments_lexer or self.metadata.get('language_info', {}).get('name', None)
@@ -270,13 +268,20 @@ class ExportMixin(NotebookBase):
         else:
             pygments_lexer = None
 
+        return pygments_lexer
+
+    def to_str(self, width=None, exclude_output=False, use_pygments=None, style='single', border_color=None,
+               parsers=None, parsers_config=None, excluded_data_types=None):
+        use_pygments = PYGMENTS_SUPPORTED if use_pygments is None else use_pygments
+        pygments_lexer = self._get_pygments_lexer(use_pygments)
+
         return '\n'.join(cell.to_str(
             width=width,
-            style=style,
+            exclude_output=exclude_output,
             use_pygments=use_pygments,
             pygments_lexer=pygments_lexer,
-            color=color,
-            exclude_output=exclude_output,
+            style=style,
+            color=border_color,
             parsers=parsers,
             parsers_config=parsers_config,
             excluded_data_types=excluded_data_types,
@@ -290,7 +295,7 @@ class ExportMixin(NotebookBase):
         :param kwargs:
         :return:
         """
-        content = self.to_str(*args, color=False, **kwargs)
+        content = self.to_str(*args, use_pygments=False, border_color=False, **kwargs)
         with open(path, 'w', encoding='utf-8') as f:
             f.write(content)
 
@@ -301,17 +306,27 @@ class ExportMixin(NotebookBase):
         """
         write_ipynb(self.raw_nb, path)
 
-    def show(self, width=None, style='single', color=None, exclude_output=False, parsers=None, parsers_config=None, excluded_data_types=None):
+    def show(self, width=None, exclude_output=False, style='single', border_color=None,
+             parsers=None, parsers_config=None, excluded_data_types=None):
         """
         Show the selected cells
         :param width:
         :param style:
-        :param color:
+        :param border_color:
         :param exclude_output:
-        :param img_color:
-        :param img_width:
+        :param parsers:
+        :param parsers_config:
+        :param excluded_data_types:
         """
-        print(self.to_str(width=width, style=style, color=color, exclude_output=exclude_output, parsers=parsers, parsers_config=parsers_config, excluded_data_types=excluded_data_types))
+        print(self.to_str(
+            width=width,
+            exclude_output=exclude_output,
+            style=style,
+            border_color=border_color,
+            parsers=parsers,
+            parsers_config=parsers_config,
+            excluded_data_types=excluded_data_types
+        ))
 
     @classmethod
     def read_ipynb(cls, path):

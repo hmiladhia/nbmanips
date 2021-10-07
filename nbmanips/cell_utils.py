@@ -89,6 +89,11 @@ class ParserBase(metaclass=ABCMeta):
         return True
 
 
+class TextParser(ParserBase):
+    def parse(self, content, **kwargs):
+        return content
+
+
 class ImageParser(ParserBase):
     def parse(self, content, width=80, colorful=COLOR_SUPPORTED, bright=COLOR_SUPPORTED, reverse=True, **kwargs):
         if callable(img_to_ascii):

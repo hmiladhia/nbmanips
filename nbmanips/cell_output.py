@@ -1,5 +1,7 @@
 from typing import Optional
 
+from nbmanips.cell_utils import ParserBase
+from nbmanips.cell_utils import TextParser
 from nbmanips.cell_utils import HtmlParser
 from nbmanips.cell_utils import ImageParser
 from nbmanips.utils import total_size
@@ -35,8 +37,8 @@ class CellOutput:
         return 0
 
     @classmethod
-    def register_parser(cls, output_type, func):
-        cls._parsers[output_type] = func
+    def register_parser(cls, output_type, parser: ParserBase):
+        cls._parsers[output_type] = parser
 
     @property
     def default_parsers(self):
@@ -78,13 +80,13 @@ class DataOutput(CellOutput):
     default_data_types = ['image/png', 'text/html', 'text/plain']
 
     def to_str(self, parsers=None, parsers_config=None, excluded_data_types=None):
-        parsers = self.default_parsers if parsers is None else parsers
+        parsers = self.default_parsers if parsers is None else set(parsers)
         parsers_config = parsers_config or {}
         exclude_data_types = {} if excluded_data_types is None else set(excluded_data_types)
 
         data = self.content['data']
-        data_types = self.default_data_types + list(data.keys())
-        for data_type in data_types:
+        data_types = [dt for dt in self.default_data_types if dt in parsers] + list(data)
+        for data_type in  data_types:
             if data_type in exclude_data_types or data_type not in data:
                 continue
 
@@ -151,5 +153,6 @@ class ExecuteResult(DataOutput, output_type='execute_result'):
         return self.content.get("execution_count", None)
 
 
+CellOutput.register_parser('text/plain', TextParser())
 CellOutput.register_parser('text/html', HtmlParser())
 CellOutput.register_parser('image/png', ImageParser())

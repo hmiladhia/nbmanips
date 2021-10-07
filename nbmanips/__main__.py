@@ -29,18 +29,24 @@ def nbmanips():
 @click.argument('notebook_path')
 @click.option('--width', '-w', type=int, default=None)
 @click.option('--output/--no-output', '-o/-no', type=bool, default=True)
-@click.option('--color/--no-color', '-c/-nc', type=bool, default=None)
+@click.option('--pygments/--no-pygments', '-p/-np', type=bool, default=None)
 @click.option('--style', '-s', type=click.Choice(styles.keys(), case_sensitive=False), default='single')
 @click.option('--border-color', '-bc', type=click.Choice(_COLORS, case_sensitive=False), default=None)
 @click.option('--image-text/--no-image-text', '-it/-nit', type=bool, default=True)
 @click.option('--image-width', '-iw', type=int, default=None)
 @click.option('--image-color/--no-image-color', '-ic/-nic', type=bool, default=None)
-def show(notebook_path, width, color, output, style, border_color, image_text, image_width, image_color):
+def show(notebook_path, width, pygments, output, style, border_color, image_text, image_width, image_color):
     nb = Notebook.read_ipynb(notebook_path)
     selector = get_selector()
 
     # image_color, image_width
-    nb.select(selector).show(width, style, border_color, exclude_output=not output)
+    nb.select(selector).show(
+        width,
+        exclude_output=not output,
+        use_pygments=pygments,
+        style=style,
+        border_color=border_color
+    )
 
 
 @nbmanips.command(help="count selected cells")
