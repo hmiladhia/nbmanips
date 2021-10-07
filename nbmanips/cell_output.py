@@ -1,10 +1,22 @@
-from typing import Optional
+from typing import Optional, Union
 
 from nbmanips.cell_utils import ParserBase
 from nbmanips.cell_utils import TextParser
 from nbmanips.cell_utils import HtmlParser
 from nbmanips.cell_utils import ImageParser
 from nbmanips.utils import total_size
+
+
+def _get_output_types(output_type: Union[set, str]) -> set:
+    if isinstance(output_type, str):
+        if '/' in output_type:
+            return {output_type, output_type.split('/')[0]}
+        return {output_type}
+
+    output_types = set()
+    for output in output_type:
+        output_types |= _get_output_types(output)
+    return output_types
 
 
 class CellOutput:
@@ -14,6 +26,10 @@ class CellOutput:
 
     def __init__(self, content):
         self.content = content
+
+    @property
+    def output_types(self) -> set:
+        raise NotImplementedError()
 
     def to_str(self, *args, **kwargs):
         return ''
@@ -29,7 +45,7 @@ class CellOutput:
         :type output_types: set
         :return: a bool object (True if cell should be selected)
         """
-        raise NotImplementedError()
+        return output_types & self.output_types
 
     def byte_size(self, output_types: Optional[set]):
         if output_types is None or self.has_output_type(output_types):
@@ -63,6 +79,10 @@ class StreamOutput(CellOutput, output_type='stream'):
     def text(self):
         return self.content['text']
 
+    @property
+    def output_types(self):
+        return _get_output_types('text/plain')
+
     def to_str(self, *args, **kwargs):
         output_text = self.text
         if not isinstance(output_text, str):
@@ -70,10 +90,7 @@ class StreamOutput(CellOutput, output_type='stream'):
         return output_text
 
     def erase_output(self, output_types: set):
-        return None if output_types & {'text/plain', 'text'} else self.content
-
-    def has_output_type(self, output_types: set):
-        return output_types & {'text/plain', 'text'}
+        return None if self.has_output_type(output_types) else self.content
 
 
 class DataOutput(CellOutput):
@@ -86,7 +103,7 @@ class DataOutput(CellOutput):
 
         data = self.content['data']
         data_types = [dt for dt in self.default_data_types if dt in parsers] + list(data)
-        for data_type in  data_types:
+        for data_type in data_types:
             if data_type in exclude_data_types or data_type not in data:
                 continue
 
@@ -108,8 +125,12 @@ class DataOutput(CellOutput):
 
         return self.content
 
+    @property
+    def output_types(self):
+        return _get_output_types(self.content['data'])
+
     def has_output_type(self, output_types: set):
-        return output_types & set(self.content['data'])
+        return output_types & self.output_types
 
     def byte_size(self, output_types: Optional[set]):
         if output_types is None:
@@ -133,14 +154,15 @@ class ErrorOutput(CellOutput, output_type='error'):
     def traceback(self):
         return self.content['traceback']
 
+    @property
+    def output_types(self):
+        return _get_output_types('text/error')
+
     def to_str(self, *args, **kwargs):
         return '\n'.join(self.traceback + [f"{self.ename}: {self.evalue}"])
 
     def erase_output(self, output_types: set):
         return None if self.has_output_type(output_types) else self.content
-
-    def has_output_type(self, output_types):
-        return output_types & {'text/error', 'error'}
 
 
 class DisplayData(DataOutput, output_type='display_data'):

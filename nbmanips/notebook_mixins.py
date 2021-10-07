@@ -306,12 +306,13 @@ class ExportMixin(NotebookBase):
         """
         write_ipynb(self.raw_nb, path)
 
-    def show(self, width=None, exclude_output=False, style='single', border_color=None,
+    def show(self, width=None, exclude_output=False, use_pygments=None, style='single', border_color=None,
              parsers=None, parsers_config=None, excluded_data_types=None):
         """
         Show the selected cells
         :param width:
         :param style:
+        :param use_pygments:
         :param border_color:
         :param exclude_output:
         :param parsers:
@@ -320,6 +321,7 @@ class ExportMixin(NotebookBase):
         """
         print(self.to_str(
             width=width,
+            use_pygments=use_pygments,
             exclude_output=exclude_output,
             style=style,
             border_color=border_color,
