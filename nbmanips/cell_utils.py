@@ -6,12 +6,13 @@ from nbmanips.color import supports_color
 
 try:
     import pygments
-    from pygments.lexers import get_lexer_by_name
     from pygments.formatters import TerminalFormatter
+
+    FORMATTER = TerminalFormatter()
 except ImportError:
     pygments = None
-    get_lexer_by_name = None
-    TerminalFormatter = object
+    TerminalFormatter = None
+    FORMATTER = None
 
 try:
     import colorama
@@ -61,12 +62,7 @@ def printable_cell(text, width=None, style='single', color=None, pygments_lexer=
 
     code = '\n'.join(code_lines)
     if pygments_lexer:
-        if pygments is None:
-            raise ModuleNotFoundError("You need to install pygments first.\n pip install nbmanips[pygments]")
-
-        formatter = TerminalFormatter()
-        lexer = get_lexer_by_name(pygments_lexer)
-        code_lines = pygments.highlight(code, lexer, formatter)[:-1].split('\n')
+        code_lines = pygments.highlight(code, pygments_lexer, FORMATTER)[:-1].split('\n')
 
     result = [color_start + style_ul + style_u * (width - len(style_ul) - len(style_ur)) + style_ur + color_end]
     result.extend([

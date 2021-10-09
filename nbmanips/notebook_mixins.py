@@ -14,6 +14,11 @@ from nbmanips.selector import is_new_slide, has_slide_type, has_output_type
 from nbmanips.utils import write_ipynb, read_ipynb, dict_to_ipynb, get_ipynb_name
 from nbmanips.cell_utils import PYGMENTS_SUPPORTED
 
+try:
+    from pygments.lexers import get_lexer_by_name
+except ImportError:
+    get_lexer_by_name = None
+
 
 class ClassicNotebook(NotebookBase):
     def update_cell_metadata(self, key: str, value: Any):
@@ -268,7 +273,13 @@ class ExportMixin(NotebookBase):
         else:
             pygments_lexer = None
 
-        return pygments_lexer
+        if pygments_lexer is None:
+            return pygments_lexer
+
+        if get_lexer_by_name is None:
+            raise ModuleNotFoundError("You need to install pygments first.\n pip install nbmanips[pygments]")
+
+        return get_lexer_by_name(pygments_lexer)
 
     def to_str(self, width=None, exclude_output=False, use_pygments=None, style='single', border_color=None,
                parsers=None, parsers_config=None, excluded_data_types=None):

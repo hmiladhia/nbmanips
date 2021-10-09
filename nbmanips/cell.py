@@ -1,4 +1,3 @@
-import shutil
 import uuid
 import re
 from copy import deepcopy
@@ -6,10 +5,14 @@ from typing import Any, Optional, Union
 
 try:
     import pygments
+    from pygments.lexers import get_lexer_by_name
+
+    _MARKDOWN_LEXER = get_lexer_by_name('md')
 except ImportError:
     pygments = None
+    get_lexer_by_name = None
 
-from nbmanips.cell_utils import printable_cell
+from nbmanips.cell_utils import printable_cell, FORMATTER
 from nbmanips.cell_output import CellOutput
 from nbmanips.utils import total_size
 
@@ -258,9 +261,7 @@ class MarkdownCell(Cell, cell_type="markdown"):
         if use_pygments:
             if pygments is None:
                 raise ModuleNotFoundError("You need to install pygments first.\n pip install nbmanips[pygments]")
-            formatter = getattr(pygments.formatters, 'TerminalFormatter')
-            lexer = getattr(pygments.lexers, 'MarkdownLexer')
-            return pygments.highlight(self.source, lexer(), formatter())[:-1]
+            return pygments.highlight(self.source, _MARKDOWN_LEXER, FORMATTER)[:-1]
         else:
             return self.source
 
