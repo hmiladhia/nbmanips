@@ -128,14 +128,15 @@ class DataOutput(CellOutput):
 
         data = self.content['data']
         for data_type in sorted(data, key=lambda x: self._get_key(x, parsers)):
-            if data_type in excluded_data_types or data_type not in data:
+            alt_data_types = _get_output_types(data_type)
+            if alt_data_types & excluded_data_types:
                 continue
 
             output_text = data[data_type]
             if not isinstance(output_text, str):
                 output_text = '\n'.join(output_text)
 
-            if _get_output_types(data_type) & parsers:
+            if alt_data_types & parsers:
                 parser, parser_config = self.get_parser(data_type, parsers_config)
                 if parser:
                     output_text = parser.parse(output_text, **parser_config)

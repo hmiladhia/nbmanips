@@ -29,15 +29,21 @@ def nbmanips():
 @click.argument('notebook_path')
 @click.option('--width', '-w', type=int, default=None)
 @click.option('--output/--no-output', '-o/-no', type=bool, default=True)
+@click.option('--exclude-output-type', '-e', 'excluded_data_types', multiple=True)
 @click.option('--pygments/--no-pygments', '-p/-np', type=bool, default=None)
 @click.option('--style', '-s', type=click.Choice(styles.keys(), case_sensitive=False), default='single')
 @click.option('--border-color', '-bc', type=click.Choice(_COLORS, case_sensitive=False), default=None)
-@click.option('--image-text/--no-image-text', '-it/-nit', type=bool, default=True)
 @click.option('--image-width', '-iw', type=int, default=None)
 @click.option('--image-color/--no-image-color', '-ic/-nic', type=bool, default=None)
-def show(notebook_path, width, pygments, output, style, border_color, image_text, image_width, image_color):
+@click.option('--parser', '-p', 'parsers', type=str, multiple=True)
+def show(notebook_path, width, pygments, output, style, border_color,
+         parsers, image_width, image_color, excluded_data_types):
     nb = Notebook.read_ipynb(notebook_path)
     selector = get_selector()
+
+    parsers_config = None
+    if image_width or image_color:
+        parsers_config = {'image': {'width': image_width, 'colorful': image_color}}
 
     # image_color, image_width
     nb.select(selector).show(
@@ -45,7 +51,10 @@ def show(notebook_path, width, pygments, output, style, border_color, image_text
         exclude_output=not output,
         use_pygments=pygments,
         style=style,
-        border_color=border_color
+        border_color=border_color,
+        parsers=parsers or None,
+        parsers_config=parsers_config,
+        excluded_data_types=excluded_data_types or None
     )
 
 
