@@ -260,7 +260,7 @@ class MarkdownCell(Cell, cell_type="markdown"):
 
         if use_pygments:
             if pygments is None:
-                raise ModuleNotFoundError("You need to install pygments first.\n pip install nbmanips[pygments]")
+                raise ModuleNotFoundError("You need to install pygments first.\n pip install pygments")
             return pygments.highlight(self.source, _MARKDOWN_LEXER, FORMATTER)[:-1]
         else:
             return self.source
