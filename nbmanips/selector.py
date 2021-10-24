@@ -2,7 +2,7 @@ from itertools import filterfalse
 from typing import Optional, Union
 
 from nbmanips.cell import Cell
-from nbmanips.utils import partial, total_size
+from nbmanips.utils import partial
 
 
 class Selector:
