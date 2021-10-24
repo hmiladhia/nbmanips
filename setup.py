@@ -7,7 +7,7 @@ with open("requirements.txt", "r", encoding="utf-8") as fh:
     requirements = fh.read().strip().split()
 
 with open("nbmanips/VERSION", "r", encoding="utf-8") as fh:
-    version = fh.read()
+    version = fh.read().strip()
 
 setuptools.setup(
     name="nbmanips",
