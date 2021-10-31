@@ -51,3 +51,20 @@ def test_to_py(nb1, output_files):
     path = f'{output_files}/test.py'
     nb1.to_py(path)
     assert os.path.exists(path)
+
+
+def test_dbc_exporter_multiple(nb1, output_files):
+    from nbmanips.exporters import DbcExporter
+    path = f'{output_files}/test_multiple.dbc'
+    exp = DbcExporter()
+    file_lists = [os.path.join('test_files', file) for file in os.listdir('test_files') if file.endswith('ipynb')]
+    exp.write_dbc(file_lists, path)
+    assert os.path.exists(path)
+
+
+def test_dbc_exporter(nb1, output_files):
+    from nbmanips.exporters import DbcExporter
+    path = f'{output_files}/test.dbc'
+    exp = DbcExporter()
+    exp.export(nb1, path)
+    assert os.path.exists(path)
