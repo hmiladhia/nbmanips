@@ -353,6 +353,12 @@ class ExportMixin(NotebookBase):
 
 
 class NotebookMetadata(NotebookBase):
+    @property
+    def language(self):
+        lang = self.metadata.get('kernelspec', {}).get('language', None)
+        lang = lang or self.metadata.get('language_info', {}).get('name', None)
+        return lang or self.metadata.get('language_info', {}).get('pygments_lexer', None)
+
     def add_author(self, name, **kwargs):
         """
         Add author to metadata
