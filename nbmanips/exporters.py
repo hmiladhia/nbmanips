@@ -26,11 +26,14 @@ class DbcExporter:
             notebook['language'] = language
 
         for cell in nb.iter_cells():
-            command = {"version": "CommandV1"}
+            source = cell.source
             if cell.type == 'markdown':
-                command['command'] = '%md\n' + cell.source
-            else:
-                command['command'] = cell.source
+                source = '%md\n' + source
+            command = {
+                "version": "CommandV1",
+                "commandTitle": cell.metadata.get('name', ''),
+                "command": source
+            }
             notebook['commands'].append(command)
 
         return notebook
