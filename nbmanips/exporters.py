@@ -29,10 +29,16 @@ class DbcExporter:
             source = cell.source
             if cell.type == 'markdown':
                 source = '%md\n' + source
+
+            jupyter = cell.metadata.get('jupyter', {})
+
             command = {
                 "version": "CommandV1",
                 "commandTitle": cell.metadata.get('name', ''),
-                "command": source
+                "command": source,
+                "collapsed": cell.metadata.get('collapsed', False),
+                "hideCommandCode": jupyter.get('source_hidden', False),
+                "hideCommandResult": jupyter.get('outputs_hidden', False),
             }
             notebook['commands'].append(command)
 
