@@ -53,6 +53,12 @@ def test_to_py(nb1, output_files):
     assert os.path.exists(path)
 
 
+def test_to_dbc(nb1, output_files):
+    path = f'{output_files}/test_to.dbc'
+    nb1.to_dbc(path)
+    assert os.path.exists(path)
+
+
 def test_dbc_exporter_multiple(nb1, output_files):
     from nbmanips.exporters import DbcExporter
     path = f'{output_files}/test_multiple.dbc'
