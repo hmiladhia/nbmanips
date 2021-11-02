@@ -182,6 +182,15 @@ class ExportMixin(NotebookBase):
         """
         return dict_to_ipynb(self.raw_nb)
 
+    def convert(self, exporter_name, path, *args, exporter_type='nbmanips', **kwargs):
+        assert exporter_type in {'nbmanips', 'nbconvert'}
+        if exporter_type == 'nbconvert':
+            return self.nbconvert(exporter_name, path, *args, **kwargs)
+
+        exporter = self.get_exporter(exporter_name, exporter_type=exporter_type)
+
+        return exporter.export(self, path, *args, **kwargs)
+
     def nbconvert(self, exporter_name, path, *args, template_name=None, **kwargs):
         notebook_node = self.to_notebook_node()
 
@@ -265,6 +274,27 @@ class ExportMixin(NotebookBase):
         """
         return self.nbconvert('slides', path, reveal_scroll=scroll, reveal_transition=transition,
                               reveal_theme=theme, **kwargs)
+
+    def to_dbc(self, path, filename=None, name=None, language=None, version='NotebookV1'):
+        """
+        Exports Notebook to dbc archive file
+
+        :param path: path to export to
+        :param filename: filename of the notebook inside archive (e.i. notebook.python)
+        :param name: name of the notebook
+        :param language: language of the notebook
+        :param version: version of dbc file (default is NotebookV1)
+        :return:
+        """
+        self.convert(
+            'dbc',
+            path,
+            exporter_type='nbmanips',
+            filename=filename,
+            name=name,
+            language=language,
+            version=version,
+        )
 
     def _get_pygments_lexer(self, use_pygments):
         if use_pygments:

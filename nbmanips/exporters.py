@@ -71,3 +71,6 @@ class DbcExporter:
                 parent_path = self._common_path(file_path)[common_path_len:]
                 zip_path = os.path.join(parent_path, default_filename)
                 zf.writestr(zip_path, json.dumps(dbc_nb))
+
+
+Notebook.register_exporter('dbc', DbcExporter, exporter_type='nbmanips')

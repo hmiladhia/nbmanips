@@ -1,4 +1,5 @@
 from nbmanips.notebook import Notebook
+import nbmanips.exporters
 
 from os.path import dirname as _dir
 from os.path import join as _join
