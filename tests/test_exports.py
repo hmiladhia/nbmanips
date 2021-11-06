@@ -60,12 +60,13 @@ def test_to_dbc(nb1, output_files):
     assert isinstance(Notebook.read_dbc(path), Notebook)
 
 
-def test_dbc_exporter_multiple(nb1, output_files):
+@pytest.mark.parametrize('common_path', [None, 'test_files', '.'])
+def test_dbc_exporter_multiple(nb1, output_files, common_path):
     from nbmanips.exporters import DbcExporter
     path = f'{output_files}/test_multiple.dbc'
     exp = DbcExporter()
     file_lists = [os.path.join('test_files', file) for file in os.listdir('test_files') if file.endswith('ipynb')]
-    exp.write_dbc(file_lists, path)
+    exp.write_dbc(file_lists, path, common_path)
     assert os.path.exists(path)
 
 
