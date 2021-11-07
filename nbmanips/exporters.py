@@ -48,14 +48,33 @@ class DbcExporter:
 
             jupyter = cell.metadata.get('jupyter', {})
 
+            results = [output.to_html() for output in cell.outputs if output.output_type != 'error']
+            errors = [output for output in cell.outputs if output.output_type == 'error']
+
             command = {
                 "version": "CommandV1",
                 "commandTitle": cell.metadata.get('name', ''),
                 "command": source,
+                "results": None,
+                "errorSummary": None,
+                "error": None,
                 "collapsed": cell.metadata.get('collapsed', False),
                 "hideCommandCode": jupyter.get('source_hidden', False),
                 "hideCommandResult": jupyter.get('outputs_hidden', False),
             }
+
+            if results:
+                content = '\n'.join(results)
+                command["results"] = {
+                    "type": "html",
+                    "data": f"<div class=\"ansiout\">{content}</div>",
+                }
+
+            if errors:
+                error = errors[0]
+                command["errorSummary"] = f"<span class=\"ansired\">{error.ename}</span>: {error.evalue}"
+                command["error"] = f"<div class=\"ansiout\">{error.to_html()}\n{command['errorSummary']}</div>"
+
             notebook['commands'].append(command)
 
         return notebook
