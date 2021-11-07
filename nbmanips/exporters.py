@@ -5,6 +5,22 @@ import zipfile
 from nbmanips import Notebook
 
 
+def _parent_directory(path: str):
+    return os.path.abspath(os.path.join(path, os.pardir))
+
+
+def _next(path, common_path):
+    return os.path.relpath(os.path.abspath(os.path.join(path, os.pardir)), common_path)
+
+
+def _get_dirs(path, common_path):
+    dirs = set()
+    while path != '.':
+        dirs.add(path.rstrip('/'))
+        path = _next(path, common_path)
+    return dirs
+
+
 class DbcExporter:
     @staticmethod
     def _to_dbc_notebook(nb: Notebook, name=None, language=None, version='NotebookV1') -> dict:
@@ -51,12 +67,9 @@ class DbcExporter:
             zf.writestr(filename, json.dumps(dbc_nb))
 
     @staticmethod
-    def _parent_directory(path: str):
-        return os.path.abspath(os.path.join(path, os.pardir))
-
-    def _check_common_path(self, file_list, common_path):
+    def _check_common_path(file_list, common_path):
         if common_path is None:
-            common_path = os.path.commonpath([self._parent_directory(path) for path in file_list])
+            common_path = os.path.commonpath([_parent_directory(path) for path in file_list])
         else:
             common_path = os.path.abspath(common_path)
             if not os.path.isdir(common_path):
@@ -76,8 +89,8 @@ class DbcExporter:
             for file_path in file_list:
                 dbc_nb = self._to_dbc_notebook(Notebook.read_ipynb(file_path))
                 default_filename = f"{dbc_nb['name']}.{dbc_nb.get('language', 'python')}"
-                parent_path = os.path.relpath(self._parent_directory(file_path), common_path)
-                dirs |= self._get_dirs(parent_path, common_path)
+                parent_path = os.path.relpath(_parent_directory(file_path), common_path)
+                dirs |= _get_dirs(parent_path, common_path)
                 zip_path = os.path.join(parent_path, default_filename)
                 zf.writestr(zip_path, json.dumps(dbc_nb))
 
@@ -90,18 +103,6 @@ class DbcExporter:
                     'children': []
                 }
                 zf.writestr(zip_info, json.dumps(content))
-
-    @staticmethod
-    def _next(path, common_path):
-        return os.path.relpath(os.path.abspath(os.path.join(path, os.pardir)), common_path)
-
-    @classmethod
-    def _get_dirs(cls, path, common_path):
-        dirs = set()
-        while path != '.':
-            dirs.add(path.rstrip('/'))
-            path = cls._next(path, common_path)
-        return dirs
 
 
 Notebook.register_exporter('dbc', DbcExporter, exporter_type='nbmanips')
