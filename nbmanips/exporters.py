@@ -9,15 +9,13 @@ def _parent_directory(path: str):
     return os.path.abspath(os.path.join(path, os.pardir))
 
 
-def _next(path, common_path):
-    return os.path.relpath(os.path.abspath(os.path.join(path, os.pardir)), common_path)
-
-
 def _get_dirs(path, common_path):
     dirs = set()
-    while path != '.':
-        dirs.add(path.rstrip('/'))
-        path = _next(path, common_path)
+    old_path = ''
+    while path.startswith(common_path) and old_path != path:
+        dirs.add(os.path.relpath(path, common_path))
+        old_path = path
+        path = _parent_directory(path)
     return dirs
 
 
@@ -108,9 +106,9 @@ class DbcExporter:
             for file_path in file_list:
                 dbc_nb = self._to_dbc_notebook(Notebook.read_ipynb(file_path))
                 default_filename = f"{dbc_nb['name']}.{dbc_nb.get('language', 'python')}"
-                parent_path = os.path.relpath(_parent_directory(file_path), common_path)
+                parent_path = _parent_directory(file_path)
                 dirs |= _get_dirs(parent_path, common_path)
-                zip_path = os.path.join(parent_path, default_filename)
+                zip_path = os.path.join(os.path.relpath(parent_path, common_path), default_filename)
                 zf.writestr(zip_path, json.dumps(dbc_nb))
 
             for directory in dirs:
