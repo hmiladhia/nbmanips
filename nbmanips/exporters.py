@@ -11,10 +11,11 @@ def _parent_directory(path: str):
 
 def _get_dirs(path, common_path):
     dirs = set()
-    old_path = ''
-    while path.startswith(common_path) and old_path != path:
-        dirs.add(os.path.relpath(path, common_path))
-        old_path = path
+    while path.startswith(common_path):
+        rel_path = os.path.relpath(path, common_path)
+        if rel_path in dirs:
+            break
+        dirs.add(rel_path)
         path = _parent_directory(path)
     return dirs
 
