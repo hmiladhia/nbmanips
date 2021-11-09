@@ -1,6 +1,7 @@
 import os
 import json
 import zipfile
+from html2text import html2text
 
 from functools import wraps
 
@@ -26,7 +27,7 @@ def read_dbc(notebook_path: str, version=4, filename=None, encoding='utf-8') -> 
         with zipfile.ZipFile(notebook_path, 'r') as zf:
             if filename is None:
                 names = zf.namelist()
-                files = [name for name in names if not name.endswith('/') ]
+                files = [name for name in names if not name.endswith('/')]
                 if len(files) > 1:
                     raise ValueError(f'Multiple Notebooks in archive: {files}\nSpecify the notebook filename.')
                 filename = files[0]
@@ -78,6 +79,25 @@ def read_dbc(notebook_path: str, version=4, filename=None, encoding='utf-8') -> 
 
         cell['cell_type'] = 'code'
         cell['outputs'] = []
+        if command.get('results', None) and command['results'].get('type', None) == 'html':
+            html = command['results'].get('data', '')
+            print(html)
+            cell['outputs'].append({'output_type': 'display_data', 'data': {'text/html': html}, 'metadata': {}})
+
+        error_summary = html2text(command.get('errorSummary', None) or '')
+        error = html2text(command.get('error', None) or '')
+        if error_summary or error:
+            if ':' in error_summary:
+                ename, evalue = error_summary.split(':', 1)
+            else:
+                ename, evalue = '', error_summary
+            cell['outputs'].append({
+                'output_type': 'error',
+                'ename': ename,
+                'evalue': evalue,
+                'traceback': error.split('\n'),
+            })
+
         cell['execution_count'] = None
 
         notebook['cells'].append(cell)
