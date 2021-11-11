@@ -11,8 +11,8 @@ except ImportError:
 
 from nbmanips.notebook_base import NotebookBase
 from nbmanips.selector import is_new_slide, has_slide_type, has_output_type
-from nbmanips.utils import write_ipynb, read_ipynb, dict_to_ipynb, get_ipynb_name
-from nbmanips.utils import read_dbc
+from nbmanips.utils import write_ipynb, dict_to_ipynb, get_ipynb_name
+from nbmanips.utils import read_ipynb, read_dbc, read_zpln
 from nbmanips.cell_utils import PYGMENTS_SUPPORTED
 
 try:
@@ -385,6 +385,11 @@ class ExportMixin(NotebookBase):
     @classmethod
     def read_dbc(cls, path, filename=None, encoding='utf-8'):
         name, nb = read_dbc(path, filename=filename, encoding=encoding)
+        return cls(nb, name, validate=False)
+
+    @classmethod
+    def read_zpln(cls, path, encoding='utf-8'):
+        name, nb = read_zpln(path, encoding=encoding)
         return cls(nb, name, validate=False)
 
 
