@@ -1,9 +1,15 @@
 import os
 import json
 import zipfile
+from io import StringIO
 from html2text import html2text
 
 from functools import wraps
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 
 import nbformat
 
@@ -81,10 +87,17 @@ def read_zpln(notebook_path: str, version=4, encoding='utf-8'):
         if paragraph.get('results', None) and paragraph['results'].get('code', None).upper() != 'ERROR':
             for result in paragraph['results'].get('msg', []):
                 result_type = result.get('type', 'TEXT').upper()
-                if result_type in {'TEXT', 'TABLE'}:
+                if result_type == 'TEXT':
                     data = result.get('data', '')
                     cell['outputs'].append({'output_type': 'stream', 'text': data, 'name': 'stdout'})
-                elif result_type == 'HTML':
+                elif result_type == 'TABLE':
+                    data = result.get('data', '')
+                    if pd is None:
+                        cell['outputs'].append({'output_type': 'stream', 'text': data, 'name': 'stdout'})
+                    else:
+                        data = pd.read_csv(StringIO(data), sep='\t').to_html()
+                        cell['outputs'].append({'output_type': 'display_data', 'data': {'text/html': data}, 'metadata': {}})
+                elif result_type in 'HTML':
                     data = result.get('data', '')
                     cell['outputs'].append({'output_type': 'display_data', 'data': {'text/html': data}, 'metadata': {}})
 
