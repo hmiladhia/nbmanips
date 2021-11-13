@@ -373,24 +373,25 @@ class ExportMixin(NotebookBase):
         ))
 
     @classmethod
-    def read_ipynb(cls, path):
+    def read_ipynb(cls, path, name=None):
         """
         Read ipynb file
         :param path: path to the ipynb file
+        :param name: name of the Notebook
         :return: Notebook object
         """
         nb = read_ipynb(path)
-        return cls(nb, get_ipynb_name(path), validate=False)
+        return cls(nb, name or get_ipynb_name(path), validate=False)
 
     @classmethod
-    def read_dbc(cls, path, filename=None, encoding='utf-8'):
-        name, nb = read_dbc(path, filename=filename, encoding=encoding)
-        return cls(nb, name, validate=False)
+    def read_dbc(cls, path, filename=None, encoding='utf-8', name=None):
+        dbc_name, nb = read_dbc(path, filename=filename, encoding=encoding)
+        return cls(nb, name or dbc_name, validate=False)
 
     @classmethod
-    def read_zpln(cls, path, encoding='utf-8'):
-        name, nb = read_zpln(path, encoding=encoding)
-        return cls(nb, name, validate=False)
+    def read_zpln(cls, path, encoding='utf-8', name=None):
+        zpln_name, nb = read_zpln(path, encoding=encoding)
+        return cls(nb, name or zpln_name, validate=False)
 
 
 class NotebookMetadata(NotebookBase):
