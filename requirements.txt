@@ -5,3 +5,4 @@ click==7.1.*
 cloudpickle==1.6.0
 Pygments==2.10.*
 ipython==7.27.0
+colorama==0.4.4

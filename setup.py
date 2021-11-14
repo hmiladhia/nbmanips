@@ -26,12 +26,12 @@ setuptools.setup(
                             'nb=nbmanips.__main__:nbmanips'],
     },
     install_requires=['nbconvert>=6.0.0',
-                      'nbformat~=5.1.3',
+                      'nbformat>=5.1.3',
                       'html2text==2020.1.16',
                       'cloudpickle>=1.6.*',
                       'click>=7.1.*',
-                      'Pygments==2.10.*',
-                      # 'ipython>=7.27.*'  # TODO: add as optional dependency
+                      'Pygments>=2.10.*',
+                      'colorama>=0.4.*'
                       ],
     classifiers=[
         "Programming Language :: Python :: 3",
