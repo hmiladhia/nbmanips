@@ -96,25 +96,18 @@ def read_zpln(notebook_path: str, version=4, encoding='utf-8'):
                         cell['outputs'].append({'output_type': 'stream', 'text': data, 'name': 'stdout'})
                     else:
                         data = pd.read_csv(StringIO(data), sep='\t').to_html()
-                        cell['outputs'].append({'output_type': 'display_data', 'data': {'text/html': data}, 'metadata': {}})
+                        cell['outputs'].append({
+                            'output_type': 'display_data',
+                            'data': {'text/html': data},
+                            'metadata': {}
+                        })
                 elif result_type in 'HTML':
                     data = result.get('data', '')
-                    cell['outputs'].append({'output_type': 'display_data', 'data': {'text/html': data}, 'metadata': {}})
-
-        #
-        # error_summary = html2text(command.get('errorSummary', None) or '')
-        # error = html2text(command.get('error', None) or '')
-        # if error_summary or error:
-        #     if ':' in error_summary:
-        #         ename, evalue = error_summary.split(':', 1)
-        #     else:
-        #         ename, evalue = '', error_summary
-        #     cell['outputs'].append({
-        #         'output_type': 'error',
-        #         'ename': ename,
-        #         'evalue': evalue,
-        #         'traceback': error.split('\n'),
-        #     })
+                    cell['outputs'].append({
+                        'output_type': 'display_data',
+                        'data': {'text/html': data},
+                        'metadata': {}
+                    })
 
         cell['execution_count'] = None
 
