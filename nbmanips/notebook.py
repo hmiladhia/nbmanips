@@ -55,3 +55,19 @@ class Notebook(NotebookCellMetadata, SlideShowMixin, ClassicNotebook, NotebookMe
             n_cells += 1
             if count is not None and n_cells >= count:
                 break
+
+
+class IPYNB(Notebook):
+    def __new__(cls, path, name=None):
+        return Notebook.read_ipynb(path, name)
+
+
+class DBC(Notebook):
+    def __new__(cls, path, filename=None, encoding='utf-8', name=None):
+        return Notebook.read_dbc(path, filename=filename, encoding=encoding, name=name)
+
+
+class ZPLN(Notebook):
+    def __new__(cls, path, name=None, encoding='utf-8'):
+        return Notebook.read_zpln(path, encoding=encoding, name=name)
+

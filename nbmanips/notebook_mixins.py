@@ -11,7 +11,8 @@ except ImportError:
 
 from nbmanips.notebook_base import NotebookBase
 from nbmanips.selector import is_new_slide, has_slide_type, has_output_type
-from nbmanips.utils import write_ipynb, read_ipynb, dict_to_ipynb, get_ipynb_name
+from nbmanips.utils import write_ipynb, dict_to_ipynb, get_ipynb_name
+from nbmanips.utils import read_ipynb, read_dbc, read_zpln
 from nbmanips.cell_utils import PYGMENTS_SUPPORTED
 
 try:
@@ -183,6 +184,15 @@ class ExportMixin(NotebookBase):
         """
         return dict_to_ipynb(self.raw_nb)
 
+    def convert(self, exporter_name, path, *args, exporter_type='nbmanips', **kwargs):
+        assert exporter_type in {'nbmanips', 'nbconvert'}
+        if exporter_type == 'nbconvert':
+            return self.nbconvert(exporter_name, path, *args, **kwargs)
+
+        exporter = self.get_exporter(exporter_name, exporter_type=exporter_type)
+
+        return exporter.export(self, path, *args, **kwargs)
+
     def nbconvert(self, exporter_name, path, *args, template_name=None, **kwargs):
         notebook_node = self.to_notebook_node()
 
@@ -267,6 +277,27 @@ class ExportMixin(NotebookBase):
         return self.nbconvert('slides', path, reveal_scroll=scroll, reveal_transition=transition,
                               reveal_theme=theme, **kwargs)
 
+    def to_dbc(self, path, filename=None, name=None, language=None, version='NotebookV1'):
+        """
+        Exports Notebook to dbc archive file
+
+        :param path: path to export to
+        :param filename: filename of the notebook inside archive (e.i. notebook.python)
+        :param name: name of the notebook
+        :param language: language of the notebook
+        :param version: version of dbc file (default is NotebookV1)
+        :return:
+        """
+        self.convert(
+            'dbc',
+            path,
+            exporter_type='nbmanips',
+            filename=filename,
+            name=name,
+            language=language,
+            version=version,
+        )
+
     def _get_pygments_lexer(self, use_pygments):
         if use_pygments:
             pygments_lexer = self.metadata.get('language_info', {}).get('pygments_lexer', None)
@@ -347,17 +378,34 @@ class ExportMixin(NotebookBase):
         ))
 
     @classmethod
-    def read_ipynb(cls, path):
+    def read_ipynb(cls, path, name=None):
         """
         Read ipynb file
         :param path: path to the ipynb file
+        :param name: name of the Notebook
         :return: Notebook object
         """
         nb = read_ipynb(path)
-        return cls(nb, get_ipynb_name(path), validate=False)
+        return cls(nb, name or get_ipynb_name(path), validate=False)
+
+    @classmethod
+    def read_dbc(cls, path, filename=None, encoding='utf-8', name=None):
+        dbc_name, nb = read_dbc(path, filename=filename, encoding=encoding)
+        return cls(nb, name or dbc_name, validate=False)
+
+    @classmethod
+    def read_zpln(cls, path, encoding='utf-8', name=None):
+        zpln_name, nb = read_zpln(path, encoding=encoding)
+        return cls(nb, name or zpln_name, validate=False)
 
 
 class NotebookMetadata(NotebookBase):
+    @property
+    def language(self):
+        lang = self.metadata.get('kernelspec', {}).get('language', None)
+        lang = lang or self.metadata.get('language_info', {}).get('name', None)
+        return lang or self.metadata.get('language_info', {}).get('pygments_lexer', None)
+
     def add_author(self, name, **kwargs):
         """
         Add author to metadata

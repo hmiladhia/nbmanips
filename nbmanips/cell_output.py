@@ -1,3 +1,4 @@
+import html
 from typing import Optional, Union
 
 from nbmanips.cell_utils import ParserBase
@@ -19,6 +20,10 @@ def _get_output_types(output_type: Union[set, dict, str]) -> set:
     return output_types
 
 
+def _to_html(text):
+    return html.escape(text).encode('ascii', 'xmlcharrefreplace').decode('ascii')
+
+
 class CellOutput:
     output_type = None
     _output_types = {}
@@ -32,6 +37,9 @@ class CellOutput:
         raise NotImplementedError()
 
     def to_str(self, parsers=None, parsers_config=None, excluded_data_types=None):
+        return ''
+
+    def to_html(self, excluded_data_types=None):
         return ''
 
     def erase_output(self, output_types: set):
@@ -106,6 +114,15 @@ class StreamOutput(CellOutput, output_type='stream'):
             return parser.parse(output_text, **parser_config)
         return output_text
 
+    def to_html(self, excluded_data_types=None):
+        excluded_data_types = set() if excluded_data_types is None else set(excluded_data_types)
+        if self.output_types & excluded_data_types:
+            return ''
+        output_text = self.text
+        if not isinstance(output_text, str):
+            output_text = '\n'.join(output_text)
+        return _to_html(output_text)
+
     def erase_output(self, output_types: set):
         return None if self.has_output_type(output_types) else self.content
 
@@ -141,6 +158,33 @@ class DataOutput(CellOutput):
                 if parser:
                     output_text = parser.parse(output_text, **parser_config)
             return output_text
+        return ''
+
+    def to_html(self, excluded_data_types=None):
+        excluded_data_types = set() if excluded_data_types is None else set(excluded_data_types)
+
+        data = self.content['data'].copy()
+        for data_type in list(data.keys()):
+            if _get_output_types(data_type) & excluded_data_types:
+                data.pop(data_type, None)
+
+        if 'text/html' in data:
+            output_text = data['text/html']
+            if not isinstance(output_text, str):
+                output_text = '\n'.join(output_text)
+            return output_text
+
+        for data_type in data:
+            if data_type.startswith('image'):
+                content = data['image/png']
+                return f'<img src="data:image/png;base64, {content}"/>'
+
+        if 'text/plain' in data:
+            output_text = data['text/plain']
+            if not isinstance(output_text, str):
+                output_text = '\n'.join(output_text)
+            return _to_html(output_text)
+
         return ''
 
     def erase_output(self, output_types: set):
@@ -196,6 +240,13 @@ class ErrorOutput(CellOutput, output_type='error'):
         if parser:
             return parser.parse(output_text, **parser_config)
         return output_text
+
+    def to_html(self, excluded_data_types=None):
+        excluded_data_types = set() if excluded_data_types is None else set(excluded_data_types)
+        if self.output_types & excluded_data_types:
+            return ''
+
+        return _to_html('\n'.join(self.traceback + [f"{self.ename}: {self.evalue}"]))
 
     def erase_output(self, output_types: set):
         return None if self.has_output_type(output_types) else self.content
