@@ -16,8 +16,10 @@ from nbmanips.utils import read_ipynb, read_dbc, read_zpln
 from nbmanips.cell_utils import PYGMENTS_SUPPORTED
 
 try:
+    import pygments.util
     from pygments.lexers import get_lexer_by_name
 except ImportError:
+    pygments = None
     get_lexer_by_name = None
 
 
@@ -310,7 +312,10 @@ class ExportMixin(NotebookBase):
         if get_lexer_by_name is None:
             raise ModuleNotFoundError("You need to install pygments first.\n pip install pygments")
 
-        return get_lexer_by_name(pygments_lexer)
+        try:
+            return get_lexer_by_name(pygments_lexer)
+        except pygments.util.ClassNotFound:
+            return None
 
     def to_str(self, width=None, exclude_output=False, use_pygments=None, style='single', border_color=None,
                parsers=None, parsers_config=None, excluded_data_types=None):
