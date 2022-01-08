@@ -15,7 +15,7 @@ class NotebookBase:
         self.name = name
         self._selector = None
 
-    def select(self, selector, *args, **kwargs) -> 'NotebookBase':
+    def select(self, selector, *args, **kwargs):
         notebook_selection = self.reset_selection()
         notebook_selection._selector = self.__get_new_selector(selector, *args, **kwargs)
         return notebook_selection
