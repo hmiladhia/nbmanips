@@ -51,11 +51,11 @@ def keep(notebook_path, output):
 @nbmanips.command(help="replace string in all selected cells")
 @click.argument('notebook_path')
 @click.option('--output', '-o', default=None)
-@click.option('--old', required=True)
-@click.option('--new', required=True)
-@click.option('--count', 'count_', type=int, default=None)
-@click.option('--regex', is_flag=True, default=False)
-@click.option('--case/--no-case', default=True)
+@click.option('--old', '-t', required=True)
+@click.option('--new', '-n', required=True)
+@click.option('--count', '--max', '-m', 'count_', type=int, default=None)
+@click.option('--regex', '-r', is_flag=True, default=False)
+@click.option('--case/--no-case', '-c/-nc', default=True)
 def replace(notebook_path, output, old, new, case, count_, regex):
     output = notebook_path if output is None else output
     nb = Notebook.read_ipynb(notebook_path)
@@ -89,15 +89,23 @@ def erase_output(notebook_path, output, output_types):
     nb = Notebook.read_ipynb(notebook_path)
     selector = get_selector()
 
-    nb.select(selector).erase_output(set(output_types))
+    if output_types:
+        output_types = set(output_types)
+    else:
+        output_types = None
+
+    nb.select(selector).erase_output(output_types)
     nb.to_ipynb(output)
+
+
+def _add_commands(module):
+    for command in module.__all__:
+        nbmanips.add_command(getattr(module, command), command.strip('_'))
 
 
 nbmanips.add_command(convert)
 nbmanips.add_command(select)
-
-for command in explore.__all__:
-    nbmanips.add_command(getattr(explore, command), command.strip('_'))
+_add_commands(explore)
 
 
 if __name__ == '__main__':
