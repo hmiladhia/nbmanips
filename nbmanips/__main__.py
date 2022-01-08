@@ -1,105 +1,15 @@
-import colorama
 import click
 
 from nbmanips import Notebook, __version__
-from nbmanips.cell_utils import styles
 from nbmanips.cli.select import select, get_selector
 from nbmanips.cli.convert import convert
-
-_COLORS = list(set(vars(colorama.Fore)) - {'RESET'})
+import nbmanips.cli.explore as explore
 
 
 @click.group()
 @click.version_option(__version__, prog_name='nbmanips')
 def nbmanips():
     pass
-
-
-@nbmanips.command(help="show notebook in human readable format")
-@click.argument('notebook_path')
-@click.option('--width', '-w', type=int, default=None)
-@click.option('--output/--no-output', '-o/-no', type=bool, default=True)
-@click.option('--exclude-output-type', '-e', 'excluded_data_types', multiple=True)
-@click.option('--pygments/--no-pygments', '-p/-np', type=bool, default=None)
-@click.option('--style', '-s', type=click.Choice(styles.keys(), case_sensitive=False), default='single')
-@click.option('--border-color', '-bc', type=click.Choice(_COLORS, case_sensitive=False), default=None)
-@click.option('--image-width', '-iw', type=int, default=None)
-@click.option('--image-color/--no-image-color', '-ic/-nic', type=bool, default=None)
-@click.option('--parser', '-p', 'parsers', type=str, multiple=True)
-def show(notebook_path, width, pygments, output, style, border_color,
-         parsers, image_width, image_color, excluded_data_types):
-    nb = Notebook.read_ipynb(notebook_path)
-    selector = get_selector()
-
-    parsers_config = None
-    if image_width or image_color:
-        parsers_config = {'image': {'width': image_width, 'colorful': image_color}}
-
-    # image_color, image_width
-    nb.select(selector).show(
-        width,
-        exclude_output=not output,
-        use_pygments=pygments,
-        style=style,
-        border_color=border_color,
-        parsers=parsers or None,
-        parsers_config=parsers_config,
-        excluded_data_types=excluded_data_types or None
-    )
-
-
-@nbmanips.command(help="count selected cells")
-@click.argument('notebook_path')
-def count(notebook_path):
-    nb = Notebook.read_ipynb(notebook_path)
-    selector = get_selector()
-
-    result = nb.select(selector).count()
-    click.echo(result)
-
-
-@nbmanips.command(help="Return the number of the first selected cell")
-@click.argument('notebook_path')
-def first(notebook_path):
-    nb = Notebook.read_ipynb(notebook_path)
-    selector = get_selector()
-
-    result = nb.select(selector).first()
-    click.echo(result)
-
-
-@nbmanips.command(help="Return the number of the last selected cell")
-@click.argument('notebook_path')
-def last(notebook_path):
-    nb = Notebook.read_ipynb(notebook_path)
-    selector = get_selector()
-
-    result = nb.select(selector).last()
-    click.echo(result)
-
-
-@click.command(help="Return the numbers of the selected cells")
-@click.argument('notebook_path')
-def list_(notebook_path):
-    nb = Notebook.read_ipynb(notebook_path)
-    selector = get_selector()
-
-    result = nb.select(selector).list()
-    click.echo(result)
-
-
-@nbmanips.command(help="Search string in all selected cells")
-@click.argument('notebook_path')
-@click.option('--text', '-t', required=True)
-@click.option('--case/--no-case', default=False)
-@click.option('--regex', '-r', is_flag=True, default=False)
-@click.option('--output', '-o', is_flag=True, default=False)
-def search(notebook_path, text, case, output, regex):
-    nb = Notebook.read_ipynb(notebook_path)
-    selector = get_selector()
-
-    result = nb.select(selector).search_all(text, case, output, regex)
-    click.echo(result)
 
 
 @nbmanips.command(help="Erase the content of the selected cells")
@@ -185,7 +95,9 @@ def erase_output(notebook_path, output, output_types):
 
 nbmanips.add_command(convert)
 nbmanips.add_command(select)
-nbmanips.add_command(list_, 'list')
+
+for command in explore.__all__:
+    nbmanips.add_command(getattr(explore, command), command.strip('_'))
 
 
 if __name__ == '__main__':
