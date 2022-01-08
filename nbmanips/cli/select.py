@@ -5,12 +5,15 @@ from nbmanips.selector import Selector
 
 
 def get_selector():
-    if not click.get_text_stream('stdin').isatty():
-        stream = click.get_binary_stream('stdin').read()
-        selector = cloudpickle.loads(stream)
-    else:
-        selector = None
-    return selector
+    binary_stream = click.get_binary_stream('stdin')
+    if binary_stream.isatty():
+        return None
+
+    stream = binary_stream.read()
+    if not stream:
+        return None
+
+    return cloudpickle.loads(stream)
 
 
 @click.command()
