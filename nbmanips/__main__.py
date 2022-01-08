@@ -7,7 +7,7 @@ from nbmanips import Notebook, __version__
 from nbmanips.selector import Selector
 from nbmanips.cell_utils import styles
 
-_COLORS = list(set(vars(colorama.Fore).keys()) - {'RESET'})
+_COLORS = list(set(vars(colorama.Fore)) - {'RESET'})
 
 
 def get_selector():
@@ -64,7 +64,8 @@ def count(notebook_path):
     nb = Notebook.read_ipynb(notebook_path)
     selector = get_selector()
 
-    click.echo(nb.select(selector).count())
+    result = nb.select(selector).count()
+    click.echo(result)
 
 
 @nbmanips.command(help="Return the number of the first selected cell")
@@ -73,7 +74,8 @@ def first(notebook_path):
     nb = Notebook.read_ipynb(notebook_path)
     selector = get_selector()
 
-    click.echo(nb.select(selector).first())
+    result = nb.select(selector).first()
+    click.echo(result)
 
 
 @nbmanips.command(help="Return the number of the last selected cell")
@@ -82,7 +84,8 @@ def last(notebook_path):
     nb = Notebook.read_ipynb(notebook_path)
     selector = get_selector()
 
-    click.echo(nb.select(selector).last())
+    result = nb.select(selector).last()
+    click.echo(result)
 
 
 @click.command(help="Return the numbers of the selected cells")
@@ -91,7 +94,8 @@ def list_(notebook_path):
     nb = Notebook.read_ipynb(notebook_path)
     selector = get_selector()
 
-    click.echo(nb.select(selector).list())
+    result = nb.select(selector).list()
+    click.echo(result)
 
 
 @nbmanips.command(help="Search string in all selected cells")
@@ -104,7 +108,8 @@ def search(notebook_path, text, case, output, regex):
     nb = Notebook.read_ipynb(notebook_path)
     selector = get_selector()
 
-    nb.select(selector).search_all(text, case, output, regex)
+    result = nb.select(selector).search_all(text, case, output, regex)
+    click.echo(result)
 
 
 @nbmanips.command(help="Erase the content of the selected cells")
