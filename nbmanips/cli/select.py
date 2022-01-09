@@ -1,3 +1,5 @@
+import copy
+
 import click
 import cloudpickle
 from click import Group
@@ -38,11 +40,24 @@ def get_selector():
     return cloudpickle.loads(stream)
 
 
+def get_params(ctx):
+    kwargs = dict(ctx.parent.params['kwargs'])
+    kwargs.update(ctx.params['kwargs'])
+    return {
+        'or_': ctx.parent.params['or_'] or ctx.params['or_'],
+        'invert': ctx.parent.params['invert'] or ctx.params['invert'],
+        'kwargs': kwargs
+    }
+
+
 # https://click.palletsprojects.com/en/8.0.x/commands/
 
 
 @click.group(cls=SelectGroup)
-def select():
+@click.option('--kwarg', 'kwargs', multiple=True, type=(str, str))
+@click.option('--or', 'or_', is_flag=True, default=False)
+@click.option('--invert', '-i', is_flag=True, default=False)
+def select(kwargs, or_, invert):
     pass
 
 
@@ -50,28 +65,35 @@ def select():
 @click.argument('selector', required=True)
 @click.argument('arguments', nargs=-1, required=False)
 @click.option('--kwarg', 'kwargs', multiple=True, type=(str, str))
-@click.option('--or', 'or_', is_flag=True, default=False)
+@click.option('--or', '-o', 'or_', is_flag=True, default=False)
 @click.option('--invert', '-i', is_flag=True, default=False)
-def select_unknown(selector, arguments, kwargs, or_, invert):
+@click.pass_context
+def select_unknown(ctx, selector, arguments, **_):
     if selector.isdigit():
         selector = int(selector)
     elif selector.replace(':', '').isdigit():
         selector = slice(*[int(p) for p in selector.split(':')])
 
-    _select_unknown(selector, arguments, kwargs, or_, invert)
+    params = get_params(ctx)
+
+    _select_unknown(selector, arguments, **params)
 
 
 @select.command(name='has_output_type', help='Select cells that have a given output_type')
-@click.argument('arguments', nargs=-1, required=False)
+@click.argument('output_type', nargs=-1, required=True)
 @click.option('--kwarg', 'kwargs', multiple=True, type=(str, str))
-@click.option('--or', 'or_', is_flag=True, default=False)
+@click.option('--or', '-o', 'or_', is_flag=True, default=False)
 @click.option('--invert', '-i', is_flag=True, default=False)
-def has_output_type(arguments, kwargs, or_, invert):
-    _select_unknown('has_output_type', arguments, kwargs, or_, invert)
+@click.pass_context
+def has_output_type(ctx, output_type, **_):
+    arguments = [set(output_type)]
+
+    params = get_params(ctx)
+    _select_unknown('has_output_type', arguments, **params)
 
 
 def _select_unknown(selector, arguments, kwargs, or_, invert):
-    sel = Selector(selector, *arguments, **dict(kwargs))
+    sel = Selector(selector, *arguments, **kwargs)
     if invert:
         sel = ~sel
 
