@@ -38,6 +38,17 @@ def test_select_2(runner):
     assert result.output.strip() == '[5, 8]'
 
 
+@pytest.mark.parametrize('selection, expected_result', [('0', 1), ('1:3', 2)])
+def test_select_3(runner, selection, expected_result):
+    selection_result = runner.invoke(cli, ['select', selection])
+    assert selection_result.exit_code == 0
+
+    result = runner.invoke(cli, ['count', 'test_files/nb3.ipynb'], input=selection_result.stdout_bytes)
+
+    assert result.exit_code == 0
+    assert int(result.output.strip()) == expected_result
+
+
 def test_to_html(runner):
     nb3 = Path('test_files/nb3.ipynb').read_text()
     with runner.isolated_filesystem():
