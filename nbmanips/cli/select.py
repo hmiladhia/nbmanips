@@ -132,17 +132,17 @@ def has_slide_type(ctx, slide_type, **_):
 @select.command(name='contains', help='Selects Cells containing a certain text.')
 @click.argument('text', type=str, required=True)
 @click.option('--case', '-c', is_flag=True, default=False)
-@click.option('--output', '-o', is_flag=True, default=False)
+@click.option('--include-output', '-n', 'output', is_flag=True, default=False)
 @click.option('--regex', '-r', is_flag=True, default=False)
 @select_params
 @click.pass_context
 def contains(ctx, text, case, output, regex, **_):
-    params = get_params(ctx)
-
-    kwargs = params.get('kwargs')
-    kwargs['case'] = case
-    kwargs['output'] = output
-    kwargs['regex'] = regex
+    params = get_params(
+        ctx,
+        case=case,
+        output=output,
+        regex=regex,
+    )
 
     _select_unknown('contains', [text], **params)
 
