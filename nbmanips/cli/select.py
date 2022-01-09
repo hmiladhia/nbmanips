@@ -1,3 +1,4 @@
+import copy
 from functools import reduce
 
 import click
@@ -13,14 +14,26 @@ __all__ = [
 
 
 class SelectGroup(Group):
+    @property
+    def dynamic_commands(self):
+        return Selector.default_selectors
+
     def resolve_command(self, ctx, args):
-        cmd_name, cmd, args = super().resolve_command(ctx, args)
-        if cmd is select_unknown:
-            args = [cmd_name] + args
+        cmd_name, cmd, _ = super().resolve_command(ctx, args)
         return cmd_name, cmd, args
 
     def get_command(self, ctx, cmd_name):
-        return self.commands.get(cmd_name, select_unknown)
+        cmd = self.commands.get(cmd_name)
+
+        if cmd is None:
+            cmd = copy.deepcopy(select_unknown)
+
+            if cmd_name in self.dynamic_commands:
+                select_func = self.dynamic_commands[cmd_name]
+                short_description = select_func.__doc__.strip().split('\n')[0]
+                cmd.help = short_description
+
+        return cmd
 
     def list_commands(self, ctx):
         commands = set(self.commands)
@@ -59,9 +72,6 @@ def select_kwargs(func):
     ]
 
     return reduce(lambda f, g: g(f), decorators[::-1])
-
-
-# https://click.palletsprojects.com/en/8.0.x/commands/
 
 
 @click.group(cls=SelectGroup)
