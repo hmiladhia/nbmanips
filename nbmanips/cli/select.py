@@ -20,24 +20,31 @@ class SelectGroup(Group):
 
     def resolve_command(self, ctx, args):
         cmd_name, cmd, _ = super().resolve_command(ctx, args)
+        if cmd is not None and cmd_name not in self.list_commands(ctx):
+            cmd_name = 'INDEX/SLICE'
         return cmd_name, cmd, args
 
     def get_command(self, ctx, cmd_name):
         cmd = self.commands.get(cmd_name)
 
-        if cmd is None:
+        if cmd is not None:
+            return cmd
+
+        if cmd_name in self.dynamic_commands:
             cmd = copy.deepcopy(select_unknown)
 
-            if cmd_name in self.dynamic_commands:
-                select_func = self.dynamic_commands[cmd_name]
-                short_description = select_func.__doc__.strip().split('\n')[0]
-                cmd.help = short_description
+            select_func = self.dynamic_commands[cmd_name]
+            short_description = select_func.__doc__.strip().split('\n')[0]
+            cmd.help = short_description
+        elif cmd_name.isdigit() or cmd_name.replace(':', '').isdigit():
+            cmd = copy.deepcopy(select_unknown)
 
         return cmd
 
     def list_commands(self, ctx):
         commands = set(self.commands)
         commands |= set(Selector.default_selectors)
+        commands |= {'INDEX', 'SLICE'}
         return sorted(commands)
 
 
