@@ -19,7 +19,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     license='MIT',
     url="https://github.com/hmiladhia/nbmanips",
-    packages=['nbmanips'],
+    packages=['nbmanips', 'nbmanips.cli'],
     include_package_data=True,
     entry_points={
         'console_scripts': ['nbmanips=nbmanips.__main__:nbmanips',
