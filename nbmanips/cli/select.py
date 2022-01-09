@@ -19,9 +19,15 @@ class SelectGroup(Group):
         return Selector.default_selectors
 
     def resolve_command(self, ctx, args):
-        cmd_name, cmd, _ = super().resolve_command(ctx, args)
-        if cmd is not None and cmd_name not in self.list_commands(ctx):
+        cmd_name, cmd, new_args = super().resolve_command(ctx, args)
+        if cmd is None:
+            return cmd_name, cmd, new_args
+
+        if cmd_name not in self.list_commands(ctx):
             cmd_name = 'INDEX/SLICE'
+        elif cmd_name in self.commands:
+            args = new_args
+
         return cmd_name, cmd, args
 
     def get_command(self, ctx, cmd_name):
@@ -62,7 +68,7 @@ def get_selector():
 
 def get_params(ctx):
     kwargs = dict(ctx.parent.params['kwargs'])
-    kwargs.update(ctx.params['kwargs'])
+    kwargs.update(ctx.params.get('kwargs', {}))
     return {
         'or_': ctx.parent.params['or_'] or ctx.params['or_'],
         'invert': ctx.parent.params['invert'] or ctx.params['invert'],
@@ -112,6 +118,35 @@ def has_output_type(ctx, output_type, **_):
 
     params = get_params(ctx)
     _select_unknown('has_output_type', arguments, **params)
+
+
+@select.command(name='has_slide_type', help='Select cells that have a given slide type')
+@click.argument('slide_type', nargs=-1, required=True)
+@select_kwargs
+@click.pass_context
+def has_slide_type(ctx, slide_type, **_):
+    arguments = [set(slide_type)]
+
+    params = get_params(ctx)
+    _select_unknown('has_slide_type', arguments, **params)
+
+
+@select.command(name='contains', help='Selects Cells containing a certain text.')
+@click.argument('text', type=str, required=True)
+@click.option('--case', '-c', is_flag=True, default=False)
+@click.option('--output', '-o', is_flag=True, default=False)
+@click.option('--regex', '-r', is_flag=True, default=False)
+@select_kwargs
+@click.pass_context
+def contains(ctx, text, case, output, regex, **_):
+    params = get_params(ctx)
+
+    kwargs = params.get('kwargs')
+    kwargs['case'] = case
+    kwargs['output'] = output
+    kwargs['regex'] = regex
+
+    _select_unknown('contains', [text], **params)
 
 
 def _select_unknown(selector, arguments, kwargs, or_, invert):
