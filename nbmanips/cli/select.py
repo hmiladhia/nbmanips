@@ -66,9 +66,7 @@ def get_selector():
     return cloudpickle.loads(stream)
 
 
-def get_params(ctx):
-    kwargs = dict(ctx.parent.params['kwargs'])
-    kwargs.update(ctx.params.get('kwargs', {}))
+def get_params(ctx, **kwargs):
     return {
         'or_': ctx.parent.params['or_'] or ctx.params['or_'],
         'invert': ctx.parent.params['invert'] or ctx.params['invert'],
@@ -76,9 +74,8 @@ def get_params(ctx):
     }
 
 
-def select_kwargs(func):
+def select_params(func):
     decorators = [
-        click.option('--kwarg', 'kwargs', multiple=True, type=(str, str)),
         click.option('--or', '-o', 'or_', is_flag=True, default=False),
         click.option('--invert', '-i', is_flag=True, default=False),
         func
@@ -88,7 +85,7 @@ def select_kwargs(func):
 
 
 @click.group(cls=SelectGroup)
-@select_kwargs
+@select_params
 def select(**_):
     pass
 
@@ -96,22 +93,23 @@ def select(**_):
 @click.command()
 @click.argument('selector', required=True)
 @click.argument('arguments', nargs=-1, required=False)
-@select_kwargs
+@click.option('--kwarg', 'kwargs', multiple=True, type=(str, str))
+@select_params
 @click.pass_context
-def select_unknown(ctx, selector, arguments, **_):
+def select_unknown(ctx, selector, arguments, kwargs, **_):
     if selector.isdigit():
         selector = int(selector)
     elif selector.replace(':', '').isdigit():
         selector = slice(*[int(p) for p in selector.split(':')])
 
-    params = get_params(ctx)
+    params = get_params(ctx, **dict(kwargs))
 
     _select_unknown(selector, arguments, **params)
 
 
 @select.command(name='has_output_type', help='Select cells that have a given output_type')
 @click.argument('output_type', nargs=-1, required=True)
-@select_kwargs
+@select_params
 @click.pass_context
 def has_output_type(ctx, output_type, **_):
     arguments = [set(output_type)]
@@ -122,7 +120,7 @@ def has_output_type(ctx, output_type, **_):
 
 @select.command(name='has_slide_type', help='Select cells that have a given slide type')
 @click.argument('slide_type', nargs=-1, required=True)
-@select_kwargs
+@select_params
 @click.pass_context
 def has_slide_type(ctx, slide_type, **_):
     arguments = [set(slide_type)]
@@ -136,7 +134,7 @@ def has_slide_type(ctx, slide_type, **_):
 @click.option('--case', '-c', is_flag=True, default=False)
 @click.option('--output', '-o', is_flag=True, default=False)
 @click.option('--regex', '-r', is_flag=True, default=False)
-@select_kwargs
+@select_params
 @click.pass_context
 def contains(ctx, text, case, output, regex, **_):
     params = get_params(ctx)
