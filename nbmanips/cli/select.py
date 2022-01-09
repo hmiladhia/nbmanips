@@ -1,4 +1,4 @@
-import copy
+from functools import reduce
 
 import click
 import cloudpickle
@@ -50,23 +50,30 @@ def get_params(ctx):
     }
 
 
+def select_kwargs(func):
+    decorators = [
+        click.option('--kwarg', 'kwargs', multiple=True, type=(str, str)),
+        click.option('--or', '-o', 'or_', is_flag=True, default=False),
+        click.option('--invert', '-i', is_flag=True, default=False),
+        func
+    ]
+
+    return reduce(lambda f, g: g(f), decorators[::-1])
+
+
 # https://click.palletsprojects.com/en/8.0.x/commands/
 
 
 @click.group(cls=SelectGroup)
-@click.option('--kwarg', 'kwargs', multiple=True, type=(str, str))
-@click.option('--or', 'or_', is_flag=True, default=False)
-@click.option('--invert', '-i', is_flag=True, default=False)
-def select(kwargs, or_, invert):
+@select_kwargs
+def select(**_):
     pass
 
 
 @click.command()
 @click.argument('selector', required=True)
 @click.argument('arguments', nargs=-1, required=False)
-@click.option('--kwarg', 'kwargs', multiple=True, type=(str, str))
-@click.option('--or', '-o', 'or_', is_flag=True, default=False)
-@click.option('--invert', '-i', is_flag=True, default=False)
+@select_kwargs
 @click.pass_context
 def select_unknown(ctx, selector, arguments, **_):
     if selector.isdigit():
@@ -81,9 +88,7 @@ def select_unknown(ctx, selector, arguments, **_):
 
 @select.command(name='has_output_type', help='Select cells that have a given output_type')
 @click.argument('output_type', nargs=-1, required=True)
-@click.option('--kwarg', 'kwargs', multiple=True, type=(str, str))
-@click.option('--or', '-o', 'or_', is_flag=True, default=False)
-@click.option('--invert', '-i', is_flag=True, default=False)
+@select_kwargs
 @click.pass_context
 def has_output_type(ctx, output_type, **_):
     arguments = [set(output_type)]
