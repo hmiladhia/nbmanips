@@ -12,6 +12,16 @@ def runner():
     yield CliRunner()
 
 
+def test_select_0(runner):
+    selection_result = runner.invoke(cli, ['select', 'contains', 'df'])
+    assert selection_result.exit_code == 0
+
+    result = runner.invoke(cli, ['count', 'test_files/nb3.ipynb'], input=selection_result.stdout_bytes)
+
+    assert result.exit_code == 0
+    assert int(result.output.strip()) == 4
+
+
 def test_select_1(runner):
     selection_result = runner.invoke(cli, ['select', 'has_output_type', 'text/plain'])
     assert selection_result.exit_code == 0
