@@ -1,5 +1,6 @@
 import os
 import json
+from pathlib import Path
 from copy import deepcopy
 from typing import Union, Any
 
@@ -397,6 +398,30 @@ class ExportMixin(NotebookBase):
     def read_zpln(cls, path, encoding='utf-8', name=None):
         zpln_name, nb = read_zpln(path, encoding=encoding)
         return cls(nb, name or zpln_name, validate=False)
+
+    @classmethod
+    def read(cls, path, name=None, **kwargs):
+        readers = {
+            '.ipynb': cls.read_ipynb,
+            '.dbc': cls.read_dbc,
+            '.zpln': cls.read_zpln,
+        }
+
+        if not Path(path).exists():
+            raise FileNotFoundError(f'Could not find: {path}')
+
+        ext = Path(path).suffix.lower()
+        reader = readers.get(ext, None)
+        if reader:
+            return reader(path, name=name, **kwargs)
+
+        for reader in readers.values():
+            try:
+                return reader(path, name=name, **kwargs)
+            except Exception as e:
+                continue
+
+        raise ValueError('Could not determine the notebook type')
 
 
 class NotebookMetadata(NotebookBase):
