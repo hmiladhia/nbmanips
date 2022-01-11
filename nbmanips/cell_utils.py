@@ -31,14 +31,16 @@ try:
 except ImportError:
     img_to_ascii = None
 
-styles = {"single": "││┌─┐└─┘",
-          "double": "║║╔═╗╚═╝",
-          "grid": '||+-++-+',
-          "separated": '||+=++=+',
-          "rounded": "||.-.'-'",
-          "dots": "::......",
-          "simple": '  ======',
-          }
+styles = {
+    "single": "││┌─┐└─┘",
+    "double": "║║╔═╗╚═╝",
+    "grid": '||+-++-+',
+    "separated": '||+=++=+',
+    "rounded": "||.-.'-'",
+    "dots": "::......",
+    "simple": '  ======',
+    "copy": ('', '', "#", "-", "-", "", "", "")
+}
 
 COLOR_SUPPORTED = supports_color()
 PYGMENTS_SUPPORTED = COLOR_SUPPORTED and pygments is not None
@@ -47,13 +49,15 @@ PYGMENTS_SUPPORTED = COLOR_SUPPORTED and pygments is not None
 def printable_cell(text, width=None, style='single', color=None, pygments_lexer=None):
     width = width or (shutil.get_terminal_size().columns - 1)
     style_l, style_r, style_ul, style_u, style_ur, style_dl, style_d, style_dr = styles[style]
+    space_l = ' ' if style_l else ''
+    space_r = ' ' if style_r else ''
 
     color_start, color_end = "", ""
     if color:
         color = 'WHITE' if color is None else color.upper()
         color_start, color_end = (vars(colorama.Fore)[color.upper()], colorama.Fore.RESET)
 
-    text_width = width - 2 - len(style_l) - len(style_r)
+    text_width = width - len(space_l) - len(space_r) - len(style_l) - len(style_r)
 
     code_lines = []
     for code_line in text.split('\n'):
@@ -66,8 +70,8 @@ def printable_cell(text, width=None, style='single', color=None, pygments_lexer=
 
     result = [color_start + style_ul + style_u * (width - len(style_ul) - len(style_ur)) + style_ur + color_end]
     result.extend([
-        f"{color_start}{style_l}{color_end}"
-        f" {line}{' ' * d} "
+        f"{color_start}{style_l}{color_end}" +
+        space_l + f"{line}{' ' * d}" + space_r +
         f"{color_start}{style_r}{color_end}"
         for line, d in zip(code_lines, diff)
     ])
