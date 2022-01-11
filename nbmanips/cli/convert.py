@@ -2,7 +2,7 @@ import os
 import click
 
 from nbmanips import Notebook
-from nbmanips.cli.select import get_selector
+from nbmanips.cli import get_selector
 
 __all__ = ['convert']
 

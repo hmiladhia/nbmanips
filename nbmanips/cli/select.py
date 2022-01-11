@@ -6,10 +6,10 @@ import cloudpickle
 from click import Group
 
 from nbmanips.selector import Selector
+from nbmanips.cli import get_selector
 
 __all__ = [
     'select',
-    'get_selector'
 ]
 
 
@@ -52,18 +52,6 @@ class SelectGroup(Group):
         commands |= set(Selector.default_selectors)
         commands |= {'INDEX', 'SLICE'}
         return sorted(commands)
-
-
-def get_selector():
-    binary_stream = click.get_binary_stream('stdin')
-    if binary_stream.isatty():
-        return None
-
-    stream = binary_stream.read()
-    if not stream:
-        return None
-
-    return cloudpickle.loads(stream)
 
 
 def get_params(ctx, **kwargs):
