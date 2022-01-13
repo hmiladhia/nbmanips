@@ -37,7 +37,7 @@ def html(
 ):
     if output is None:
         output = os.path.splitext(notebook_path)[0] + '.html'
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     nb.select(selector).to_html(
@@ -78,7 +78,7 @@ def md(
 ):
     if output is None:
         output = os.path.splitext(notebook_path)[0] + '.md'
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     nb.select(selector).to_md(
@@ -102,7 +102,7 @@ def md(
 def py(notebook_path, output, template_name, kwargs):
     if output is None:
         output = os.path.splitext(notebook_path)[0] + '.py'
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     nb.select(selector).to_py(output, template_name=template_name, **dict(kwargs))
@@ -139,7 +139,7 @@ def slides(
 ):
     if output is None:
         output = os.path.splitext(notebook_path)[0] + '.slides.html'
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     nb.select(selector).to_slides(

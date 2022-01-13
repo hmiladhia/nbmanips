@@ -30,7 +30,7 @@ __all__ = [
 @click.option('--parser', '-p', 'parsers', type=str, multiple=True)
 def show(notebook_path, width, pygments, output, style, border_color,
          parsers, image_width, image_color, excluded_data_types):
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     parsers_config = None
@@ -53,7 +53,7 @@ def show(notebook_path, width, pygments, output, style, border_color,
 @click.command(help="count selected cells")
 @click.argument('notebook_path')
 def count(notebook_path):
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     result = nb.select(selector).count()
@@ -63,7 +63,7 @@ def count(notebook_path):
 @click.command(help="Return the number of the first selected cell")
 @click.argument('notebook_path')
 def first(notebook_path):
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     result = nb.select(selector).first()
@@ -73,7 +73,7 @@ def first(notebook_path):
 @click.command(help="Return the number of the last selected cell")
 @click.argument('notebook_path')
 def last(notebook_path):
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     result = nb.select(selector).last()
@@ -83,7 +83,7 @@ def last(notebook_path):
 @click.command(help="Return the numbers of the selected cells")
 @click.argument('notebook_path')
 def list_(notebook_path):
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     result = nb.select(selector).list()
@@ -97,7 +97,7 @@ def list_(notebook_path):
 @click.option('--regex', '-r', is_flag=True, default=False)
 @click.option('--output', '-o', is_flag=True, default=False)
 def search(notebook_path, text, case, output, regex):
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     result = nb.select(selector).search_all(text, case, output, regex)

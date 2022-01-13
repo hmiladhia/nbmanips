@@ -22,8 +22,7 @@ __all__ = [
 )
 def erase(notebook_path, output, force):
     output = notebook_path if output is None else output
-    # TODO: autodetect type
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     nb.select(selector).erase()
@@ -39,7 +38,7 @@ def erase(notebook_path, output, force):
 )
 def delete(notebook_path, output, force):
     output = notebook_path if output is None else output
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     nb.select(selector).delete()
@@ -55,7 +54,7 @@ def delete(notebook_path, output, force):
 )
 def keep(notebook_path, output, force):
     output = notebook_path if output is None else output
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     nb.select(selector).keep()
@@ -76,7 +75,7 @@ def keep(notebook_path, output, force):
 )
 def replace(notebook_path, output, old, new, case, count_, regex, force):
     output = notebook_path if output is None else output
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     nb.select(selector).replace(old, new, count_, case, regex)
@@ -95,7 +94,7 @@ def replace(notebook_path, output, old, new, case, count_, regex, force):
 )
 def auto_slide(notebook_path, output, max_cells, max_images, delete_empty, force):
     output = notebook_path if output is None else output
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     nb.select(selector).auto_slide(max_cells, max_images, delete_empty=delete_empty)
@@ -112,7 +111,7 @@ def auto_slide(notebook_path, output, max_cells, max_images, delete_empty, force
 )
 def erase_output(notebook_path, output, output_types, force):
     output = notebook_path if output is None else output
-    nb = Notebook.read_ipynb(notebook_path)
+    nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     if output_types:
