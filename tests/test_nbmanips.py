@@ -1,3 +1,4 @@
+
 import nbformat
 import pytest
 
@@ -41,8 +42,8 @@ def test_read_ipynb(nb1):
     assert len(nb1.raw_nb['cells']) == 4
 
 
-def test_read():
-    nb = Notebook.read('test_files/nb1.ipynb')
+def test_read(test_files):
+    nb = Notebook.read(str(test_files / 'nb1.ipynb'))
     assert nb.count() == 4
 
 

@@ -12,27 +12,27 @@ def runner():
     yield CliRunner()
 
 
-def test_select_0(runner):
+def test_select_0(runner, test_files):
     selection_result = runner.invoke(cli, ['select', 'contains', 'df'])
     assert selection_result.exit_code == 0
 
-    result = runner.invoke(cli, ['count', 'test_files/nb3.ipynb'], input=selection_result.stdout_bytes)
+    result = runner.invoke(cli, ['count', str(test_files / 'nb3.ipynb')], input=selection_result.stdout_bytes)
 
     assert result.exit_code == 0
     assert int(result.output.strip()) == 4
 
 
-def test_select_1(runner):
+def test_select_1(runner, test_files):
     selection_result = runner.invoke(cli, ['select', 'has_output_type', 'text/plain'])
     assert selection_result.exit_code == 0
 
-    result = runner.invoke(cli, ['count', 'test_files/nb1.ipynb'], input=selection_result.stdout_bytes)
+    result = runner.invoke(cli, ['count', str(test_files / 'nb1.ipynb')], input=selection_result.stdout_bytes)
 
     assert result.exit_code == 0
     assert result.output.strip() == '2'
 
 
-def test_select_2(runner):
+def test_select_2(runner, test_files):
     import cloudpickle
     from nbmanips.selector import Selector
 
@@ -42,25 +42,25 @@ def test_select_2(runner):
     selector = cloudpickle.loads(selection_result.stdout_bytes)
     assert isinstance(selector, Selector)
 
-    result = runner.invoke(cli, ['list', 'test_files/nb3.ipynb'], input=selection_result.stdout_bytes)
+    result = runner.invoke(cli, ['list', str(test_files / 'nb3.ipynb')], input=selection_result.stdout_bytes)
 
     assert result.exit_code == 0
     assert result.output.strip() == '[5, 8]'
 
 
 @pytest.mark.parametrize('selection, expected_result', [('0', 1), ('1:3', 2)])
-def test_select_3(runner, selection, expected_result):
+def test_select_3(runner, test_files, selection, expected_result):
     selection_result = runner.invoke(cli, ['select', selection])
     assert selection_result.exit_code == 0
 
-    result = runner.invoke(cli, ['count', 'test_files/nb3.ipynb'], input=selection_result.stdout_bytes)
+    result = runner.invoke(cli, ['count', str(test_files / 'nb3.ipynb')], input=selection_result.stdout_bytes)
 
     assert result.exit_code == 0
     assert int(result.output.strip()) == expected_result
 
 
-def test_to_html(runner):
-    nb3 = Path('test_files/nb3.ipynb').read_text()
+def test_to_html(runner, test_files):
+    nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
         with open('nb.ipynb', 'w') as f:
             f.write(nb3)
@@ -71,8 +71,8 @@ def test_to_html(runner):
         assert Path('exported.html').exists()
 
 
-def test_to_slides(runner):
-    nb3 = Path('test_files/nb3.ipynb').read_text()
+def test_to_slides(runner, test_files):
+    nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
         with open('nb.ipynb', 'w') as f:
             f.write(nb3)
@@ -82,8 +82,8 @@ def test_to_slides(runner):
         assert Path('exported.slides.html').exists()
 
 
-def test_to_py(runner):
-    nb3 = Path('test_files/nb3.ipynb').read_text()
+def test_to_py(runner, test_files):
+    nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
         with open('nb.ipynb', 'w') as f:
             f.write(nb3)
@@ -93,8 +93,8 @@ def test_to_py(runner):
         assert Path('exported.py').exists()
 
 
-def test_to_md(runner):
-    nb3 = Path('test_files/nb3.ipynb').read_text()
+def test_to_md(runner, test_files):
+    nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
         with open('nb.ipynb', 'w') as f:
             f.write(nb3)
@@ -104,59 +104,59 @@ def test_to_md(runner):
         assert Path('exported.md').exists()
 
 
-def test_show(runner):
-    result = runner.invoke(cli, ['show', 'test_files/nb1.ipynb'])
+def test_show(runner, test_files):
+    result = runner.invoke(cli, ['show', str(test_files / 'nb1.ipynb')])
 
     assert result.exit_code == 0
     assert len(result.output.strip().split('\n')) >= 3
 
 
-def test_count(runner):
-    result = runner.invoke(cli, ['count', 'test_files/nb1.ipynb'])
+def test_count(runner, test_files):
+    result = runner.invoke(cli, ['count', str(test_files / 'nb1.ipynb')])
 
     assert result.exit_code == 0
     assert int(result.output.strip()) == 4
 
 
-def test_first(runner):
+def test_first(runner, test_files):
     selection_result = runner.invoke(cli, ['select', 'is_empty'])
     assert selection_result.exit_code == 0
 
-    result = runner.invoke(cli, ['first', 'test_files/nb3.ipynb'], input=selection_result.stdout_bytes)
+    result = runner.invoke(cli, ['first', str(test_files / 'nb3.ipynb')], input=selection_result.stdout_bytes)
 
     assert result.exit_code == 0
     assert int(result.output.strip()) == 5
 
 
-def test_last(runner):
+def test_last(runner, test_files):
     selection_result = runner.invoke(cli, ['select', 'is_empty'])
     assert selection_result.exit_code == 0
 
-    result = runner.invoke(cli, ['last', 'test_files/nb3.ipynb'], input=selection_result.stdout_bytes)
+    result = runner.invoke(cli, ['last', str(test_files / 'nb3.ipynb')], input=selection_result.stdout_bytes)
 
     assert result.exit_code == 0
     assert int(result.output.strip()) == 8
 
 
-def test_list(runner):
+def test_list(runner, test_files):
     selection_result = runner.invoke(cli, ['select', 'is_empty'])
     assert selection_result.exit_code == 0
 
-    result = runner.invoke(cli, ['list', 'test_files/nb3.ipynb'], input=selection_result.stdout_bytes)
+    result = runner.invoke(cli, ['list', str(test_files / 'nb3.ipynb')], input=selection_result.stdout_bytes)
 
     assert result.exit_code == 0
     assert result.output.strip() == '[5, 8]'
 
 
-def test_search(runner):
-    result = runner.invoke(cli, ['search', '-t', 'a', 'test_files/nb1.ipynb'])
+def test_search(runner, test_files):
+    result = runner.invoke(cli, ['search', '-t', 'a', str(test_files / 'nb1.ipynb')])
 
     assert result.exit_code == 0
     assert result.output.strip() == '[0, 2, 3]'
 
 
-def test_erase(runner):
-    nb3 = Path('test_files/nb3.ipynb').read_text()
+def test_erase(runner, test_files):
+    nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
         with open('nb.ipynb', 'w') as f:
             f.write(nb3)
@@ -179,8 +179,8 @@ def test_erase(runner):
         assert IPYNB('nb1.ipynb').select('is_empty').count() == 4
 
 
-def test_delete(runner):
-    nb3 = Path('test_files/nb3.ipynb').read_text()
+def test_delete(runner, test_files):
+    nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
         with open('nb.ipynb', 'w') as f:
             f.write(nb3)
@@ -207,8 +207,8 @@ def test_delete(runner):
         assert nb.count() == 7
 
 
-def test_keep(runner):
-    nb3 = Path('test_files/nb3.ipynb').read_text()
+def test_keep(runner, test_files):
+    nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
         with open('nb.ipynb', 'w') as f:
             f.write(nb3)
@@ -235,8 +235,8 @@ def test_keep(runner):
         assert nb.select('is_empty').count() == 2
 
 
-def test_replace(runner):
-    nb3 = Path('test_files/nb3.ipynb').read_text()
+def test_replace(runner, test_files):
+    nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
         with open('nb.ipynb', 'w') as f:
             f.write(nb3)
@@ -260,8 +260,8 @@ def test_replace(runner):
         assert len(nb.search_all('data')) == 4
 
 
-def test_erase_output(runner):
-    nb3 = Path('test_files/nb3.ipynb').read_text()
+def test_erase_output(runner, test_files):
+    nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
         with open('nb.ipynb', 'w') as f:
             f.write(nb3)
@@ -281,8 +281,8 @@ def test_erase_output(runner):
         assert IPYNB('nb1.ipynb').select('has_output').count() == 0
 
 
-def test_auto_slide(runner):
-    nb3 = Path('test_files/nb3.ipynb').read_text()
+def test_auto_slide(runner, test_files):
+    nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
         with open('nb.ipynb', 'w') as f:
             f.write(nb3)
