@@ -418,7 +418,7 @@ class ExportMixin(NotebookBase):
         for reader in readers.values():
             try:
                 return reader(path, name=name, **kwargs)
-            except Exception as e:
+            except Exception:
                 continue
 
         raise ValueError('Could not determine the notebook type')
