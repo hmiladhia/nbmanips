@@ -36,8 +36,14 @@ def nb5():
     return Notebook.read_ipynb('test_files/nb5.ipynb')
 
 
-def test_read(nb1):
+
+def test_read_ipynb(nb1):
     assert len(nb1.raw_nb['cells']) == 4
+
+
+def test_read():
+    nb = Notebook.read('test_files/nb1.ipynb')
+    assert nb.count() == 4
 
 
 def test_name(nb1):
