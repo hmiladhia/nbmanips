@@ -166,9 +166,17 @@ def test_erase(runner):
         assert selection_result.exit_code == 0
 
         result = runner.invoke(cli, ['erase', 'nb.ipynb'], input=selection_result.stdout_bytes)
+        assert result.exit_code == 1
+
+        result = runner.invoke(cli, ['erase', '-f', 'nb.ipynb'], input=selection_result.stdout_bytes)
         assert result.exit_code == 0
 
         assert IPYNB('nb.ipynb').select('is_empty').count() == 4
+
+        result = runner.invoke(cli, ['erase', 'nb.ipynb', '-o', 'nb1.ipynb'], input=selection_result.stdout_bytes)
+        assert result.exit_code == 0
+
+        assert IPYNB('nb1.ipynb').select('is_empty').count() == 4
 
 
 def test_delete(runner):
@@ -182,9 +190,19 @@ def test_delete(runner):
         assert selection_result.exit_code == 0
 
         result = runner.invoke(cli, ['delete', 'nb.ipynb'], input=selection_result.stdout_bytes)
+        assert result.exit_code == 1
+
+        result = runner.invoke(cli, ['delete', 'nb.ipynb', '-f'], input=selection_result.stdout_bytes)
         assert result.exit_code == 0
 
         nb = IPYNB('nb.ipynb')
+        assert nb.select('is_empty').count() == 0
+        assert nb.count() == 7
+
+        result = runner.invoke(cli, ['delete', 'nb.ipynb', '-o', 'nb1.ipynb'], input=selection_result.stdout_bytes)
+        assert result.exit_code == 0
+
+        nb = IPYNB('nb1.ipynb')
         assert nb.select('is_empty').count() == 0
         assert nb.count() == 7
 
@@ -200,9 +218,19 @@ def test_keep(runner):
         assert selection_result.exit_code == 0
 
         result = runner.invoke(cli, ['keep', 'nb.ipynb'], input=selection_result.stdout_bytes)
+        assert result.exit_code == 1
+
+        result = runner.invoke(cli, ['keep', 'nb.ipynb', '-f'], input=selection_result.stdout_bytes)
         assert result.exit_code == 0
 
         nb = IPYNB('nb.ipynb')
+        assert nb.count() == 2
+        assert nb.select('is_empty').count() == 2
+
+        result = runner.invoke(cli, ['keep', 'nb.ipynb', '-o', 'nb1.ipynb'], input=selection_result.stdout_bytes)
+        assert result.exit_code == 0
+
+        nb = IPYNB('nb1.ipynb')
         assert nb.count() == 2
         assert nb.select('is_empty').count() == 2
 
@@ -215,9 +243,19 @@ def test_replace(runner):
         assert len(IPYNB('nb.ipynb').search_all('df')) == 4
 
         result = runner.invoke(cli, ['replace', '-t', 'df', '-n', 'data', 'nb.ipynb'])
+        assert result.exit_code == 1
+
+        result = runner.invoke(cli, ['replace', '-t', 'df', '-n', 'data', '-f', 'nb.ipynb'])
         assert result.exit_code == 0
 
         nb = IPYNB('nb.ipynb')
+        assert len(nb.search_all('df')) == 0
+        assert len(nb.search_all('data')) == 4
+
+        result = runner.invoke(cli, ['replace', '-t', 'df', '-n', 'data', 'nb.ipynb', '-o', 'nb1.ipynb'])
+        assert result.exit_code == 0
+
+        nb = IPYNB('nb1.ipynb')
         assert len(nb.search_all('df')) == 0
         assert len(nb.search_all('data')) == 4
 
@@ -230,9 +268,17 @@ def test_erase_output(runner):
         assert IPYNB('nb.ipynb').select('has_output').count() == 5
 
         result = runner.invoke(cli, ['erase-output', 'nb.ipynb'])
+        assert result.exit_code == 1
+
+        result = runner.invoke(cli, ['erase-output', 'nb.ipynb', '-f'])
         assert result.exit_code == 0
 
         assert IPYNB('nb.ipynb').select('has_output').count() == 0
+
+        result = runner.invoke(cli, ['erase-output', 'nb.ipynb', '-o', 'nb1.ipynb'])
+        assert result.exit_code == 0
+
+        assert IPYNB('nb1.ipynb').select('has_output').count() == 0
 
 
 def test_auto_slide(runner):
@@ -246,8 +292,18 @@ def test_auto_slide(runner):
         assert nb.select('has_slide_type', 'subslide').count() == 0
 
         result = runner.invoke(cli, ['auto-slide', 'nb.ipynb'])
+        assert result.exit_code == 1
+
+        result = runner.invoke(cli, ['auto-slide', 'nb.ipynb', '-f'])
         assert result.exit_code == 0
 
         nb = IPYNB('nb.ipynb')
+        assert nb.select('has_slide_type', 'slide').count() == 0
+        assert nb.select('has_slide_type', 'subslide').count() == 2
+
+        result = runner.invoke(cli, ['auto-slide', 'nb.ipynb', '-o', 'nb1.ipynb'])
+        assert result.exit_code == 0
+
+        nb = IPYNB('nb1.ipynb')
         assert nb.select('has_slide_type', 'slide').count() == 0
         assert nb.select('has_slide_type', 'subslide').count() == 2
