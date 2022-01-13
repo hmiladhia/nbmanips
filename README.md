@@ -3,6 +3,7 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nbmanips)
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/nbmanips)
 ![PyPI](https://img.shields.io/pypi/v/nbmanips)
+![Tests](https://github.com/hmiladhia/nbmanips/actions/workflows/tests.yml/badge.svg)
 
 A collections of utilities to manipulate IPython/Jupyter Notebooks via a python script.
 
