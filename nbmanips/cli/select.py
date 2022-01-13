@@ -144,4 +144,4 @@ def _select_unknown(selector, arguments, kwargs, or_, invert):
     if piped_selector is not None:
         sel = (piped_selector | sel) if or_ else (piped_selector & sel)
 
-    click.echo(cloudpickle.dumps(sel))
+    click.echo(cloudpickle.dumps(sel), nl=False)

@@ -5,9 +5,9 @@ import cloudpickle
 
 
 def export(nb, output, force=False):
-    if not force:
-        if Path(output).exists():
-            click.confirm(f'"{output}" already exists. Do you want to overwrite it?', abort=True)
+    if not force and Path(output).exists():
+        click.echo(f'Notebook "{output}" already exists. Use --force to overwrite')
+        raise click.Abort()
     nb.to_ipynb(output)
 
 
