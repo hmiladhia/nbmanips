@@ -21,12 +21,11 @@ __all__ = [
     help='Do not prompt for confirmation if file already exists'
 )
 def erase(notebook_path, output, force):
-    output = notebook_path if output is None else output
     nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     nb.select(selector).erase()
-    export(nb, output, force=force)
+    export(nb, notebook_path, output, force=force)
 
 
 @click.command(help="Delete the selected cells")
@@ -37,12 +36,11 @@ def erase(notebook_path, output, force):
     help='Do not prompt for confirmation if file already exists'
 )
 def delete(notebook_path, output, force):
-    output = notebook_path if output is None else output
     nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     nb.select(selector).delete()
-    export(nb, output, force=force)
+    export(nb, notebook_path, output, force=force)
 
 
 @click.command(help="Delete all the non-selected cells")
@@ -53,12 +51,11 @@ def delete(notebook_path, output, force):
     help='Do not prompt for confirmation if file already exists'
 )
 def keep(notebook_path, output, force):
-    output = notebook_path if output is None else output
     nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     nb.select(selector).keep()
-    export(nb, output, force=force)
+    export(nb, notebook_path, output, force=force)
 
 
 @click.command(help="replace string in all selected cells")
@@ -74,12 +71,11 @@ def keep(notebook_path, output, force):
     help='Do not prompt for confirmation if file already exists'
 )
 def replace(notebook_path, output, old, new, case, count_, regex, force):
-    output = notebook_path if output is None else output
     nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     nb.select(selector).replace(old, new, count_, case, regex)
-    export(nb, output, force=force)
+    export(nb, notebook_path, output, force=force)
 
 
 @click.command(help="replace string in all selected cells")
@@ -93,12 +89,11 @@ def replace(notebook_path, output, old, new, case, count_, regex, force):
     help='Do not prompt for confirmation if file already exists'
 )
 def auto_slide(notebook_path, output, max_cells, max_images, delete_empty, force):
-    output = notebook_path if output is None else output
     nb = Notebook.read(notebook_path)
     selector = get_selector()
 
     nb.select(selector).auto_slide(max_cells, max_images, delete_empty=delete_empty)
-    export(nb, output, force=force)
+    export(nb, notebook_path, output, force=force)
 
 
 @click.command(help="Erase the output content of the selected cells")
@@ -110,7 +105,6 @@ def auto_slide(notebook_path, output, max_cells, max_images, delete_empty, force
     help='Do not prompt for confirmation if file already exists'
 )
 def erase_output(notebook_path, output, output_types, force):
-    output = notebook_path if output is None else output
     nb = Notebook.read(notebook_path)
     selector = get_selector()
 
@@ -120,4 +114,4 @@ def erase_output(notebook_path, output, output_types, force):
         output_types = None
 
     nb.select(selector).erase_output(output_types)
-    export(nb, output, force=force)
+    export(nb, notebook_path, output, force=force)
