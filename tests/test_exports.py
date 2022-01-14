@@ -1,20 +1,19 @@
 import os
 import tempfile
+from pathlib import Path
 
 import pytest
 
 from nbmanips import Notebook
 
 
+test_files = str(Path(__file__).parent / 'test_files')
+
+
 @pytest.fixture(scope='session')
 def output_files():
     with tempfile.TemporaryDirectory() as directory:
         yield directory
-
-
-@pytest.fixture(scope='session')
-def nb1():
-    return Notebook.read_ipynb('test_files/nb1.ipynb')
 
 
 def test_to_ipynb(nb1, output_files):
@@ -60,12 +59,12 @@ def test_to_dbc(nb1, output_files):
     assert isinstance(Notebook.read_dbc(path), Notebook)
 
 
-@pytest.mark.parametrize('common_path', [None, 'test_files', '.'])
+@pytest.mark.parametrize('common_path', [None, test_files, '.'])
 def test_dbc_exporter_multiple(nb1, output_files, common_path):
     from nbmanips.exporters import DbcExporter
     path = f'{output_files}/test_multiple.dbc'
     exp = DbcExporter()
-    file_lists = [os.path.join('test_files', file) for file in os.listdir('test_files') if file.endswith('ipynb')]
+    file_lists = [os.path.join(test_files, file) for file in os.listdir(test_files) if file.endswith('ipynb')]
     exp.write_dbc(file_lists, path, common_path)
     assert os.path.exists(path)
 

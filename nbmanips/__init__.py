@@ -1,3 +1,4 @@
+# flake8: noqa
 from nbmanips.notebook import Notebook
 from nbmanips.notebook import IPYNB, DBC, ZPLN
 import nbmanips.exporters

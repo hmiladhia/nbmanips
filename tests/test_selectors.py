@@ -1,27 +1,6 @@
 import pytest
 
-from nbmanips import Notebook
 from nbmanips.selector import Selector
-
-
-@pytest.fixture(scope='function')
-def nb0():
-    return Notebook.read_ipynb('test_files/nb1.ipynb')
-
-
-@pytest.fixture(scope='session')
-def nb1():
-    return Notebook.read_ipynb('test_files/nb1.ipynb')
-
-
-@pytest.fixture(scope='session')
-def nb2():
-    return Notebook.read_ipynb('test_files/nb2.ipynb')
-
-
-@pytest.fixture(scope='session')
-def nb3():
-    return Notebook.read_ipynb('test_files/nb3.ipynb')
 
 
 @pytest.mark.parametrize("cell_num, expected", [

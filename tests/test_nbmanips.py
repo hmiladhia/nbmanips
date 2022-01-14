@@ -4,40 +4,13 @@ import pytest
 from nbmanips import Notebook
 
 
-@pytest.fixture(scope='function')
-def nb1_0():
-    return Notebook.read_ipynb('test_files/nb1.ipynb')
-
-
-@pytest.fixture(scope='function')
-def nb3_0():
-    return Notebook.read_ipynb('test_files/nb3.ipynb')
-
-
-@pytest.fixture(scope='session')
-def nb1():
-    return Notebook.read_ipynb('test_files/nb1.ipynb')
-
-
-@pytest.fixture(scope='session')
-def nb2():
-    return Notebook.read_ipynb('test_files/nb2.ipynb')
-
-
-@pytest.fixture(scope='session')
-def nb3():
-    """Notebook with images"""
-    return Notebook.read_ipynb('test_files/nb3.ipynb')
-
-
-@pytest.fixture(scope='session')
-def nb5():
-    """Notebook in version 4.5"""
-    return Notebook.read_ipynb('test_files/nb5.ipynb')
-
-
-def test_read(nb1):
+def test_read_ipynb(nb1):
     assert len(nb1.raw_nb['cells']) == 4
+
+
+def test_read(test_files):
+    nb = Notebook.read(str(test_files / 'nb1.ipynb'))
+    assert nb.count() == 4
 
 
 def test_name(nb1):
@@ -271,4 +244,3 @@ def test_cover_auto_slide(nb3_0):
 #
 # def to_ipynb(self, path):
 #     write_ipynb(self.nb, path)
-

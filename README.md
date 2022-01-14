@@ -3,6 +3,7 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nbmanips)
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/nbmanips)
 ![PyPI](https://img.shields.io/pypi/v/nbmanips)
+![Tests](https://github.com/hmiladhia/nbmanips/actions/workflows/tests.yml/badge.svg)
 
 A collections of utilities to manipulate IPython/Jupyter Notebooks via a python script.
 
@@ -50,7 +51,7 @@ nb[1:6:2].show()
 # OR 
 selected_cells = slice(1, 6, 2)
 
-nb.show(selected_cells)
+nb.select(selected_cells).show()
 ```
 - A predefined selector. Available predefined selectors are the following:
 
@@ -61,6 +62,7 @@ nb.show(selected_cells)
     - `has_output_type`: Select cells that have a given output_type
     - `has_slide_type`: Select cells that have a given slide type
     - `is_new_slide`: Selects cells where a new slide/subslide starts
+    - `has_byte_size`: Selects cells with byte size within a given range of values.
 
 ```python
 # Show Markdown Cells
@@ -90,6 +92,7 @@ nb.select(['markdown_cells', 'code_cells'], type='or').show()
 You can export the notebooks to these formats:
 
 - to_ipynb
+- to_dbc
 - to_html
 - to_slides (using reveal.js)
 - to_md (to markdown)

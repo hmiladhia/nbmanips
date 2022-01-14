@@ -70,4 +70,3 @@ class DBC(Notebook):
 class ZPLN(Notebook):
     def __new__(cls, path, name=None, encoding='utf-8'):
         return Notebook.read_zpln(path, encoding=encoding, name=name)
-
