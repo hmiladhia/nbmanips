@@ -23,6 +23,10 @@ def _is_digit(selector):
 
 def _is_slice(selector):
     match = re.fullmatch(r'((-?\d+))?(:(-?\d+)?)?(:(-?\d+)?)?', selector)
+
+    if match is None:
+        match = re.fullmatch(r'\[((-?\d+))?(:(-?\d+)?)?(:(-?\d+)?)?\]', selector)
+
     if match is None:
         return None
 
