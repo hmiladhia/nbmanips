@@ -1,75 +1,94 @@
+from abc import abstractmethod, ABC
+from copy import copy
 from itertools import filterfalse
-from typing import Optional, Union
+from typing import Optional, Union, Callable, Tuple
 
 from nbmanips.cell import Cell
 from nbmanips.utils import partial
 
 
-class Selector:
-    default_selectors = {}
+class ISelector(ABC):
+    def __init__(self):
+        self._neg = False
 
-    def __init__(self, selector, *args, **kwargs):
-        self._selector = self._get_selector(selector, *args, **kwargs)
+    @abstractmethod
+    def get_callable(self, nb) -> Tuple[Callable, bool]:
+        pass
 
     def iter_cells(self, nb, neg=False):
-        filter_method = filterfalse if neg else filter
-        return filter_method(self._selector, (Cell(cell, i) for i, cell in enumerate(nb["cells"])))
+        selector, sel_neg = self.get_callable(nb)
+        filter_method = filterfalse if (sel_neg ^ neg) else filter
+        return filter_method(selector, (Cell(cell, i) for i, cell in enumerate(nb["cells"])))
+
+    def __invert__(self):
+        selector = copy(self)
+        selector._neg = not selector._neg
+        return selector
+
+    def __and__(self, selector):
+        return ListSelector([self, selector], type='and')
+
+    def __or__(self, selector):
+        return ListSelector([self, selector], type='or')
+
+
+def Selector(selector, *args, **kwargs):
+    if callable(selector):
+        return CallableSelector(selector, *args, **kwargs)
+    elif isinstance(selector, int):
+        return IndexSelector(selector)
+    elif isinstance(selector, str):
+        return DefaultSelector(selector, *args, **kwargs)
+    elif hasattr(selector, '__iter__'):
+        return ListSelector(selector, *args, **kwargs)
+    elif isinstance(selector, slice):
+        assert not kwargs and not args
+        return SliceSelector(selector)
+    elif isinstance(selector, ISelector):
+        return selector
+    elif selector is None:
+        return CallableSelector(lambda cell: True)   # TODO
+    else:
+        raise ValueError(f'selector needs to be of type: (str, int, list, slice, None): {type(selector)}')
+
+
+class CallableSelector(ISelector):
+    def __init__(self, selector, *args, **kwargs):
+        if args or kwargs:
+            self._selector = partial(selector, *args, **kwargs)
+        else:
+            self._selector = selector
+        super().__init__()
+
+    def get_callable(self, nb) -> Tuple[Callable, bool]:
+        return self._selector, self._neg
+
+
+class DefaultSelector(CallableSelector):
+    # TODO: use signature
+    default_selectors = {}
+
+    def __init__(self, selector: str, *args, **kwargs):
+        super(DefaultSelector, self).__init__(self.default_selectors[selector], *args, **kwargs)
 
     @classmethod
     def register_selector(cls, key, selector):
         cls.default_selectors[key] = selector
 
-    def __and__(self, selector):
-        return Selector([self, selector], type='and')
 
-    def __or__(self, selector):
-        return Selector([self, selector], type='or')
+class SliceSelector(ISelector):
+    def __init__(self, selector):
+        self._slice = selector
+        super().__init__()
 
-    def __invert__(self):
-        return Selector(lambda cell: not self._selector(cell))
+    def get_callable(self, nb):
+        new_slice = self.__adapt_slice(self._slice, len(nb))
+        return self.__get_slice_selector(new_slice), self._neg
 
-    def _get_selector(self, selector, *args, **kwargs):
-        if callable(selector):
-            return partial(selector, *args, **kwargs)
-        elif isinstance(selector, int):
-            return lambda cell: cell.num == selector
-        elif isinstance(selector, str):
-            return partial(self.default_selectors[selector], *args, **kwargs)
-        elif hasattr(selector, '__iter__'):
-            return self.__get_list_selector(selector, *args, **kwargs)
-        elif isinstance(selector, slice):
-            assert not kwargs and not args
-            return self.__get_slice_selector(selector)
-        elif isinstance(selector, Selector):
-            return selector._selector
-        elif selector is None:
-            return lambda cell: True
-        else:
-            raise ValueError(f'selector needs to be of type: (str, int, list, slice, None): {type(selector)}')
-
-    @classmethod
-    def __get_list_selector(cls, selector, *args, **kwargs):
-        selector = list(selector)
-        type_ = kwargs.pop('type', 'and')
-        assert not kwargs, "only 'type' keyword is allowed as keyword argument"
-        if len(args) == len(selector):
-            args_kwargs_list = args
-        else:
-            args_kwargs_list = tuple(args[0]) if args else tuple([{} for _ in selector])
-
-        # Parsing args
-        args_list, kwargs_list = cls.__parse_list_args(args_kwargs_list)
-
-        # Creating list of selectors
-        selector_list = [Selector(sel, *args, **kwargs) for sel, args, kwargs in zip(selector, args_list, kwargs_list)]
-
-        # Return selector function
-        if type_ == 'and':
-            return lambda cell: all(sel._selector(cell) for sel in selector_list)
-        elif type_ == 'or':
-            return lambda cell: any(sel._selector(cell) for sel in selector_list)
-        else:
-            raise ValueError(f'type can be "and" or "or": {type_}')
+    @staticmethod
+    def __adapt_slice(old_slice, n_cells):
+        # TODO: Implement this
+        return old_slice
 
     @classmethod
     def __get_slice_selector(cls, selector: slice) -> callable:
@@ -84,7 +103,53 @@ class Selector:
             selector_list.append(lambda cell: cell.num < stop)
         if step is not None:
             selector_list.append(lambda cell: (cell.num - start) % abs(step) == 0)
-        return cls.__get_multiple_selector(selector_list)
+        return partial(cls.__get_multiple_selector, selector_list=selector_list)
+
+    @staticmethod
+    def __get_multiple_selector(cell, selector_list: list):
+        return all(sel(cell) for sel in selector_list)
+
+
+class IndexSelector(ISelector):
+    def __init__(self, index: int):
+        self._index = index
+        super().__init__()
+
+    def get_callable(self, nb) -> Tuple[Callable, bool]:
+        return partial(self.selector, index=self._index), self._neg
+
+    @classmethod
+    def selector(cls, cell: Cell, index):
+        return cell.num == index
+
+
+class ListSelector(ISelector):
+    def __init__(self, selector, *args, **kwargs):
+        selector = list(selector)
+        self.type_ = kwargs.pop('type', 'and')
+        assert not kwargs, "only 'type' keyword is allowed as keyword argument"
+        if len(args) == len(selector):
+            args_kwargs_list = args
+        else:
+            args_kwargs_list = tuple(args[0]) if args else tuple([{} for _ in selector])
+
+        # Parsing args
+        args_list, kwargs_list = self.__parse_list_args(args_kwargs_list)
+
+        # Creating list of selectors
+        self._selector_list = [
+            Selector(sel, *args, **kwargs)
+            for sel, args, kwargs in zip(selector, args_list, kwargs_list)
+        ]
+        super().__init__()
+
+    def get_callable(self, nb) -> Tuple[Callable, bool]:
+        if self.type_ == 'and':
+            return lambda cell: all((sel._neg ^ sel.get_callable(nb)[0](cell)) for sel in self._selector_list), self._neg
+        elif self.type_ == 'or':
+            return lambda cell: any((sel._neg ^ sel.get_callable(nb)[0](cell)) for sel in self._selector_list), self._neg
+        else:
+            raise ValueError(f'type can be "and" or "or": {self.type_}')
 
     @staticmethod
     def __parse_list_args(list_args: tuple) -> (list, list):
@@ -103,10 +168,8 @@ class Selector:
                 raise ValueError('Cannot parse arguments:', str(arg))
         return args_list, kwargs_list
 
-    @staticmethod
-    def __get_multiple_selector(selector_list: list):
-        return lambda cell: all(sel(cell) for sel in selector_list)
 
+# Default Selectors
 
 def contains(cell, text, case=True, output=False, regex=False):
     """
@@ -254,22 +317,22 @@ def is_new_slide(cell, subslide=True):
 
 
 # Default Selectors
-Selector.register_selector('contains', contains)
-Selector.register_selector('empty', is_empty)
-Selector.register_selector('is_empty', is_empty)
-Selector.register_selector('has_output', has_output)
-Selector.register_selector('has_output_type', has_output_type)
-Selector.register_selector('has_byte_size', has_byte_size)
+DefaultSelector.register_selector('contains', contains)
+DefaultSelector.register_selector('empty', is_empty)
+DefaultSelector.register_selector('is_empty', is_empty)
+DefaultSelector.register_selector('has_output', has_output)
+DefaultSelector.register_selector('has_output_type', has_output_type)
+DefaultSelector.register_selector('has_byte_size', has_byte_size)
 
 # Cell Types
-Selector.register_selector('has_type', has_type)
-Selector.register_selector('raw_cells', is_raw)
-Selector.register_selector('is_raw', is_raw)
-Selector.register_selector('markdown_cells', is_markdown)
-Selector.register_selector('is_markdown', is_markdown)
-Selector.register_selector('code_cells', is_code)
-Selector.register_selector('is_code', is_code)
+DefaultSelector.register_selector('has_type', has_type)
+DefaultSelector.register_selector('raw_cells', is_raw)
+DefaultSelector.register_selector('is_raw', is_raw)
+DefaultSelector.register_selector('markdown_cells', is_markdown)
+DefaultSelector.register_selector('is_markdown', is_markdown)
+DefaultSelector.register_selector('code_cells', is_code)
+DefaultSelector.register_selector('is_code', is_code)
 
 # Slide cells
-Selector.register_selector('has_slide_type', has_slide_type)
-Selector.register_selector('is_new_slide', is_new_slide)
+DefaultSelector.register_selector('has_slide_type', has_slide_type)
+DefaultSelector.register_selector('is_new_slide', is_new_slide)

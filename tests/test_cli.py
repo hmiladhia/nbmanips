@@ -34,13 +34,13 @@ def test_select_1(runner, test_files):
 
 def test_select_2(runner, test_files):
     import cloudpickle
-    from nbmanips.selector import Selector
+    from nbmanips.selector import ISelector
 
     selection_result = runner.invoke(cli, ['select', 'is_empty'])
     assert selection_result.exit_code == 0
 
     selector = cloudpickle.loads(selection_result.stdout_bytes)
-    assert isinstance(selector, Selector)
+    assert isinstance(selector, ISelector)
 
     result = runner.invoke(cli, ['list', str(test_files / 'nb3.ipynb')], input=selection_result.stdout_bytes)
 

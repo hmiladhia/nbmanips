@@ -5,7 +5,7 @@ import click
 import cloudpickle
 from click import Group
 
-from nbmanips.selector import Selector
+from nbmanips.selector import Selector, DefaultSelector
 from nbmanips.cli import get_selector
 
 __all__ = [
@@ -16,7 +16,7 @@ __all__ = [
 class SelectGroup(Group):
     @property
     def dynamic_commands(self):
-        return Selector.default_selectors
+        return DefaultSelector.default_selectors
 
     def resolve_command(self, ctx, args):
         cmd_name, cmd, new_args = super().resolve_command(ctx, args)
@@ -49,7 +49,7 @@ class SelectGroup(Group):
 
     def list_commands(self, ctx):
         commands = set(self.commands)
-        commands |= set(Selector.default_selectors)
+        commands |= set(self.dynamic_commands)
         commands |= {'INDEX', 'SLICE'}
         return sorted(commands)
 
