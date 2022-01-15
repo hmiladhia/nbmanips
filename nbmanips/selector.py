@@ -45,11 +45,17 @@ class ISelector(ABC):
         selector._neg = not selector._neg
         return selector
 
-    def __and__(self, selector):
-        return ListSelector([self, selector], type='and')
+    def __and__(self, other: 'ISelector'):
+        if not isinstance(other, ISelector):
+            return NotImplemented
 
-    def __or__(self, selector):
-        return ListSelector([self, selector], type='or')
+        return ListSelector([self]) & other
+
+    def __or__(self, other: 'ISelector'):
+        if not isinstance(other, ISelector):
+            return NotImplemented
+
+        return ListSelector([self], type='or') | other
 
 
 class CallableSelector(ISelector):
@@ -65,11 +71,12 @@ class CallableSelector(ISelector):
 
 
 class DefaultSelector(CallableSelector):
-    # TODO: use signature
     default_selectors = {}
 
     def __init__(self, selector: str, *args, **kwargs):
-        super(DefaultSelector, self).__init__(self.default_selectors[selector], *args, **kwargs)
+        # TODO: use signature ?
+        selector = self.default_selectors[selector]
+        super(DefaultSelector, self).__init__(selector, *args, **kwargs)
 
     @classmethod
     def register_selector(cls, key, selector):
@@ -151,7 +158,10 @@ class ListSelector(ISelector):
         ]
         super().__init__()
 
-    def __and__(self, other):
+    def __and__(self, other: ISelector):
+        if not isinstance(other, ISelector):
+            return NotImplemented
+
         if not self._and:
             return super().__and__(other)
 
@@ -163,9 +173,12 @@ class ListSelector(ISelector):
             selector._list.append(other)
         return selector
 
-    def __or__(self, other):
+    def __or__(self, other: ISelector):
+        if not isinstance(other, ISelector):
+            return NotImplemented
+
         if self._and:
-            return super().__and__(other)
+            return super().__or__(other)
 
         selector = copy(self)
         selector._list = copy(selector._list)
