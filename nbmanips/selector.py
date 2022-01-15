@@ -32,7 +32,7 @@ class ISelector(ABC):
         self._neg = False
 
     @abstractmethod
-    def get_callable(self, nb) -> Callable:
+    def get_callable(self, nb: dict) -> Callable:
         pass
 
     def iter_cells(self, nb, neg=False):
@@ -98,7 +98,7 @@ class CallableSelector(ISelector):
             self._selector = selector
         super().__init__()
 
-    def get_callable(self, nb) -> Callable:
+    def get_callable(self, nb: dict) -> Callable:
         return self._selector
 
 
@@ -120,8 +120,8 @@ class SliceSelector(ISelector):
         self._slice = selector
         super().__init__()
 
-    def get_callable(self, nb) -> Callable:
-        new_slice = self.__adapt_slice(self._slice, len(nb))
+    def get_callable(self, nb: dict) -> Callable:
+        new_slice = self.__adapt_slice(self._slice, len(nb.get('cells', [])))
         return self.__get_slice_selector(new_slice)
 
     @staticmethod
@@ -160,7 +160,7 @@ class IndexSelector(ISelector):
         self._index = index
         super().__init__()
 
-    def get_callable(self, nb) -> Callable:
+    def get_callable(self, nb: dict) -> Callable:
         index = self._index
         if index < 0:
             index = len(nb) + index
@@ -220,7 +220,7 @@ class ListSelector(ISelector):
             selector._list.append(other)
         return selector
 
-    def get_callable(self, nb) -> Callable:
+    def get_callable(self, nb: dict) -> Callable:
         op = all if self._and else any
         return partial(self.__combine, op=op, nb=nb)
 
