@@ -22,7 +22,7 @@ def Selector(selector, *args, **kwargs):
     elif isinstance(selector, ISelector):
         return selector
     elif selector is None:
-        return CallableSelector(lambda cell: True)
+        return TrueSelector()
     else:
         raise ValueError(f'selector needs to be of type: (str, int, list, slice, None): {type(selector)}')
 
@@ -49,13 +49,45 @@ class ISelector(ABC):
         if not isinstance(other, ISelector):
             return NotImplemented
 
+        if isinstance(other, TrueSelector):
+            return other & self
+
         return ListSelector([self]) & other
 
     def __or__(self, other: 'ISelector'):
         if not isinstance(other, ISelector):
             return NotImplemented
 
+        if isinstance(other, TrueSelector):
+            return other & self
+
         return ListSelector([self], type='or') | other
+
+
+class TrueSelector(ISelector):
+    def iter_cells(self, nb, neg=False):
+        if self._neg ^ neg:
+            return (_ for _ in range(0))
+        return (Cell(cell, i) for i, cell in enumerate(nb["cells"]))
+
+    def get_callable(self, nb):
+        return lambda cell: True
+
+    def __and__(self, other: 'ISelector'):
+        if not isinstance(other, ISelector):
+            return NotImplemented
+
+        if self._neg:
+            return copy(self)
+        return copy(other)
+
+    def __or__(self, other: 'ISelector'):
+        if not isinstance(other, ISelector):
+            return NotImplemented
+
+        if self._neg:
+            return copy(other)
+        return copy(self)
 
 
 class CallableSelector(ISelector):

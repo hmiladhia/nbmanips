@@ -8,17 +8,17 @@ from nbmanips.selector import Selector
 
 
 class NotebookBase:
-    def __init__(self, content: dict, name=None, validate=True):
+    def __init__(self, content: Optional[dict], name=None, validate=True):
         if validate:
             self.__validate(content)
         self.raw_nb = copy.deepcopy(content)
         self.name = name
-        self._selector = None
+        self._selector = Selector(None)
 
     def select(self, selector, *args, **kwargs):
-        notebook_selection = self.reset_selection()
-        notebook_selection._selector = self.__get_new_selector(selector, *args, **kwargs)
-        return notebook_selection
+        nb = self.reset_selection()
+        nb._selector = self._selector & Selector(selector, *args, **kwargs)
+        return nb
 
     def apply(self, func: Callable[[Cell], Optional[Cell]], neg=False):
         delete_list = []
@@ -141,15 +141,6 @@ class NotebookBase:
 
     def __str__(self):
         return '\n'.join(str(cell) for cell in self.iter_cells())
-
-    def __get_new_selector(self, selector, *args, **kwargs):
-        selector = Selector(selector, *args, **kwargs)
-
-        if self._selector is None:
-            new_selector = selector
-        else:
-            new_selector = self._selector & selector
-        return new_selector
 
     @staticmethod
     def __validate(content: dict):
