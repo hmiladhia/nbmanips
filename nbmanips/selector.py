@@ -87,8 +87,14 @@ class SliceSelector(ISelector):
 
     @staticmethod
     def __adapt_slice(old_slice, n_cells):
-        # TODO: Implement this
-        return old_slice
+        start, stop, step = old_slice.start, old_slice.stop, old_slice.step
+        if stop is not None and stop < 0:
+            stop = stop + n_cells
+        if start is not None and start < 0:
+            start = start + n_cells
+
+        new_slice = slice(start, stop, step)
+        return new_slice
 
     @classmethod
     def __get_slice_selector(cls, selector: slice) -> callable:
@@ -116,7 +122,10 @@ class IndexSelector(ISelector):
         super().__init__()
 
     def get_callable(self, nb) -> Callable:
-        return partial(self.selector, index=self._index)
+        index = self._index
+        if index < 0:
+            index = len(nb) + index
+        return partial(self.selector, index=index)
 
     @classmethod
     def selector(cls, cell: Cell, index):

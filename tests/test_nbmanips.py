@@ -2,6 +2,7 @@ import nbformat
 import pytest
 
 from nbmanips import Notebook
+from nbmanips.selector import Selector
 
 
 def test_read_ipynb(nb1):
@@ -221,7 +222,7 @@ def test_apply(nb1_0):
             return None
         cell.set_source(cell.get_source().replace('a', 'b').split('\n'))
         return cell
-    sel = nb1_0.create_selector('contains', '=') | nb1_0.create_selector('contains', 'H')
+    sel = Selector('contains', '=') | Selector('contains', 'H')
     nb1_0.select(sel).apply(replace)
     assert nb1_0.select('contains', 'b').list() == [1]
     assert nb1_0.select('contains', 'a').list() == [0, 2]
