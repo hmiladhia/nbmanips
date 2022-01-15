@@ -1,9 +1,9 @@
 # nbmanips
-![PyPI - License](https://img.shields.io/pypi/l/nbmanips)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nbmanips)
-![PyPI - Wheel](https://img.shields.io/pypi/wheel/nbmanips)
 ![PyPI](https://img.shields.io/pypi/v/nbmanips)
 ![Tests](https://github.com/hmiladhia/nbmanips/actions/workflows/tests.yml/badge.svg)
+![PyPI - License](https://img.shields.io/pypi/l/nbmanips)
+![PyPI - Wheel](https://img.shields.io/pypi/wheel/nbmanips)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nbmanips)
 
 A collections of utilities to manipulate IPython/Jupyter Notebooks via a python script.
 
@@ -133,6 +133,9 @@ nb show my_notebook.ipynb
 To show a subset of the notebook cells, you can perform a select operation:
 ```bash
 nb select 0:3 | nb show my_notebook.ipynb
+
+# Or if you're using negative indexes ( to show the last 3 cells )
+nb select [-3:] | nb show my_notebook.ipynb
 ```
 ### Basic usage
 A simple example of using nbmanips via the cli:
@@ -156,7 +159,7 @@ You can convert a notebook to the following formats:
 ### Slide manipulations
 ```bash
 # Automatically set slides
-nb auto-slide my_notebook.ipynb
+nb auto-slide -f my_notebook.ipynb
 
 # Generate a my_notebook.slides.html file
 nb convert slides my_notebook.ipynb
