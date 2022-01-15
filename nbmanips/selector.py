@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from copy import copy
 from itertools import filterfalse
-from typing import Optional, Union, Callable, Tuple, List
+from typing import Optional, Union, Callable, List
 
 from nbmanips.cell import Cell
 from nbmanips.utils import partial
@@ -32,12 +32,12 @@ class ISelector(ABC):
         self._neg = False
 
     @abstractmethod
-    def get_callable(self, nb) -> Tuple[Callable, bool]:
+    def get_callable(self, nb) -> Callable:
         pass
 
     def iter_cells(self, nb, neg=False):
-        selector, sel_neg = self.get_callable(nb)
-        filter_method = filterfalse if (sel_neg ^ neg) else filter
+        selector = self.get_callable(nb)
+        filter_method = filterfalse if (self._neg ^ neg) else filter
         return filter_method(selector, (Cell(cell, i) for i, cell in enumerate(nb["cells"])))
 
     def __invert__(self):
@@ -60,8 +60,8 @@ class CallableSelector(ISelector):
             self._selector = selector
         super().__init__()
 
-    def get_callable(self, nb) -> Tuple[Callable, bool]:
-        return self._selector, self._neg
+    def get_callable(self, nb) -> Callable:
+        return self._selector
 
 
 class DefaultSelector(CallableSelector):
@@ -81,9 +81,9 @@ class SliceSelector(ISelector):
         self._slice = selector
         super().__init__()
 
-    def get_callable(self, nb):
+    def get_callable(self, nb) -> Callable:
         new_slice = self.__adapt_slice(self._slice, len(nb))
-        return self.__get_slice_selector(new_slice), self._neg
+        return self.__get_slice_selector(new_slice)
 
     @staticmethod
     def __adapt_slice(old_slice, n_cells):
@@ -115,8 +115,8 @@ class IndexSelector(ISelector):
         self._index = index
         super().__init__()
 
-    def get_callable(self, nb) -> Tuple[Callable, bool]:
-        return partial(self.selector, index=self._index), self._neg
+    def get_callable(self, nb) -> Callable:
+        return partial(self.selector, index=self._index)
 
     @classmethod
     def selector(cls, cell: Cell, index):
@@ -136,7 +136,7 @@ class ListSelector(ISelector):
 
         # Creating list of selectors
         self._and = self._check_sanity(kwargs)
-        self._selector_list: List[ISelector] = [
+        self._list: List[ISelector] = [
             Selector(sel, *args, **kwargs)
             for sel, args, kwargs in zip(selector, args_list, kwargs_list)
         ]
@@ -147,11 +147,11 @@ class ListSelector(ISelector):
             return super().__and__(other)
 
         selector = copy(self)
-        selector._selector_list = copy(selector._selector_list)
+        selector._list = copy(selector._list)
         if isinstance(other, ListSelector) and (other._and == self._and):
-            selector._selector_list.extend(other._selector_list)
+            selector._list.extend(other._list)
         else:
-            selector._selector_list.append(other)
+            selector._list.append(other)
         return selector
 
     def __or__(self, other):
@@ -159,17 +159,19 @@ class ListSelector(ISelector):
             return super().__and__(other)
 
         selector = copy(self)
-        selector._selector_list = copy(selector._selector_list)
+        selector._list = copy(selector._list)
         if isinstance(other, ListSelector) and (other._and == self._and):
-            selector._selector_list.extend(other._selector_list)
+            selector._list.extend(other._list)
         else:
-            selector._selector_list.append(other)
+            selector._list.append(other)
         return selector
 
-    def get_callable(self, nb) -> Tuple[Callable, bool]:
-        if self._and:
-            return lambda cell: all((sel._neg ^ sel.get_callable(nb)[0](cell)) for sel in self._selector_list), self._neg
-        return lambda cell: any((sel._neg ^ sel.get_callable(nb)[0](cell)) for sel in self._selector_list), self._neg
+    def get_callable(self, nb) -> Callable:
+        op = all if self._and else any
+        return partial(self.__combine, op=op, nb=nb)
+
+    def __combine(self, cell: Cell, op, nb):
+        return op((sel._neg ^ sel.get_callable(nb)(cell)) for sel in self._list)
 
     @staticmethod
     def _check_sanity(kwargs):
