@@ -1,3 +1,4 @@
+import re
 import copy
 from functools import reduce
 
@@ -11,6 +12,26 @@ from nbmanips.cli import get_selector
 __all__ = [
     'select',
 ]
+
+
+def _is_digit(selector):
+    match = re.fullmatch(r'-?\d+', selector)
+    if match is None:
+        return None
+    return match.string
+
+
+def _is_slice(selector):
+    match = re.fullmatch(r'((-?\d+))?(:(-?\d+)?)?(:(-?\d+)?)?', selector)
+    if match is None:
+        return None
+
+    ret = []
+    for el in match.groups()[1::2]:
+        if el is not None:
+            el = int(el)
+        ret.append(el)
+    return ret
 
 
 class SelectGroup(Group):
@@ -42,7 +63,7 @@ class SelectGroup(Group):
             select_func = self.dynamic_commands[cmd_name]
             short_description = select_func.__doc__.strip().split('\n')[0]
             cmd.help = short_description
-        elif cmd_name.isdigit() or cmd_name.replace(':', '').isdigit():
+        elif _is_slice(cmd_name):
             cmd = copy.deepcopy(select_unknown)
 
         return cmd
@@ -85,10 +106,12 @@ def select(**_):
 @select_params
 @click.pass_context
 def select_unknown(ctx, selector, arguments, kwargs, **_):
-    if selector.isdigit():
-        selector = int(selector)
-    elif selector.replace(':', '').isdigit():
-        selector = slice(*[int(p) for p in selector.split(':')])
+    digit_match = _is_digit(selector)
+    slice_match = _is_slice(selector)
+    if digit_match:
+        selector = int(digit_match)
+    elif slice_match:
+        selector = slice(*slice_match)
 
     params = get_params(ctx, **dict(kwargs))
 
