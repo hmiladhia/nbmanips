@@ -1,10 +1,30 @@
 from abc import abstractmethod, ABC
 from copy import copy
 from itertools import filterfalse
-from typing import Optional, Union, Callable, Tuple
+from typing import Optional, Union, Callable, Tuple, List
 
 from nbmanips.cell import Cell
 from nbmanips.utils import partial
+
+
+def Selector(selector, *args, **kwargs):
+    if callable(selector):
+        return CallableSelector(selector, *args, **kwargs)
+    elif isinstance(selector, int):
+        return IndexSelector(selector)
+    elif isinstance(selector, str):
+        return DefaultSelector(selector, *args, **kwargs)
+    elif hasattr(selector, '__iter__'):
+        return ListSelector(selector, *args, **kwargs)
+    elif isinstance(selector, slice):
+        assert not kwargs and not args
+        return SliceSelector(selector)
+    elif isinstance(selector, ISelector):
+        return selector
+    elif selector is None:
+        return CallableSelector(lambda cell: True)
+    else:
+        raise ValueError(f'selector needs to be of type: (str, int, list, slice, None): {type(selector)}')
 
 
 class ISelector(ABC):
@@ -30,26 +50,6 @@ class ISelector(ABC):
 
     def __or__(self, selector):
         return ListSelector([self, selector], type='or')
-
-
-def Selector(selector, *args, **kwargs):
-    if callable(selector):
-        return CallableSelector(selector, *args, **kwargs)
-    elif isinstance(selector, int):
-        return IndexSelector(selector)
-    elif isinstance(selector, str):
-        return DefaultSelector(selector, *args, **kwargs)
-    elif hasattr(selector, '__iter__'):
-        return ListSelector(selector, *args, **kwargs)
-    elif isinstance(selector, slice):
-        assert not kwargs and not args
-        return SliceSelector(selector)
-    elif isinstance(selector, ISelector):
-        return selector
-    elif selector is None:
-        return CallableSelector(lambda cell: True)   # TODO
-    else:
-        raise ValueError(f'selector needs to be of type: (str, int, list, slice, None): {type(selector)}')
 
 
 class CallableSelector(ISelector):
@@ -126,8 +126,6 @@ class IndexSelector(ISelector):
 class ListSelector(ISelector):
     def __init__(self, selector, *args, **kwargs):
         selector = list(selector)
-        self.type_ = kwargs.pop('type', 'and')
-        assert not kwargs, "only 'type' keyword is allowed as keyword argument"
         if len(args) == len(selector):
             args_kwargs_list = args
         else:
@@ -137,19 +135,52 @@ class ListSelector(ISelector):
         args_list, kwargs_list = self.__parse_list_args(args_kwargs_list)
 
         # Creating list of selectors
-        self._selector_list = [
+        self._and = self._check_sanity(kwargs)
+        self._selector_list: List[ISelector] = [
             Selector(sel, *args, **kwargs)
             for sel, args, kwargs in zip(selector, args_list, kwargs_list)
         ]
         super().__init__()
 
-    def get_callable(self, nb) -> Tuple[Callable, bool]:
-        if self.type_ == 'and':
-            return lambda cell: all((sel._neg ^ sel.get_callable(nb)[0](cell)) for sel in self._selector_list), self._neg
-        elif self.type_ == 'or':
-            return lambda cell: any((sel._neg ^ sel.get_callable(nb)[0](cell)) for sel in self._selector_list), self._neg
+    def __and__(self, other):
+        if not self._and:
+            return super().__and__(other)
+
+        selector = copy(self)
+        selector._selector_list = copy(selector._selector_list)
+        if isinstance(other, ListSelector) and (other._and == self._and):
+            selector._selector_list.extend(other._selector_list)
         else:
-            raise ValueError(f'type can be "and" or "or": {self.type_}')
+            selector._selector_list.append(other)
+        return selector
+
+    def __or__(self, other):
+        if self._and:
+            return super().__and__(other)
+
+        selector = copy(self)
+        selector._selector_list = copy(selector._selector_list)
+        if isinstance(other, ListSelector) and (other._and == self._and):
+            selector._selector_list.extend(other._selector_list)
+        else:
+            selector._selector_list.append(other)
+        return selector
+
+    def get_callable(self, nb) -> Tuple[Callable, bool]:
+        if self._and:
+            return lambda cell: all((sel._neg ^ sel.get_callable(nb)[0](cell)) for sel in self._selector_list), self._neg
+        return lambda cell: any((sel._neg ^ sel.get_callable(nb)[0](cell)) for sel in self._selector_list), self._neg
+
+    @staticmethod
+    def _check_sanity(kwargs):
+        _type = kwargs.pop('type', 'and')
+        if _type not in {'and', 'or'}:
+            raise ValueError('type can only have the following values: {"and", "or"}')
+
+        if kwargs:
+            raise ValueError("only 'type' keyword is allowed as keyword argument")
+
+        return _type == 'and'
 
     @staticmethod
     def __parse_list_args(list_args: tuple) -> (list, list):
