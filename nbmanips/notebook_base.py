@@ -15,7 +15,7 @@ class NotebookBase:
         self.name = name
         self._selector = Selector(None)
 
-    def select(self, selector, *args, **kwargs):
+    def select(self, selector: Any, *args, **kwargs):
         nb = self.reset_selection()
         nb._selector = self._selector & Selector(selector, *args, **kwargs)
         return nb
@@ -79,7 +79,7 @@ class NotebookBase:
         """
         return [cell for cell in self.iter_cells()]
 
-    def add_cell(self, cell, pos=None):
+    def add_cell(self, cell: Cell, pos=None):
         pos = len(self) if pos is None else pos
 
         new_id = cell.id
@@ -91,7 +91,7 @@ class NotebookBase:
 
     def __add__(self, other: 'NotebookBase'):
         if not isinstance(other, NotebookBase):
-            raise ValueError('Expected Notebook object, got %s' % type(other))
+            return NotImplemented
 
         # Copying the notebook
         raw_nb = copy.deepcopy(self.raw_nb)
@@ -108,7 +108,7 @@ class NotebookBase:
 
     def __mul__(self, other: int):
         if not isinstance(other, int):
-            raise ValueError('Expected int, got %s' % type(other))
+            return NotImplemented
 
         # Copying the notebook
         raw_nb = copy.deepcopy(self.raw_nb)
@@ -141,6 +141,33 @@ class NotebookBase:
 
     def __str__(self):
         return '\n'.join(str(cell) for cell in self.iter_cells())
+
+    def __and__(self, other):
+        if not isinstance(other, NotebookBase):
+            return NotImplemented
+
+        if other.raw_nb is not self.raw_nb:
+            raise ValueError('and operator only works with the same Notebook.')
+
+        nb = self.reset_selection()
+        nb._selector = self._selector & other._selector
+        return nb
+
+    def __or__(self, other):
+        if not isinstance(other, NotebookBase):
+            return NotImplemented
+
+        if other.raw_nb is not self.raw_nb:
+            raise ValueError('and operator only works with the same Notebook.')
+
+        nb = self.reset_selection()
+        nb._selector = self._selector | other._selector
+        return nb
+
+    def __invert__(self):
+        nb = self.reset_selection()
+        nb._selector = ~self._selector
+        return nb
 
     @staticmethod
     def __validate(content: dict):

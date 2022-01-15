@@ -245,3 +245,25 @@ def test_cover_auto_slide(nb3_0):
 #
 # def to_ipynb(self, path):
 #     write_ipynb(self.nb, path)
+
+
+def test_and_operator(nb1):
+    selection = nb1.select('contains', 'a') & nb1.select('contains', '=')
+    assert selection.list() == [2]
+
+
+def test_and_operator_error(nb1, nb2):
+    with pytest.raises(ValueError):
+        nb1.select('contains', 'a') & nb2.select('contains', '=')
+
+    nb1.select('contains', 'a') & nb1.select('contains', '5').select('contains', '=')
+
+
+def test_or_operator(nb1):
+    selection = nb1.select('contains', 'o') | nb1.select('contains', '=')
+    assert selection.list() == [1, 2]
+
+
+def test_invert_operator(nb1):
+    selection = ~nb1.select('contains', 'o')
+    assert selection.list() == [0, 2, 3]
