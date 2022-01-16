@@ -238,7 +238,7 @@ class Cell:
 
 class CodeCell(Cell, cell_type="code"):
     def to_str(self, width=None, style='single', use_pygments=None, pygments_lexer=None, color=None,
-               exclude_output=False, parsers=None, parsers_config=None, excluded_data_types=None):
+               exclude_output=False, parsers=None, parsers_config=None, excluded_data_types=None, truncate=None):
         sources = [printable_cell(self.source, width=width, style=style, color=color, pygments_lexer=pygments_lexer)]
 
         if not exclude_output:
@@ -248,6 +248,8 @@ class CodeCell(Cell, cell_type="code"):
                 parsers_config=parsers_config,
                 excluded_data_types=excluded_data_types,
             ).strip()
+            if truncate:
+                output = output[:truncate]
             if output:
                 sources.append(output)
 

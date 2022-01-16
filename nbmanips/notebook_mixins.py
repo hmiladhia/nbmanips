@@ -319,7 +319,7 @@ class ExportMixin(NotebookBase):
             return None
 
     def to_str(self, width=None, exclude_output=False, use_pygments=None, style='single', border_color=None,
-               parsers=None, parsers_config=None, excluded_data_types=None):
+               parsers=None, parsers_config=None, excluded_data_types=None, truncate=None):
         use_pygments = PYGMENTS_SUPPORTED if use_pygments is None else use_pygments
         pygments_lexer = self._get_pygments_lexer(use_pygments)
 
@@ -333,6 +333,7 @@ class ExportMixin(NotebookBase):
             parsers=parsers,
             parsers_config=parsers_config,
             excluded_data_types=excluded_data_types,
+            truncate=truncate,
         ) for cell in self.iter_cells())
 
     def to_text(self, path, *args, **kwargs):
@@ -355,7 +356,7 @@ class ExportMixin(NotebookBase):
         write_ipynb(self.raw_nb, path)
 
     def show(self, width=None, exclude_output=False, use_pygments=None, style='single', border_color=None,
-             parsers=None, parsers_config=None, excluded_data_types=None):
+             parsers=None, parsers_config=None, excluded_data_types=None, truncate=None):
         """
         Show the selected cells
         :param width:
@@ -375,7 +376,8 @@ class ExportMixin(NotebookBase):
             border_color=border_color,
             parsers=parsers,
             parsers_config=parsers_config,
-            excluded_data_types=excluded_data_types
+            excluded_data_types=excluded_data_types,
+            truncate=truncate,
         ))
 
     @classmethod

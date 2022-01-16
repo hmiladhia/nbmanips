@@ -267,3 +267,27 @@ def test_or_operator(nb1):
 def test_invert_operator(nb1):
     selection = ~nb1.select('contains', 'o')
     assert selection.list() == [0, 2, 3]
+
+
+@pytest.mark.parametrize("truncate,expected", [
+    (None, 11),
+    (5, 5)
+])
+def test_truncate(nb1, truncate, expected):
+    result = nb1[1].to_str(truncate=truncate)
+    output = '\n'.join(result.split('\n')[3:])
+
+    assert len(output) == expected
+    assert len(nb1[0].to_str(truncate=truncate)) == 16
+
+
+@pytest.mark.parametrize("exclude_output,expected", [
+    (False, 11),
+    (True, 0)
+])
+def test_exclude_output(nb1, exclude_output, expected):
+    result = nb1[1].to_str(exclude_output=exclude_output)
+    output = '\n'.join(result.split('\n')[3:])
+
+    assert len(output) == expected
+    assert len(nb1[0].to_str(exclude_output=exclude_output)) == 16
