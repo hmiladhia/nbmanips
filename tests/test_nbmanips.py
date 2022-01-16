@@ -271,7 +271,10 @@ def test_invert_operator(nb1):
 
 @pytest.mark.parametrize("truncate,expected", [
     (None, 11),
-    (5, 5)
+    (4, 10),
+    (8, 14),
+    (15, 11),
+    (11, 11)
 ])
 def test_truncate(nb1, truncate, expected):
     result = nb1[1].to_str(truncate=truncate)

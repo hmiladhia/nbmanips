@@ -248,8 +248,8 @@ class CodeCell(Cell, cell_type="code"):
                 parsers_config=parsers_config,
                 excluded_data_types=excluded_data_types,
             ).strip()
-            if truncate:
-                output = output[:truncate]
+            if truncate is not None and len(output) > truncate:
+                output = output[:truncate] + ' [...]'
             if output:
                 sources.append(output)
 
