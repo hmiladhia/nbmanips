@@ -73,13 +73,16 @@ class SelectGroup(Group):
             cmd.help = short_description
         elif _is_slice(cmd_name):
             cmd = copy.deepcopy(select_unknown)
+        elif cmd_name == '[INDEX/SLICE]':
+            cmd = copy.deepcopy(select_unknown)
+            cmd.help = 'Selects Cells based on their index'
 
         return cmd
 
     def list_commands(self, ctx):
         commands = set(self.commands)
         commands |= set(self.dynamic_commands)
-        commands |= {'INDEX', 'SLICE'}
+        commands |= {'[INDEX/SLICE]'}
         return sorted(commands)
 
 
@@ -114,6 +117,8 @@ def select(**_):
 @select_params
 @click.pass_context
 def select_unknown(ctx, selector, arguments, kwargs, **_):
+    if selector == '[INDEX/SLICE]':
+        raise ValueError('Provide an index. Example: nb select [-3:-1]')
     digit_match = _is_digit(selector)
     slice_match = _is_slice(selector)
     if digit_match:
