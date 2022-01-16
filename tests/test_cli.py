@@ -52,6 +52,7 @@ def test_select_2(runner, test_files):
     ('0', 1),
     ('1:3', 2),
     ('[-3:]', 3),
+    ('[-3]', 1),
     ('[1:-2]', 6),
 ])
 def test_select_3(runner, test_files, selection, expected_result):

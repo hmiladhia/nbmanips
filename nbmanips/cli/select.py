@@ -15,10 +15,14 @@ __all__ = [
 
 
 def _is_digit(selector):
-    match = re.fullmatch(r'-?\d+', selector)
+    match = re.fullmatch(r'(-?\d+)', selector)
+
+    if match is None:
+        match = re.fullmatch(r'\[(-?\d+)\]', selector)
+
     if match is None:
         return None
-    return match.string
+    return match.group(1)
 
 
 def _is_slice(selector):
