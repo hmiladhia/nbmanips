@@ -7,26 +7,6 @@ from nbmanips.cell import Cell
 from nbmanips.utils import partial
 
 
-def Selector(selector, *args, **kwargs):
-    if callable(selector):
-        return CallableSelector(selector, *args, **kwargs)
-    elif isinstance(selector, int):
-        return IndexSelector(selector)
-    elif isinstance(selector, str):
-        return DefaultSelector(selector, *args, **kwargs)
-    elif hasattr(selector, '__iter__'):
-        return ListSelector(selector, *args, **kwargs)
-    elif isinstance(selector, slice):
-        assert not kwargs and not args
-        return SliceSelector(selector)
-    elif isinstance(selector, ISelector):
-        return selector
-    elif selector is None:
-        return TrueSelector()
-    else:
-        raise ValueError(f'selector needs to be of type: (str, int, list, slice, None): {type(selector)}')
-
-
 class ISelector(ABC):
     def __init__(self):
         self._neg = False
@@ -62,6 +42,32 @@ class ISelector(ABC):
             return other & self
 
         return ListSelector([self], type='or') | other
+
+
+class Selector(ISelector):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+
+    def __new__(cls, selector, *args, **kwargs):
+        if callable(selector):
+            return CallableSelector(selector, *args, **kwargs)
+        elif isinstance(selector, int):
+            return IndexSelector(selector)
+        elif isinstance(selector, str):
+            return DefaultSelector(selector, *args, **kwargs)
+        elif hasattr(selector, '__iter__'):
+            return ListSelector(selector, *args, **kwargs)
+        elif isinstance(selector, slice):
+            assert not kwargs and not args
+            return SliceSelector(selector)
+        elif isinstance(selector, ISelector):
+            return selector
+        elif selector is None:
+            return TrueSelector()
+        raise ValueError(f'selector needs to be of type: (str, int, list, slice, NoneType): {type(selector)}')
+
+    def get_callable(self, nb: dict) -> Callable:
+        raise NotImplementedError()
 
 
 class TrueSelector(ISelector):
