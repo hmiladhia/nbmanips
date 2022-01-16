@@ -274,7 +274,8 @@ def test_invert_operator(nb1):
     (4, 10),
     (8, 14),
     (15, 11),
-    (11, 11)
+    (11, 11),
+    (-1, 11)
 ])
 def test_truncate(nb1, truncate, expected):
     result = nb1[1].to_str(truncate=truncate)

@@ -1,3 +1,4 @@
+import re
 import shutil
 from abc import ABCMeta, abstractmethod
 from textwrap import wrap
@@ -42,6 +43,7 @@ styles = {
     "copy": ('', '', "#", "-", "-", "", "", "")
 }
 
+ANSI_ESCAPE = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 COLOR_SUPPORTED = supports_color()
 PYGMENTS_SUPPORTED = COLOR_SUPPORTED and pygments is not None
 
@@ -77,6 +79,15 @@ def printable_cell(text, width=None, style='single', color=None, pygments_lexer=
     ])
     result.append(color_start + style_dl + style_d * (width - len(style_dl) - len(style_dr)) + style_dr + color_end)
     return '\n'.join(result)
+
+
+def monochrome(text):
+    """
+    Source: https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
+
+    :param text: any text
+    """
+    return ANSI_ESCAPE.sub('', text)
 
 
 class ParserBase(metaclass=ABCMeta):

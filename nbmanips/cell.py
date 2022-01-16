@@ -12,7 +12,7 @@ except ImportError:
     pygments = None
     get_lexer_by_name = None
 
-from nbmanips.cell_utils import printable_cell, FORMATTER
+from nbmanips.cell_utils import printable_cell, FORMATTER, monochrome
 from nbmanips.cell_output import CellOutput
 from nbmanips.utils import total_size
 
@@ -248,8 +248,9 @@ class CodeCell(Cell, cell_type="code"):
                 parsers_config=parsers_config,
                 excluded_data_types=excluded_data_types,
             ).strip()
-            if truncate is not None and len(output) > truncate:
-                output = output[:truncate] + ' [...]'
+            monochrome_output = monochrome(output)
+            if truncate is not None and len(monochrome_output) > truncate >= 0:
+                output = monochrome_output[:truncate] + ' [...]'
             if output:
                 sources.append(output)
 

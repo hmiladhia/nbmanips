@@ -323,18 +323,20 @@ class ExportMixin(NotebookBase):
         use_pygments = PYGMENTS_SUPPORTED if use_pygments is None else use_pygments
         pygments_lexer = self._get_pygments_lexer(use_pygments)
 
-        return '\n'.join(cell.to_str(
-            width=width,
-            exclude_output=exclude_output,
-            use_pygments=use_pygments,
-            pygments_lexer=pygments_lexer,
-            style=style,
-            color=border_color,
-            parsers=parsers,
-            parsers_config=parsers_config,
-            excluded_data_types=excluded_data_types,
-            truncate=truncate,
-        ) for cell in self.iter_cells())
+        return '\n'.join(
+            cell.to_str(
+                width=width,
+                exclude_output=exclude_output,
+                use_pygments=use_pygments,
+                pygments_lexer=pygments_lexer,
+                style=style,
+                color=border_color,
+                parsers=parsers,
+                parsers_config=parsers_config,
+                excluded_data_types=excluded_data_types,
+                truncate=truncate,
+            ) for cell in self.iter_cells()
+        )
 
     def to_text(self, path, *args, **kwargs):
         """
