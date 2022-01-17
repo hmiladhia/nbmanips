@@ -86,6 +86,35 @@ class ClassicNotebook(NotebookBase):
                 cp = cp.reset_selection()
         return cp
 
+    def toc(self, width=None):
+        markdown_cells = self.select('is_markdown')
+
+        results = []
+        indentation_levels = []
+        for cell in markdown_cells.iter_cells():
+            for element in cell.soup.select('h1, h2, h3, h4, h5, h6'):
+                indentation_level = int(element.name[-1]) - 1
+                indentation_levels.append(indentation_level)
+                results.append((indentation_level, element.text, cell.num))
+
+        if not results:
+            return ''
+
+        min_indentation = min(indentation_levels)
+        results = [('  ' * (ind - min_indentation) + title, cell_num) for ind, title, cell_num in results]
+
+        # TODO: set width ?
+
+        results = [(title.split('\n'), cell_num) for title, cell_num in results]
+        max_length = max(len(x[0]) for x, _ in results)
+
+        toc = []
+        for title, cell_num in results:
+            title[0] = title[0] + ' ' * (max_length - len(title[0])) + f' [{cell_num}]'
+            toc.extend(title)
+
+        return '\n'.join(toc)
+
     def split(self, *args):
         # TODO: Add tests (sums and whatnot)
         return self.copy().select(args, type='or').split_on_selection()

@@ -12,6 +12,9 @@ except ImportError:
     pygments = None
     get_lexer_by_name = None
 
+from markdown import Markdown
+from bs4 import BeautifulSoup
+
 from nbmanips.cell_utils import printable_cell, FORMATTER
 from nbmanips.cell_output import CellOutput
 from nbmanips.utils import total_size
@@ -255,6 +258,8 @@ class CodeCell(Cell, cell_type="code"):
 
 
 class MarkdownCell(Cell, cell_type="markdown"):
+    _md = Markdown()
+
     def to_str(self, width=None, style='single', use_pygments=None, pygments_lexer=None, color=None, **kwargs):
         use_pygments = pygments is not None if use_pygments is None else use_pygments
 
@@ -264,6 +269,14 @@ class MarkdownCell(Cell, cell_type="markdown"):
             return pygments.highlight(self.source, _MARKDOWN_LEXER, FORMATTER)[:-1]
         else:
             return self.source
+
+    @property
+    def html(self):
+        return self._md.convert(self.source)
+
+    @property
+    def soup(self):
+        return BeautifulSoup(self.html, "lxml")
 
 
 class RawCell(Cell, cell_type="raw"):
