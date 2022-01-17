@@ -77,6 +77,39 @@ class ClassicNotebook(NotebookBase):
         for cell in reversed(list(self.iter_cells())):
             return cell.num
 
+    def copy(self, selection=True, crop=True):
+        cp = self.__class__(self.raw_nb, self.name, validate=False)
+        if selection:
+            cp._selector = self._selector
+            if crop:
+                cp.keep()
+                cp = cp.reset_selection()
+        return cp
+
+    def split(self, *args):
+        # TODO: Add tests (sums and whatnot)
+        return self.copy().select(args, type='or').split_on_selection()
+
+    def split_on_selection(self):
+        """
+        Return the number of the last selected cell
+        :return:
+        """
+        # TODO: check this works
+        # cp = self.copy(crop=False, selection=False)
+        cp = self.reset_selection()
+        notebooks = []
+        prev = 0
+        for cell in list(self.iter_cells()):
+            if cell.num == prev:
+                continue
+
+            notebooks.append(cp[prev:cell.num].copy())
+
+            prev = cell.num
+        notebooks.append(cp[prev:].copy())
+        return notebooks
+
     def list(self):
         """
         Return the numbers of the selected cells
