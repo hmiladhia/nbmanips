@@ -78,7 +78,7 @@ def printable_cell(text, width=None, style='single', color=None, pygments_lexer=
         for line, d in zip(code_lines, diff)
     ])
     result.append(color_start + style_dl + style_d * (width - len(style_dl) - len(style_dr)) + style_dr + color_end)
-    return '\n'.join(result)
+    return '\n'.join(line.rstrip(' ') for line in result)
 
 
 def monochrome(text):
