@@ -1,3 +1,5 @@
+import re
+
 import nbformat
 import pytest
 
@@ -258,3 +260,15 @@ def test_select(nb6, value, expected):
     result = nb6.split(*value)
     assert len(result) == expected
     assert sum(len(nb) for nb in result) == len(nb6)
+
+
+def test_toc(nb6):
+    toc = nb6.toc(index=True)
+    match = re.search(r'2\.1\sSubpart\s*\[\d+]', toc)
+
+    assert match is not None
+
+    max_width = max(len(line) for line in nb6.toc(width=40, index=True).split('\n'))
+
+    assert max_width < 40
+
