@@ -332,3 +332,14 @@ def test_split(runner, test_files):
 
         result = runner.invoke(cli, ['split', 'nb.ipynb', '1,6', '-f'])
         assert result.exit_code == 0
+
+
+def test_toc(runner, test_files):
+    nb6 = Path(str(test_files / 'nb6.ipynb')).read_text()
+    with runner.isolated_filesystem():
+        with open('nb.ipynb', 'w') as f:
+            f.write(nb6)
+
+        result = runner.invoke(cli, ['toc', 'nb.ipynb', '-w', '60'])
+        assert result.exit_code == 0
+        assert len(result.output.strip().split('\n')) == 16
