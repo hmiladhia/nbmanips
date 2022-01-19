@@ -603,7 +603,7 @@ class ContentAnalysisMixin(NotebookBase):
 
         return toc
 
-    def toc(self, width=None):
+    def toc(self, width=None, index=False):
         toc = self._toc
 
         if not toc:
@@ -625,7 +625,8 @@ class ContentAnalysisMixin(NotebookBase):
 
         printable_toc = []
         for title, cell_num in wrapped_toc:
-            title[0] = title[0] + ' ' * (width - len(title[0])) + f'  [{cell_num}]'
+            if index:
+                title[0] = title[0] + ' ' * (width - len(title[0])) + f'  [{cell_num}]'
             printable_toc.extend(title)
 
         return '\n'.join(printable_toc)
