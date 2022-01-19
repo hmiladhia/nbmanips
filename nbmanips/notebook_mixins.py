@@ -617,9 +617,10 @@ class ContentAnalysisMixin(NotebookBase):
         ]
 
         if width is None:
-            max_width = shutil.get_terminal_size().columns - 7
-            max_length = max(len(x) for x, _ in indented_toc)
+            max_width = shutil.get_terminal_size().columns
+            max_length = max(len(x) for x, _ in indented_toc) + 7
             width = min(max_width, max_length)
+        width -= 7
 
         wrapped_toc = [(textwrap.wrap(title, width), n) for title, n in indented_toc]
 
