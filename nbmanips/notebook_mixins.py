@@ -634,3 +634,27 @@ class ContentAnalysisMixin(NotebookBase):
 
     def show_toc(self, width=None, index=True):
         print(self.ptoc(width, index))
+
+    def add_toc(self, pos=0):
+        from nbmanips.cell import Cell
+
+        toc = self.toc
+
+        min_indentation = min(ind_level for ind_level, _, _ in toc)
+
+        numbered_toc = []
+        stack = [0, 0, 0, 0, 0, 0]
+        for ind, title, _ in toc:
+            for i in range(ind+1, len(stack)):
+                stack[i] = 0
+            stack[ind] += 1
+            numbered_toc.append((stack[ind], ind, title))
+
+        indented_toc = [
+            '  ' * (ind - min_indentation) + f"{num}. [{title}](#{title.replace(' ', '-')})\n"
+            for num, ind, title in numbered_toc
+        ]
+
+        toc_cell = Cell({'cell_type': 'markdown', 'source': '\n'.join(indented_toc), 'metadata': {}})
+
+        self.add_cell(toc_cell, pos)
