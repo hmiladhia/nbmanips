@@ -1,5 +1,7 @@
 import os
 import json
+import shutil
+import textwrap
 from pathlib import Path
 from copy import deepcopy
 from typing import Union, Any
@@ -85,35 +87,6 @@ class ClassicNotebook(NotebookBase):
                 cp.keep()
                 cp = cp.reset_selection()
         return cp
-
-    def toc(self, width=None):
-        markdown_cells = self.select('is_markdown')
-
-        results = []
-        indentation_levels = []
-        for cell in markdown_cells.iter_cells():
-            for element in cell.soup.select('h1, h2, h3, h4, h5, h6'):
-                indentation_level = int(element.name[-1]) - 1
-                indentation_levels.append(indentation_level)
-                results.append((indentation_level, element.text, cell.num))
-
-        if not results:
-            return ''
-
-        min_indentation = min(indentation_levels)
-        results = [('  ' * (ind - min_indentation) + title, cell_num) for ind, title, cell_num in results]
-
-        # TODO: set width ?
-
-        results = [(title.split('\n'), cell_num) for title, cell_num in results]
-        max_length = max(len(x[0]) for x, _ in results)
-
-        toc = []
-        for title, cell_num in results:
-            title[0] = title[0] + ' ' * (max_length - len(title[0])) + f' [{cell_num}]'
-            toc.extend(title)
-
-        return '\n'.join(toc)
 
     def split(self, *args):
         # TODO: Add tests (sums and whatnot)
@@ -603,3 +576,46 @@ class NotebookCellMetadata(ClassicNotebook):
         :param value: boolean
         """
         self.update_cell_metadata('jupyter', {'outputs_hidden': value})
+
+
+class ContentAnalysisMixin(NotebookBase):
+    @property
+    def _toc(self):
+        markdown_cells = self.select('is_markdown')
+
+        toc = []
+        indentation_levels = []
+        for cell in markdown_cells.iter_cells():
+            for element in cell.soup.select('h1, h2, h3, h4, h5, h6'):
+                indentation_level = int(element.name[-1]) - 1
+                indentation_levels.append(indentation_level)
+                toc.append((indentation_level, element.text, cell.num))
+
+        return toc
+
+    def toc(self, width=None):
+        toc = self._toc
+
+        if not toc:
+            return ''
+
+        min_indentation = min(ind_level for ind_level, _, _ in toc)
+
+        indented_toc = [
+            ('  ' * (ind - min_indentation) + title, cell_num)
+            for ind, title, cell_num in toc
+        ]
+
+        if width is None:
+            max_width = shutil.get_terminal_size().columns - 7
+            max_length = max(len(x) for x, _ in indented_toc)
+            width = min(max_width, max_length)
+
+        wrapped_toc = [(textwrap.wrap(title, width), n) for title, n in indented_toc]
+
+        printable_toc = []
+        for title, cell_num in wrapped_toc:
+            title[0] = title[0] + ' ' * (width - len(title[0])) + f'  [{cell_num}]'
+            printable_toc.extend(title)
+
+        return '\n'.join(printable_toc)

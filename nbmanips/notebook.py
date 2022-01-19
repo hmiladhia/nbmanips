@@ -6,9 +6,18 @@ from nbmanips.notebook_mixins import ClassicNotebook
 from nbmanips.notebook_mixins import ExportMixin
 from nbmanips.notebook_mixins import NotebookMetadata
 from nbmanips.notebook_mixins import NotebookCellMetadata
+from nbmanips.notebook_mixins import ContentAnalysisMixin
 
 
-class Notebook(NotebookCellMetadata, SlideShowMixin, ClassicNotebook, NotebookMetadata, ExportMixin, NotebookBase):
+class Notebook(
+    NotebookCellMetadata,
+    SlideShowMixin,
+    ClassicNotebook,
+    ContentAnalysisMixin,
+    ExportMixin,
+    NotebookMetadata,
+    NotebookBase
+):
     def search(self, text, case=False, output=False, regex=False):
         """
         Return the number of the first cell containing the given text
