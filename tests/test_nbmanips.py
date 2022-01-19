@@ -4,6 +4,7 @@ import nbformat
 import pytest
 
 from nbmanips import Notebook
+from nbmanips.selector import Selector
 
 
 def test_read_ipynb(nb1):
@@ -223,7 +224,7 @@ def test_apply(nb1_0):
             return None
         cell.set_source(cell.get_source().replace('a', 'b').split('\n'))
         return cell
-    sel = nb1_0.create_selector('contains', '=') | nb1_0.create_selector('contains', 'H')
+    sel = Selector('contains', '=') | Selector('contains', 'H')
     nb1_0.select(sel).apply(replace)
     assert nb1_0.select('contains', 'b').list() == [1]
     assert nb1_0.select('contains', 'a').list() == [0, 2]
@@ -271,3 +272,53 @@ def test_toc(nb6):
     max_width = max(len(line) for line in nb6.ptoc(width=40, index=True).split('\n'))
 
     assert max_width < 40
+
+
+def test_and_operator(nb1):
+    selection = nb1.select('contains', 'a') & nb1.select('contains', '=')
+    assert selection.list() == [2]
+
+
+def test_and_operator_error(nb1, nb2):
+    with pytest.raises(ValueError):
+        nb1.select('contains', 'a') & nb2.select('contains', '=')
+
+    nb1.select('contains', 'a') & nb1.select('contains', '5').select('contains', '=')
+
+
+def test_or_operator(nb1):
+    selection = nb1.select('contains', 'o') | nb1.select('contains', '=')
+    assert selection.list() == [1, 2]
+
+
+def test_invert_operator(nb1):
+    selection = ~nb1.select('contains', 'o')
+    assert selection.list() == [0, 2, 3]
+
+
+@pytest.mark.parametrize("truncate,expected", [
+    (None, 11),
+    (4, 10),
+    (8, 14),
+    (15, 11),
+    (11, 11),
+    (-1, 11)
+])
+def test_truncate(nb1, truncate, expected):
+    result = nb1[1].to_str(truncate=truncate)
+    output = '\n'.join(result.split('\n')[3:])
+
+    assert len(output) == expected
+    assert len(nb1[0].to_str(truncate=truncate)) == 16
+
+
+@pytest.mark.parametrize("exclude_output,expected", [
+    (False, 11),
+    (True, 0)
+])
+def test_exclude_output(nb1, exclude_output, expected):
+    result = nb1[1].to_str(exclude_output=exclude_output)
+    output = '\n'.join(result.split('\n')[3:])
+
+    assert len(output) == expected
+    assert len(nb1[0].to_str(exclude_output=exclude_output)) == 16

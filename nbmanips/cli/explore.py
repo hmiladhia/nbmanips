@@ -29,8 +29,9 @@ __all__ = [
 @click.option('--image-width', '-iw', type=int, default=None)
 @click.option('--image-color/--no-image-color', '-ic/-nic', type=bool, default=None)
 @click.option('--parser', '-p', 'parsers', type=str, multiple=True)
+@click.option('--truncate', '-t', type=int, default=None)
 def show(notebook_path, width, pygments, output, style, border_color,
-         parsers, image_width, image_color, excluded_data_types):
+         parsers, image_width, image_color, excluded_data_types, truncate):
     nb = Notebook.read(notebook_path)
     selector = get_selector()
 
@@ -47,7 +48,8 @@ def show(notebook_path, width, pygments, output, style, border_color,
         border_color=border_color,
         parsers=parsers or None,
         parsers_config=parsers_config,
-        excluded_data_types=excluded_data_types or None
+        excluded_data_types=excluded_data_types or None,
+        truncate=truncate,
     )
 
 

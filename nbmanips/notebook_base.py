@@ -8,17 +8,17 @@ from nbmanips.selector import Selector
 
 
 class NotebookBase:
-    def __init__(self, content: dict, name=None, validate=True):
+    def __init__(self, content: Optional[dict], name=None, validate=True):
         if validate:
             self.__validate(content)
         self.raw_nb = copy.deepcopy(content)
         self.name = name
-        self._selector = None
+        self._selector = Selector(None)
 
-    def select(self, selector, *args, **kwargs):
-        notebook_selection = self.reset_selection()
-        notebook_selection._selector = self.__get_new_selector(selector, *args, **kwargs)
-        return notebook_selection
+    def select(self, selector: Any, *args, **kwargs):
+        nb = self.reset_selection()
+        nb._selector = self._selector & Selector(selector, *args, **kwargs)
+        return nb
 
     def apply(self, func: Callable[[Cell], Optional[Cell]], neg=False):
         delete_list = []
@@ -79,7 +79,7 @@ class NotebookBase:
         """
         return [cell for cell in self.iter_cells()]
 
-    def add_cell(self, cell, pos=None):
+    def add_cell(self, cell: Cell, pos=None):
         pos = len(self) if pos is None else pos
 
         new_id = cell.id
@@ -91,7 +91,7 @@ class NotebookBase:
 
     def __add__(self, other: 'NotebookBase'):
         if not isinstance(other, NotebookBase):
-            raise ValueError('Expected Notebook object, got %s' % type(other))
+            return NotImplemented
 
         # Copying the notebook
         raw_nb = copy.deepcopy(self.raw_nb)
@@ -108,7 +108,7 @@ class NotebookBase:
 
     def __mul__(self, other: int):
         if not isinstance(other, int):
-            raise ValueError('Expected int, got %s' % type(other))
+            return NotImplemented
 
         # Copying the notebook
         raw_nb = copy.deepcopy(self.raw_nb)
@@ -142,31 +142,32 @@ class NotebookBase:
     def __str__(self):
         return '\n'.join(str(cell) for cell in self.iter_cells())
 
-    def create_selector(self, selector, *args, **kwargs):
-        if isinstance(selector, int) and selector < 0:
-            selector = len(self) + selector
-        if isinstance(selector, slice):
-            start, stop, step = selector.start, selector.stop, selector.step
-            if stop is not None and stop < 0:
-                stop = stop + len(self)
-            if start is not None and start < 0:
-                start = start + len(self)
+    def __and__(self, other):
+        if not isinstance(other, NotebookBase):
+            return NotImplemented
 
-            selector = slice(start, stop, step)
+        if other.raw_nb is not self.raw_nb:
+            raise ValueError('and operator only works with the same Notebook.')
 
-        if not isinstance(selector, Selector):
-            selector = Selector(selector, *args, **kwargs)
-        return selector
+        nb = self.reset_selection()
+        nb._selector = self._selector & other._selector
+        return nb
 
-    def __get_new_selector(self, selector, *args, **kwargs):
-        selector = self.create_selector(selector, *args, **kwargs)
+    def __or__(self, other):
+        if not isinstance(other, NotebookBase):
+            return NotImplemented
 
-        if self._selector is None:
-            new_selector = []
-        else:
-            new_selector = self._selector.copy()
-        new_selector.append(selector)
-        return new_selector
+        if other.raw_nb is not self.raw_nb:
+            raise ValueError('and operator only works with the same Notebook.')
+
+        nb = self.reset_selection()
+        nb._selector = self._selector | other._selector
+        return nb
+
+    def __invert__(self):
+        nb = self.reset_selection()
+        nb._selector = ~self._selector
+        return nb
 
     @staticmethod
     def __validate(content: dict):

@@ -34,13 +34,13 @@ def test_select_1(runner, test_files):
 
 def test_select_2(runner, test_files):
     import cloudpickle
-    from nbmanips.selector import Selector
+    from nbmanips.selector import ISelector
 
     selection_result = runner.invoke(cli, ['select', 'is_empty'])
     assert selection_result.exit_code == 0
 
     selector = cloudpickle.loads(selection_result.stdout_bytes)
-    assert isinstance(selector, Selector)
+    assert isinstance(selector, ISelector)
 
     result = runner.invoke(cli, ['list', str(test_files / 'nb3.ipynb')], input=selection_result.stdout_bytes)
 
@@ -48,7 +48,13 @@ def test_select_2(runner, test_files):
     assert result.output.strip() == '[5, 8]'
 
 
-@pytest.mark.parametrize('selection, expected_result', [('0', 1), ('1:3', 2)])
+@pytest.mark.parametrize('selection, expected_result', [
+    ('0', 1),
+    ('1:3', 2),
+    ('[-3:]', 3),
+    ('[-3]', 1),
+    ('[1:-2]', 6),
+])
 def test_select_3(runner, test_files, selection, expected_result):
     selection_result = runner.invoke(cli, ['select', selection])
     assert selection_result.exit_code == 0

@@ -32,6 +32,9 @@ setuptools.setup(
         'Pygments>=2.10.*',
         'colorama>=0.4.*'
     ],
+    extras_require={
+       "images": ["img2text>=0.0.2"],
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
