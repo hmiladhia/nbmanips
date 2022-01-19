@@ -234,13 +234,27 @@ def test_cover_auto_slide(nb3_0):
     assert nb3_0.select('has_slide_type', 'subslide').list() == [3, 4]
 
 
-# def test_selectors(nb1_0, selector, selector_kwargs):
-#     assert False
-# def test_get_item(nb1):
-#     assert nb1['cells'] == nb1.nb['cells']
-#
-# def test_tag(self, tag_key, tag_value, selector, *args, **kwargs):
-#     ...
-#
-# def to_ipynb(self, path):
-#     write_ipynb(self.nb, path)
+def test_cells_property(nb1):
+    assert nb1.cells == nb1.raw_nb['cells']
+
+
+def test_select_on_selection(nb6):
+    result = nb6.select('is_markdown').split_on_selection()
+    assert len(result) == 6
+    assert sum(len(nb) for nb in result) == len(nb6)
+
+
+@pytest.mark.parametrize('value,expected', [
+    ([], 1),
+    ([0, 6], 2),
+    ([1, 6], 3),
+    ([1, 6, 9], 4),
+    ([1, 6, 14], 4),
+    ([1, 6, 15], 3),
+    ([1, 6, 18], 3),
+    ([1, 6, 18, 29], 3),
+])
+def test_select(nb6, value, expected):
+    result = nb6.split(*value)
+    assert len(result) == expected
+    assert sum(len(nb) for nb in result) == len(nb6)

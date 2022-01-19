@@ -40,3 +40,8 @@ def nb3(test_files):
 def nb5(test_files):
     """Notebook in version 4.5"""
     return Notebook.read_ipynb(test_files / 'nb5.ipynb')
+
+
+@pytest.fixture(scope='session')
+def nb6(test_files):
+    return Notebook.read_ipynb(test_files / 'nb6.ipynb')

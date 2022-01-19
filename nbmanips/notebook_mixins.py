@@ -89,7 +89,6 @@ class ClassicNotebook(NotebookBase):
         return cp
 
     def split(self, *args):
-        # TODO: Add tests (sums and whatnot)
         return self.copy().select(args, type='or').split_on_selection()
 
     def split_on_selection(self):
@@ -97,8 +96,6 @@ class ClassicNotebook(NotebookBase):
         Return the number of the last selected cell
         :return:
         """
-        # TODO: check this works
-        # cp = self.copy(crop=False, selection=False)
         cp = self.reset_selection()
         notebooks = []
         prev = 0
