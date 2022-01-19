@@ -80,6 +80,13 @@ class ClassicNotebook(NotebookBase):
             return cell.num
 
     def copy(self, selection=True, crop=True):
+        """
+        Copy the notebook instance
+
+        :param selection: keep selection
+        :param crop: crop on selection
+        :return: a new copy of the notebook
+        """
         cp = self.__class__(self.raw_nb, self.name, validate=False)
         if selection:
             cp._selector = self._selector
@@ -89,11 +96,17 @@ class ClassicNotebook(NotebookBase):
         return cp
 
     def split(self, *args):
+        """
+        Split the notebook based passed selectors (typically cell indexes)
+
+        :param args:
+        :return:
+        """
         return self.copy().select(args, type='or').split_on_selection()
 
     def split_on_selection(self):
         """
-        Return the number of the last selected cell
+        Split the notebook based on the selected cells
         :return:
         """
         cp = self.reset_selection()

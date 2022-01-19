@@ -307,3 +307,28 @@ def test_auto_slide(runner, test_files):
         nb = IPYNB('nb1.ipynb')
         assert nb.select('has_slide_type', 'slide').count() == 0
         assert nb.select('has_slide_type', 'subslide').count() == 2
+
+
+def test_split(runner, test_files):
+    nb6 = Path(str(test_files / 'nb6.ipynb')).read_text()
+    with runner.isolated_filesystem():
+        with open('nb.ipynb', 'w') as f:
+            f.write(nb6)
+
+        result = runner.invoke(cli, ['split', 'nb.ipynb', '1,6'])
+        assert result.exit_code == 0
+
+        for i in range(3):
+            assert Path(f'nb-{i}.ipynb').exists()
+
+        result = runner.invoke(cli, ['split', 'nb.ipynb', '-i', '1,9', '-o', 'new_nb-%d.ipynb'])
+        assert result.exit_code == 0
+
+        for i in range(3):
+            assert Path(f'new_nb-{i}.ipynb').exists()
+
+        result = runner.invoke(cli, ['split', 'nb.ipynb', '1,6'])
+        assert result.exit_code == 1
+
+        result = runner.invoke(cli, ['split', 'nb.ipynb', '1,6', '-f'])
+        assert result.exit_code == 0
