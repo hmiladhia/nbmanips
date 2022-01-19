@@ -1,3 +1,4 @@
+import re
 import copy
 from functools import reduce
 
@@ -5,7 +6,7 @@ import click
 import cloudpickle
 from click import Group
 
-from nbmanips.selector import Selector
+from nbmanips.selector import Selector, DefaultSelector
 from nbmanips.cli import get_selector
 
 __all__ = [
@@ -13,10 +14,38 @@ __all__ = [
 ]
 
 
+def _is_digit(selector):
+    match = re.fullmatch(r'(-?\d+)', selector)
+
+    if match is None:
+        match = re.fullmatch(r'\[(-?\d+)\]', selector)
+
+    if match is None:
+        return None
+    return match.group(1)
+
+
+def _is_slice(selector):
+    match = re.fullmatch(r'((-?\d+))?(:(-?\d+)?)?(:(-?\d+)?)?', selector)
+
+    if match is None:
+        match = re.fullmatch(r'\[((-?\d+))?(:(-?\d+)?)?(:(-?\d+)?)?\]', selector)
+
+    if match is None:
+        return None
+
+    ret = []
+    for el in match.groups()[1::2]:
+        if el is not None:
+            el = int(el)
+        ret.append(el)
+    return ret
+
+
 class SelectGroup(Group):
     @property
     def dynamic_commands(self):
-        return Selector.default_selectors
+        return DefaultSelector.default_selectors
 
     def resolve_command(self, ctx, args):
         cmd_name, cmd, new_args = super().resolve_command(ctx, args)
@@ -42,15 +71,18 @@ class SelectGroup(Group):
             select_func = self.dynamic_commands[cmd_name]
             short_description = select_func.__doc__.strip().split('\n')[0]
             cmd.help = short_description
-        elif cmd_name.isdigit() or cmd_name.replace(':', '').isdigit():
+        elif _is_slice(cmd_name):
             cmd = copy.deepcopy(select_unknown)
+        elif cmd_name == '[INDEX/SLICE]':
+            cmd = copy.deepcopy(select_unknown)
+            cmd.help = 'Selects Cells based on their index'
 
         return cmd
 
     def list_commands(self, ctx):
         commands = set(self.commands)
-        commands |= set(Selector.default_selectors)
-        commands |= {'INDEX', 'SLICE'}
+        commands |= set(self.dynamic_commands)
+        commands |= {'[INDEX/SLICE]'}
         return sorted(commands)
 
 
@@ -85,10 +117,14 @@ def select(**_):
 @select_params
 @click.pass_context
 def select_unknown(ctx, selector, arguments, kwargs, **_):
-    if selector.isdigit():
-        selector = int(selector)
-    elif selector.replace(':', '').isdigit():
-        selector = slice(*[int(p) for p in selector.split(':')])
+    if selector == '[INDEX/SLICE]':
+        raise ValueError('Provide an index. Example: nb select [-3:-1]')
+    digit_match = _is_digit(selector)
+    slice_match = _is_slice(selector)
+    if digit_match:
+        selector = int(digit_match)
+    elif slice_match:
+        selector = slice(*slice_match)
 
     params = get_params(ctx, **dict(kwargs))
 
