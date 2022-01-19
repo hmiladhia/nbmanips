@@ -590,7 +590,7 @@ class NotebookCellMetadata(ClassicNotebook):
 
 class ContentAnalysisMixin(NotebookBase):
     @property
-    def _toc(self):
+    def toc(self):
         markdown_cells = self.select('is_markdown')
 
         toc = []
@@ -603,8 +603,8 @@ class ContentAnalysisMixin(NotebookBase):
 
         return toc
 
-    def toc(self, width=None, index=False):
-        toc = self._toc
+    def ptoc(self, width=None, index=False):
+        toc = self.toc
 
         if not toc:
             return ''
@@ -631,3 +631,6 @@ class ContentAnalysisMixin(NotebookBase):
             printable_toc.extend(title)
 
         return '\n'.join(printable_toc)
+
+    def show_toc(self, width=None, index=True):
+        print(self.ptoc(width, index))

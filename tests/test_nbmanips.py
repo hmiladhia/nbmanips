@@ -263,12 +263,11 @@ def test_select(nb6, value, expected):
 
 
 def test_toc(nb6):
-    toc = nb6.toc(index=True)
+    toc = nb6.ptoc(index=True)
     match = re.search(r'2\.1\sSubpart\s*\[\d+]', toc)
 
     assert match is not None
 
-    max_width = max(len(line) for line in nb6.toc(width=40, index=True).split('\n'))
+    max_width = max(len(line) for line in nb6.ptoc(width=40, index=True).split('\n'))
 
     assert max_width < 40
-

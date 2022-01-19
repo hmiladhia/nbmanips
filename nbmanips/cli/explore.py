@@ -113,5 +113,5 @@ def toc(notebook_path, width, index):
     nb = Notebook.read(notebook_path)
     selector = get_selector()
 
-    result = nb.select(selector).toc(width, index=index)
+    result = nb.select(selector).ptoc(width, index=index)
     click.echo(result)
