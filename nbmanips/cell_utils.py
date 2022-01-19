@@ -83,7 +83,8 @@ def printable_cell(text, width=None, style='single', color=None, pygments_lexer=
 
 def monochrome(text):
     """
-    Source: https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
+    Source:
+    https://stackoverflow.com/questions/14693701/how-can-i-remove-the-ansi-escape-sequences-from-a-string-in-python
 
     :param text: any text
     """
