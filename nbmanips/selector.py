@@ -3,7 +3,7 @@ from copy import copy
 from itertools import filterfalse
 from typing import Optional, Union, Callable, List
 
-from nbmanips.cell import Cell
+from nbmanips.cell import Cell, MarkdownCell
 from nbmanips.utils import partial
 
 
@@ -396,6 +396,38 @@ def has_slide_type(cell, slide_type):
                lambda c: c.metadata['slideshow']['slide_type'] in slide_type])
 
 
+def has_tag(cell: Cell, tag: str, case=False):
+    """
+    Select cells that have a certain tag
+
+    :param cell: Cell object to select
+    :param tag:
+    :type tag: str
+    :param case:
+    :type case: bool
+    :return: a bool object (True if cell should be selected)
+    """
+    if case:
+        return tag in cell.metadata.get('tags', {})
+    else:
+        return tag.lower() in {cell_tag.lower() for cell_tag in cell.metadata.get('tags', {})}
+
+
+def has_html_tag(cell: MarkdownCell, css_selector: str):
+    """
+    Select cells that have a certain HTML tag
+
+    :param cell: Cell object to select
+    :param css_selector: Css selector
+    :type css_selector: str
+    :return: a bool object (True if cell should be selected)
+    """
+    if not is_markdown(cell):
+        return False
+
+    return bool(cell.soup.select(css_selector))
+
+
 def is_new_slide(cell, subslide=True):
     """
     Selects cells where a new slide/subslide starts
@@ -416,6 +448,8 @@ DefaultSelector.register_selector('is_empty', is_empty)
 DefaultSelector.register_selector('has_output', has_output)
 DefaultSelector.register_selector('has_output_type', has_output_type)
 DefaultSelector.register_selector('has_byte_size', has_byte_size)
+DefaultSelector.register_selector('has_html_tag', has_html_tag)
+DefaultSelector.register_selector('has_tag', has_tag)
 
 # Cell Types
 DefaultSelector.register_selector('has_type', has_type)
