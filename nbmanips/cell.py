@@ -12,7 +12,7 @@ except ImportError:
     pygments = None
     get_lexer_by_name = None
 
-from markdown import Markdown
+from nbconvert.filters.markdown_mistune import IPythonRenderer, MarkdownWithMath
 from bs4 import BeautifulSoup
 
 from nbmanips.cell_utils import printable_cell, FORMATTER, monochrome
@@ -261,7 +261,7 @@ class CodeCell(Cell, cell_type="code"):
 
 
 class MarkdownCell(Cell, cell_type="markdown"):
-    _md = Markdown()
+    _bs4_parser = 'lxml'
 
     def to_str(self, width=None, style='single', use_pygments=None, pygments_lexer=None, color=None, **kwargs):
         use_pygments = pygments is not None if use_pygments is None else use_pygments
@@ -274,12 +274,21 @@ class MarkdownCell(Cell, cell_type="markdown"):
             return self.source
 
     @property
+    def attachments(self):
+        return self.cell.get('attachments', {})
+
+    @property
     def html(self):
-        return self._md.convert(self.source)
+        renderer = IPythonRenderer(
+            escape=False,
+            attachments=self.attachments,
+            exclude_anchor_links=True
+        )
+        return MarkdownWithMath(renderer=renderer).render(self.source)
 
     @property
     def soup(self):
-        return BeautifulSoup(self.html, "lxml")
+        return BeautifulSoup(self.html, self._bs4_parser)
 
 
 class RawCell(Cell, cell_type="raw"):
