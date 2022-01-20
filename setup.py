@@ -11,7 +11,7 @@ setuptools.setup(
     version=version,
     author="Dhia HMILA",
     author_email="dhiahmila@gmail.com",
-    description="nbmanips allows you easily manipulate ipynb files",
+    description="nbmanips allows you easily manipulate notebook files",
     long_description=long_description,
     long_description_content_type="text/markdown",
     license='MIT',
@@ -30,7 +30,9 @@ setuptools.setup(
         'cloudpickle>=1.6.*',
         'click>=7.1.*',
         'Pygments>=2.10.*',
-        'colorama>=0.4.*'
+        'colorama>=0.4.*',
+        'beautifulsoup4>=4.10.*',
+        'lxml'
     ],
     extras_require={
        "images": ["img2text>=0.0.2"],
@@ -46,5 +48,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    keywords=['jupyter', 'notebook', 'ipynb', 'slides', 'notebooks'],
+    keywords=['jupyter', 'notebook', 'ipynb', 'dbc', 'zpln', 'zeppelin', 'slides', 'notebooks'],
 )
