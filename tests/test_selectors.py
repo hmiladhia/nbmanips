@@ -117,3 +117,20 @@ def test_invert_operator(nb1):
 #                          [('text/plain', [1, 3])])
 # def test_has_output_type3(nb3, output_type, expected):
 #     assert nb1.find_all('has_output_type', output_type) == expected
+
+
+def test_has_html_tag(nb6):
+    assert nb6.select('has_html_tag', 'h1').list() == [0, 8, 12]
+    assert nb6.select('has_html_tag', 'h2').list() == [2, 4, 12]
+    assert nb6.select('has_html_tag', 'img').count() == 0
+
+
+def test_has_tag(nb6_0):
+    assert nb6_0.select('has_tag', 'toc').count() == 0
+
+    nb6_0[5].add_tag('toc')
+    nb6_0[8].add_tag('Toc')
+
+    assert nb6_0.select('has_tag', 'Toc').list() == [5, 8]
+    assert nb6_0.select('has_tag', 'toc', case=True).list() == [5]
+    assert nb6_0.select('has_tag', 'Toc', case=True).list() == [8]

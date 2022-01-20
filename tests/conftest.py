@@ -20,6 +20,11 @@ def nb3_0(test_files):
     return Notebook.read_ipynb(test_files / 'nb3.ipynb')
 
 
+@pytest.fixture(scope='function')
+def nb6_0(test_files):
+    return Notebook.read_ipynb(test_files / 'nb6.ipynb')
+
+
 @pytest.fixture(scope='session')
 def nb1(test_files):
     return Notebook.read_ipynb(test_files / 'nb1.ipynb')
