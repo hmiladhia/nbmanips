@@ -340,6 +340,28 @@ def test_split(runner, test_files):
         assert result.exit_code == 0
 
 
+def test_split_on_selection(runner, test_files):
+    nb6 = Path(str(test_files / 'nb6.ipynb')).read_text()
+    with runner.isolated_filesystem():
+        with open('nb.ipynb', 'w') as f:
+            f.write(nb6)
+
+        selection_result = runner.invoke(cli, ['select', 'has_html_tag', 'h1'])
+        assert selection_result.exit_code == 0
+
+        selector = selection_result.stdout_bytes
+        result = runner.invoke(cli, ['split', '-s', 'nb.ipynb', '1,6'], input=selector)
+        assert result.exit_code == 1
+        assert isinstance(result.exception, ValueError)
+
+        selector = selection_result.stdout_bytes
+        result = runner.invoke(cli, ['split', '-s', 'nb.ipynb'], input=selector)
+        assert result.exit_code == 0
+
+        for i in range(3):
+            assert Path(f'nb-{i}.ipynb').exists() is True, f'nb-{i}.ipynb'
+
+
 def test_toc(runner, test_files):
     nb6 = Path(str(test_files / 'nb6.ipynb')).read_text()
     with runner.isolated_filesystem():

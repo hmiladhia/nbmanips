@@ -127,18 +127,28 @@ def erase_output(notebook_path, output, output_types, force):
 @click.argument('indexes', nargs=-1, required=False)
 @click.option('--output', '-o', default=None)
 @click.option('--index', '-i', multiple=True)
+@click.option('--use-selection', '-s', is_flag=True, default=False)
 @click.option(
     '--force', '-f', is_flag=True, default=False,
     help='Do not prompt for confirmation if file already exists'
 )
-def split(notebook_path, output, indexes, index, force):
-    indexes = reduce(add, [index.split(',') for index in list(indexes) + list(index)])
-    indexes = [int(index) for index in indexes]
+def split(notebook_path, output, indexes, index, force, use_selection):
+    if index or indexes:
+        indexes = reduce(add, [index.split(',') for index in list(indexes) + list(index)])
+        indexes = [int(index) for index in indexes]
+    elif not use_selection:
+        raise ValueError('You need to specify the cells to split on')
+
+    if indexes and use_selection:
+        raise ValueError('Cannot use selection and indexes at the same time')
 
     nb = Notebook.read(notebook_path)
     selector = get_selector()
 
-    nbs = nb.select(selector).split(*indexes)
+    if use_selection:
+        nbs = nb.select(selector).split_on_selection()
+    else:
+        nbs = nb.select(selector).split(*indexes)
 
     # Exporting
     base, ext = os.path.splitext(notebook_path)
