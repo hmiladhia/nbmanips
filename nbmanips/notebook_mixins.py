@@ -639,7 +639,7 @@ class ContentAnalysisMixin(NotebookBase):
     def show_toc(self, width=None, index=True):
         print(self.ptoc(width, index))
 
-    def add_toc(self, pos=0):
+    def add_toc(self, pos=0, bullets=False):
         from nbmanips.cell import Cell
 
         toc = self.toc
@@ -655,7 +655,9 @@ class ContentAnalysisMixin(NotebookBase):
             numbered_toc.append((stack[ind], ind, title))
 
         indented_toc = [
-            '  ' * (ind - min_indentation) + f"{num}. [{title}](#{title.replace(' ', '-')})\n"
+            '  ' * (ind - min_indentation) +
+            ("- " if bullets else f"{num}. ") +
+            f"[{title}](#{title.replace(' ', '-')})\n"
             for num, ind, title in numbered_toc
         ]
 

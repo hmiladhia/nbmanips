@@ -274,6 +274,19 @@ def test_toc(nb6):
     assert max_width < 40
 
 
+def test_add_toc(nb6_0):
+    len_nb6 = len(nb6_0)
+    nb6_0.add_toc(1, bullets=True)
+
+    assert len(nb6_0) == len_nb6 + 1
+
+    match = re.search(r'\[2\.1\sSubpart]\(#2\.1-Subpart\)', nb6_0[1].first_cell().source)
+
+    assert match is not None
+
+    assert nb6_0[1].select('has_html_tag', 'a').count() == 1
+
+
 def test_and_operator(nb1):
     selection = nb1.select('contains', 'a') & nb1.select('contains', '=')
     assert selection.list() == [2]
