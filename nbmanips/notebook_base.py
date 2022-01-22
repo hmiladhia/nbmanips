@@ -174,6 +174,6 @@ class NotebookBase:
         if not isinstance(content, dict):
             message = f"'content' must be of type 'dict': {type(content).__name__!r} given"
             if isinstance(content, str):
-                message += "\nUse Notebook.read_ipynb(path) to read notebook from file"
+                message += "\nUse Notebook.read(path) to read notebook from file"
             raise ValueError(message)
         nbformat.validate(nbdict=content)

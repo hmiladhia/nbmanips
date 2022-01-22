@@ -334,7 +334,7 @@ def has_output(cell, value=True):
 
 def has_output_type(cell, output_type: Union[set, str]):
     """
-    Select cells that have a given output_type
+    Selects cells that have a given output_type
 
     :param cell: Cell object to select
     :param output_type: Output Type(MIME type) to select: text/plain, text/html, image/png, ...
@@ -381,7 +381,7 @@ def has_byte_size(cell, min_size=0, max_size: Optional[int] = None, output_types
 
 def has_slide_type(cell, slide_type):
     """
-    Select cells that have a given slide type
+    Selects markdown cells that have a given slide type
 
     :param cell: Cell object to select
     :param slide_type: Slide Type(s): '-', 'skip', 'slide', 'subslide', 'fragment', 'notes'
@@ -398,7 +398,7 @@ def has_slide_type(cell, slide_type):
 
 def has_tag(cell: Cell, tag: str, case=False):
     """
-    Select cells that have a certain tag
+    Selects cells that have a certain tag
 
     :param cell: Cell object to select
     :param tag:
