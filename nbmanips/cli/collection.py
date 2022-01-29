@@ -29,10 +29,10 @@ def cat(file, select, output, force):
     nbs = [Notebook.read(notebook_path) for notebook_path in file]
     selector = get_selector()
 
-    if select:
-        nbs[select] = nbs[select].select(selector)
-    else:
+    if select is None:
         nbs = [nb.select(selector) for nb in nbs]
+    else:
+        nbs[select] = nbs[select].select(selector)
 
     nb = reduce(add, nbs)
     if output:
