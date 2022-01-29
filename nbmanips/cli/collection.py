@@ -12,7 +12,7 @@ __all__ = [
 
 
 @click.command(help="Concatenate Jupyter FILE(s) to standard output")
-@click.argument('file', nargs=-1)
+@click.argument('file', nargs=-1, required=True)
 @click.option('--output', '-o', default=None)
 @click.option(
     '--force', '-f', is_flag=True, default=False,
