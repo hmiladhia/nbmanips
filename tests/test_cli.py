@@ -371,3 +371,22 @@ def test_toc(runner, test_files):
         result = runner.invoke(cli, ['toc', 'nb.ipynb', '-w', '60'])
         assert result.exit_code == 0
         assert len(result.output.strip().split('\n')) == 16
+
+
+def test_cat(runner, test_files):
+    nb1 = Path(str(test_files / 'nb1.ipynb')).read_text()
+    nb2 = Path(str(test_files / 'nb2.ipynb')).read_text()
+    with runner.isolated_filesystem():
+        with open('nb1.ipynb', 'w') as f:
+            f.write(nb1)
+
+        with open('nb2.ipynb', 'w') as f:
+            f.write(nb2)
+
+        result = runner.invoke(cli, ['cat', 'nb1.ipynb', 'nb2.ipynb', '-o', 'nb3.ipynb'])
+        assert result.exit_code == 0
+
+        nb1 = IPYNB('nb1.ipynb')
+        nb2 = IPYNB('nb2.ipynb')
+        nb3 = IPYNB('nb3.ipynb')
+        assert len(nb3) == len(nb1) + len(nb2)
