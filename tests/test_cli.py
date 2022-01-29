@@ -390,3 +390,24 @@ def test_cat(runner, test_files):
         nb2 = IPYNB('nb2.ipynb')
         nb3 = IPYNB('nb3.ipynb')
         assert len(nb3) == len(nb1) + len(nb2)
+
+        selector_result = runner.invoke(cli, ['select', '0'])
+        result = runner.invoke(
+            cli,
+            ['cat', 'nb1.ipynb', 'nb2.ipynb', '-o', 'nb4.ipynb', '-s', '0'],
+            input=selector_result.stdout_bytes
+        )
+        assert result.exit_code == 0
+
+        nb4 = IPYNB('nb4.ipynb')
+        assert len(nb4) == 1 + len(nb2)
+
+        result = runner.invoke(
+            cli,
+            ['cat', 'nb1.ipynb', 'nb2.ipynb', '-o', 'nb5.ipynb'],
+            input=selector_result.stdout_bytes
+        )
+        assert result.exit_code == 0
+
+        nb5 = IPYNB('nb5.ipynb')
+        assert len(nb5) == 2
