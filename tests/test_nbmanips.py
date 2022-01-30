@@ -113,7 +113,7 @@ def test_replace(nb1_0, old, new, case, count, regex, expected_old, expected_new
 
 @pytest.mark.parametrize("selector, selector_kwargs, search_term, expected", [
     ('contains', {'text': 'Hello'}, 'World', []),
-    ('contains', {'text': 'Hllo'}, 'World', [1]),
+    ('contains', {'text': 'Hi'}, 'World', [1]),
     ('contains', {'text': 'a '}, 'a', [0, 3]),
 ])
 def test_erase(nb1_0, selector, selector_kwargs, search_term, expected):
@@ -130,7 +130,7 @@ def test_erase_output(nb3_0):
 
 @pytest.mark.parametrize("selector, selector_kwargs, search_term, expected, expected_length", [
     ('contains', {'text': 'Hello'}, 'World', [], 3),
-    ('contains', {'text': 'Hllo'}, 'World', [1], 4),
+    ('contains', {'text': 'Hi'}, 'World', [1], 4),
     ('contains', {'text': 'a '}, 'a', [0, 2], 3),
 ])
 def test_delete(nb1_0, selector, selector_kwargs, search_term, expected, expected_length):
@@ -141,7 +141,7 @@ def test_delete(nb1_0, selector, selector_kwargs, search_term, expected, expecte
 
 @pytest.mark.parametrize("selector, selector_kwargs, search_term, expected, expected_length", [
     ('contains', {'text': 'Hello'}, 'World', [0], 1),
-    ('contains', {'text': 'Hllo'}, 'World', [], 0),
+    ('contains', {'text': 'Hi'}, 'World', [], 0),
     ('contains', {'text': 'a'}, 'a', [0, 1, 2], 3),
     ('contains', {'text': 'a '}, 'a', [0], 1),
 ])
