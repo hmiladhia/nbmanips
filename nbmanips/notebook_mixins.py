@@ -644,6 +644,9 @@ class ContentAnalysisMixin(NotebookBase):
 
         toc = self.toc
 
+        if not toc:
+            raise ValueError('Could not build Table of contents. No headers found.')
+
         min_indentation = min(ind_level for ind_level, _, _ in toc)
 
         numbered_toc = []
