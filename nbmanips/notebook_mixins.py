@@ -181,13 +181,13 @@ class SlideShowMixin(ClassicNotebook):
                 cells_count = 1
                 img_count = 1 if is_image else 0
 
-    def auto_slide(self, max_cells_per_slide=3, max_images_per_slide=1, *_, delete_empty=True):
+    def auto_slide(self, max_cells_per_slide=3, max_images_per_slide=1, *_, delete_empty=True, title_tags='h1, h2'):
         # Delete Empty
         if delete_empty:
             self.select('is_empty').delete()
 
         # Each title represents
-        self.select('is_markdown').select('contains', '#').set_slide()
+        self.select('has_html_tag', title_tags).set_slide()
 
         # Create a new slide only
         for cell in reversed(list(self.iter_cells())):
