@@ -7,8 +7,8 @@
 
 A collections of utilities to manipulate IPython/Jupyter Notebooks via a python script.
 
-## Usage/Examples
-### Basic usage
+## I - Usage/Examples
+### 1 - Basic usage
 A simple example of using nbmanips:
 
 ```python
@@ -32,7 +32,7 @@ Examples of operations you can perform on a Notebook:
 - `delete`: Delete the selected cells
 - `keep`: Kepp the selected cells
 
-### Selectors
+### 2 - Selectors
 To select cells on which to apply the previous operations, you can use:
 
 - The cell number
@@ -88,7 +88,7 @@ nb.select(['markdown_cells', 'is_empty']).show()
 nb.select(['markdown_cells', 'code_cells'], type='or').show()
 ```
  
-### Export Formats
+### 3 - Export Formats
 You can export the notebooks to these formats:
 
 - to_ipynb
@@ -99,7 +99,7 @@ You can export the notebooks to these formats:
 - to_py (to python)
 - to_text (textual representation of the notebook)
 
-### Slide manipulations
+### 4 - Slide manipulations
 You can manipulate the slides by tagging which cells to keep and which to skip. 
 The following actions are available:
 
@@ -123,11 +123,16 @@ nb.auto_slide()
 nb.to_slides("new_slides.slides.html", theme='beige')
 ```
 
-## CLI
-### Show a notebook
+## II - CLI
+### 1 - Show a notebook
 To get a readable representation of the notebook 
 ```bash
 nb show my_notebook.ipynb
+```
+
+Other options are available. For example, you can customize the style, weather to truncate the output of cells:
+```bash
+nb show -s double -t 100 my_notebook.ipynb
 ```
 
 To show a subset of the notebook cells, you can perform a select operation:
@@ -137,7 +142,7 @@ nb select 0:3 | nb show my_notebook.ipynb
 # Or if you're using negative indexes ( to show the last 3 cells )
 nb select [-3:] | nb show my_notebook.ipynb
 ```
-### Basic usage
+### 2 - Basic usage
 A simple example of using nbmanips via the cli:
 
 ```bash
@@ -148,7 +153,18 @@ nb select empty | nb delete my_notebook.ipynb --output new_notebook.ipynb
 nbmanips select empty | nbmanips delete my_notebook.ipynb --output new_notebook.ipynb
 ```
 
-### Export Formats
+You could also show the table of contents of a certain notebook:
+```bash
+nb toc nb.ipynb
+```
+
+Or split a notebook into multiple notebooks:
+
+```bash
+nb split nb.ipynb 5,9
+```
+
+### 3 - Export Formats
 You can convert a notebook to the following formats:
 
 - html: `nb convert html my_notebook.ipynb --output my_notebook.html`
@@ -156,7 +172,7 @@ You can convert a notebook to the following formats:
 - md (to markdown): `nb convert md my_notebook.ipynb --output my_notebook.md`
 - py (to python): `nb convert py my_notebook.ipynb --output my_notebook.py`
 
-### Slide manipulations
+### 4 - Slide manipulations
 ```bash
 # Automatically set slides
 nb auto-slide -f my_notebook.ipynb
@@ -178,6 +194,17 @@ If you need more details you can check the --help option:
 ```
 nbmanips --help
 ```
+
+## III - Optional Requirements
+
+There are optional requirements you may want to install to render images in the terminal. 
+The results, however, are not always convincing.
+If you want to enable this feature, you can just run the following command:
+
+```bash
+pip install nbmanips[images]
+```
+
 ## Roadmap
 
 - Add Custom Templates
