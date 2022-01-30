@@ -8,9 +8,13 @@ from nbmanips.selector import Selector
 
 
 class NotebookBase:
-    def __init__(self, content: Optional[dict], name=None, validate=True):
+    def __init__(self, content: Optional[dict] = None, name=None, validate=True):
+        if content is None:
+            content = dict(nbformat.v4.new_notebook())
+
         if validate:
             self.__validate(content)
+
         self.raw_nb = copy.deepcopy(content)
         self.name = name
         self._selector = Selector(None)
@@ -174,6 +178,6 @@ class NotebookBase:
         if not isinstance(content, dict):
             message = f"'content' must be of type 'dict': {type(content).__name__!r} given"
             if isinstance(content, str):
-                message += "\nUse Notebook.read_ipynb(path) to read notebook from file"
+                message += "\nUse Notebook.read(path) to read notebook from file"
             raise ValueError(message)
         nbformat.validate(nbdict=content)

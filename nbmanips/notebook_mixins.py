@@ -1,5 +1,7 @@
 import os
 import json
+import shutil
+import textwrap
 from pathlib import Path
 from copy import deepcopy
 from typing import Union, Any
@@ -77,6 +79,49 @@ class ClassicNotebook(NotebookBase):
         for cell in reversed(list(self.iter_cells())):
             return cell.num
 
+    def copy(self, selection=True, crop=True):
+        """
+        Copy the notebook instance
+
+        :param selection: keep selection
+        :param crop: crop on selection
+        :return: a new copy of the notebook
+        """
+        cp = self.__class__(self.raw_nb, self.name, validate=False)
+        if selection:
+            cp._selector = self._selector
+            if crop:
+                cp.keep()
+                cp = cp.reset_selection()
+        return cp
+
+    def split(self, *args):
+        """
+        Split the notebook based passed selectors (typically cell indexes)
+
+        :param args:
+        :return:
+        """
+        return self.copy().select(args, type='or').split_on_selection()
+
+    def split_on_selection(self):
+        """
+        Split the notebook based on the selected cells
+        :return:
+        """
+        cp = self.reset_selection()
+        notebooks = []
+        prev = 0
+        for cell in list(self.iter_cells()):
+            if cell.num == prev:
+                continue
+
+            notebooks.append(cp[prev:cell.num].copy())
+
+            prev = cell.num
+        notebooks.append(cp[prev:].copy())
+        return notebooks
+
     def list(self):
         """
         Return the numbers of the selected cells
@@ -136,13 +181,13 @@ class SlideShowMixin(ClassicNotebook):
                 cells_count = 1
                 img_count = 1 if is_image else 0
 
-    def auto_slide(self, max_cells_per_slide=3, max_images_per_slide=1, *_, delete_empty=True):
+    def auto_slide(self, max_cells_per_slide=3, max_images_per_slide=1, *_, delete_empty=True, title_tags='h1, h2'):
         # Delete Empty
         if delete_empty:
             self.select('is_empty').delete()
 
         # Each title represents
-        self.select('is_markdown').select('contains', '#').set_slide()
+        self.select('has_html_tag', title_tags).set_slide()
 
         # Create a new slide only
         for cell in reversed(list(self.iter_cells())):
@@ -545,3 +590,80 @@ class NotebookCellMetadata(ClassicNotebook):
         :param value: boolean
         """
         self.update_cell_metadata('jupyter', {'outputs_hidden': value})
+
+
+class ContentAnalysisMixin(NotebookBase):
+    @property
+    def toc(self):
+        markdown_cells = self.select('is_markdown')
+
+        toc = []
+        indentation_levels = []
+        for cell in markdown_cells.iter_cells():
+            for element in cell.soup.select('h1, h2, h3, h4, h5, h6'):
+                indentation_level = int(element.name[-1]) - 1
+                indentation_levels.append(indentation_level)
+                toc.append((indentation_level, element.text, cell.num))
+
+        return toc
+
+    def ptoc(self, width=None, index=False):
+        toc = self.toc
+
+        if not toc:
+            return ''
+
+        min_indentation = min(ind_level for ind_level, _, _ in toc)
+
+        indented_toc = [
+            ('  ' * (ind - min_indentation) + title, cell_num)
+            for ind, title, cell_num in toc
+        ]
+
+        if width is None:
+            max_width = shutil.get_terminal_size().columns
+            max_length = max(len(x) for x, _ in indented_toc) + 7
+            width = min(max_width, max_length)
+        width -= 7
+
+        wrapped_toc = [(textwrap.wrap(title, width), n) for title, n in indented_toc]
+
+        printable_toc = []
+        for title, cell_num in wrapped_toc:
+            if index:
+                title[0] = title[0] + ' ' * (width - len(title[0])) + f'  [{cell_num}]'
+            printable_toc.extend(title)
+
+        return '\n'.join(printable_toc)
+
+    def show_toc(self, width=None, index=True):
+        print(self.ptoc(width, index))
+
+    def add_toc(self, pos=0, bullets=False):
+        from nbmanips.cell import Cell
+
+        toc = self.toc
+
+        if not toc:
+            raise ValueError('Could not build Table of contents. No headers found.')
+
+        min_indentation = min(ind_level for ind_level, _, _ in toc)
+
+        numbered_toc = []
+        stack = [0, 0, 0, 0, 0, 0]
+        for ind, title, _ in toc:
+            for i in range(ind+1, len(stack)):
+                stack[i] = 0
+            stack[ind] += 1
+            numbered_toc.append((stack[ind], ind, title))
+
+        indented_toc = [
+            '  ' * (ind - min_indentation) +
+            ("- " if bullets else f"{num}. ") +
+            f"[{title}](#{title.replace(' ', '-')})\n"
+            for num, ind, title in numbered_toc
+        ]
+
+        toc_cell = Cell({'cell_type': 'markdown', 'source': '\n'.join(indented_toc), 'metadata': {}})
+
+        self.add_cell(toc_cell, pos)

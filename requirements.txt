@@ -6,3 +6,5 @@ cloudpickle==1.6.0
 Pygments==2.10.*
 ipython==7.27.0
 colorama==0.4.4
+lxml==4.7.1
+beautifulsoup4==4.10.0

@@ -313,3 +313,101 @@ def test_auto_slide(runner, test_files):
         nb = IPYNB('nb1.ipynb')
         assert nb.select('has_slide_type', 'slide').count() == 0
         assert nb.select('has_slide_type', 'subslide').count() == 2
+
+
+def test_split(runner, test_files):
+    nb6 = Path(str(test_files / 'nb6.ipynb')).read_text()
+    with runner.isolated_filesystem():
+        with open('nb.ipynb', 'w') as f:
+            f.write(nb6)
+
+        result = runner.invoke(cli, ['split', 'nb.ipynb', '1,6'])
+        assert result.exit_code == 0
+
+        for i in range(3):
+            assert Path(f'nb-{i}.ipynb').exists()
+
+        result = runner.invoke(cli, ['split', 'nb.ipynb', '-i', '1,9', '-o', 'new_nb-%d.ipynb'])
+        assert result.exit_code == 0
+
+        for i in range(3):
+            assert Path(f'new_nb-{i}.ipynb').exists()
+
+        result = runner.invoke(cli, ['split', 'nb.ipynb', '1,6'])
+        assert result.exit_code == 1
+
+        result = runner.invoke(cli, ['split', 'nb.ipynb', '1,6', '-f'])
+        assert result.exit_code == 0
+
+
+def test_split_on_selection(runner, test_files):
+    nb6 = Path(str(test_files / 'nb6.ipynb')).read_text()
+    with runner.isolated_filesystem():
+        with open('nb.ipynb', 'w') as f:
+            f.write(nb6)
+
+        selection_result = runner.invoke(cli, ['select', 'has_html_tag', 'h1'])
+        assert selection_result.exit_code == 0
+
+        selector = selection_result.stdout_bytes
+        result = runner.invoke(cli, ['split', '-s', 'nb.ipynb', '1,6'], input=selector)
+        assert result.exit_code == 1
+        assert isinstance(result.exception, ValueError)
+
+        selector = selection_result.stdout_bytes
+        result = runner.invoke(cli, ['split', '-s', 'nb.ipynb'], input=selector)
+        assert result.exit_code == 0
+
+        for i in range(3):
+            assert Path(f'nb-{i}.ipynb').exists() is True, f'nb-{i}.ipynb'
+
+
+def test_toc(runner, test_files):
+    nb6 = Path(str(test_files / 'nb6.ipynb')).read_text()
+    with runner.isolated_filesystem():
+        with open('nb.ipynb', 'w') as f:
+            f.write(nb6)
+
+        result = runner.invoke(cli, ['toc', 'nb.ipynb', '-w', '60'])
+        assert result.exit_code == 0
+        assert len(result.output.strip().split('\n')) == 16
+
+
+def test_cat(runner, test_files):
+    nb1 = Path(str(test_files / 'nb1.ipynb')).read_text()
+    nb2 = Path(str(test_files / 'nb2.ipynb')).read_text()
+    with runner.isolated_filesystem():
+        with open('nb1.ipynb', 'w') as f:
+            f.write(nb1)
+
+        with open('nb2.ipynb', 'w') as f:
+            f.write(nb2)
+
+        result = runner.invoke(cli, ['cat', 'nb1.ipynb', 'nb2.ipynb', '-o', 'nb3.ipynb'])
+        assert result.exit_code == 0
+
+        nb1 = IPYNB('nb1.ipynb')
+        nb2 = IPYNB('nb2.ipynb')
+        nb3 = IPYNB('nb3.ipynb')
+        assert len(nb3) == len(nb1) + len(nb2)
+
+        selector_result = runner.invoke(cli, ['select', '0'])
+        result = runner.invoke(
+            cli,
+            ['cat', 'nb1.ipynb', 'nb2.ipynb', '-o', 'nb4.ipynb', '-s', '0'],
+            input=selector_result.stdout_bytes
+        )
+        assert result.exit_code == 0
+
+        nb4 = IPYNB('nb4.ipynb')
+        assert len(nb4) == 1 + len(nb2)
+
+        result = runner.invoke(
+            cli,
+            ['cat', 'nb1.ipynb', 'nb2.ipynb', '-o', 'nb5.ipynb'],
+            input=selector_result.stdout_bytes
+        )
+        assert result.exit_code == 0
+
+        nb5 = IPYNB('nb5.ipynb')
+        assert len(nb5) == 2

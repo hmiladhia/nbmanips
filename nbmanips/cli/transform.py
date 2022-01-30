@@ -1,3 +1,7 @@
+import os.path
+from functools import reduce
+from operator import add
+
 import click
 
 from nbmanips import Notebook
@@ -9,7 +13,8 @@ __all__ = [
     'keep',
     'replace',
     'auto_slide',
-    'erase_output'
+    'erase_output',
+    'split'
 ]
 
 
@@ -115,3 +120,42 @@ def erase_output(notebook_path, output, output_types, force):
 
     nb.select(selector).erase_output(output_types)
     export(nb, notebook_path, output, force=force)
+
+
+@click.command(help="Split the notebook based the cell indexes")
+@click.argument('notebook_path')
+@click.argument('indexes', nargs=-1, required=False)
+@click.option('--output', '-o', default=None)
+@click.option('--index', '-i', multiple=True)
+@click.option('--use-selection', '-s', is_flag=True, default=False)
+@click.option(
+    '--force', '-f', is_flag=True, default=False,
+    help='Do not prompt for confirmation if file already exists'
+)
+def split(notebook_path, output, indexes, index, force, use_selection):
+    if index or indexes:
+        indexes = reduce(add, [index.split(',') for index in list(indexes) + list(index)])
+        indexes = [int(index) for index in indexes]
+    elif not use_selection:
+        raise ValueError('You need to specify the cells to split on')
+
+    if indexes and use_selection:
+        raise ValueError('Cannot use selection and indexes at the same time')
+
+    nb = Notebook.read(notebook_path)
+    selector = get_selector()
+
+    if use_selection:
+        nbs = nb.select(selector).split_on_selection()
+    else:
+        nbs = nb.select(selector).split(*indexes)
+
+    # Exporting
+    base, ext = os.path.splitext(notebook_path)
+    input_path = base + '-%d' + ext
+    for i, nb in enumerate(nbs):
+        if output:
+            output_path = output % i
+        else:
+            output_path = None
+        export(nb, input_path % i, output_path, force=force)

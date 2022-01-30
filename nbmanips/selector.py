@@ -3,7 +3,7 @@ from copy import copy
 from itertools import filterfalse
 from typing import Optional, Union, Callable, List
 
-from nbmanips.cell import Cell
+from nbmanips.cell import Cell, MarkdownCell
 from nbmanips.utils import partial
 
 
@@ -334,7 +334,7 @@ def has_output(cell, value=True):
 
 def has_output_type(cell, output_type: Union[set, str]):
     """
-    Select cells that have a given output_type
+    Selects cells that have a given output_type
 
     :param cell: Cell object to select
     :param output_type: Output Type(MIME type) to select: text/plain, text/html, image/png, ...
@@ -381,7 +381,7 @@ def has_byte_size(cell, min_size=0, max_size: Optional[int] = None, output_types
 
 def has_slide_type(cell, slide_type):
     """
-    Select cells that have a given slide type
+    Selects markdown cells that have a given slide type
 
     :param cell: Cell object to select
     :param slide_type: Slide Type(s): '-', 'skip', 'slide', 'subslide', 'fragment', 'notes'
@@ -394,6 +394,38 @@ def has_slide_type(cell, slide_type):
     return all(f(cell) for f in [lambda c: 'slideshow' in c.metadata,
                lambda c: 'slide_type' in c.metadata['slideshow'],
                lambda c: c.metadata['slideshow']['slide_type'] in slide_type])
+
+
+def has_tag(cell: Cell, tag: str, case=False):
+    """
+    Selects cells that have a certain tag
+
+    :param cell: Cell object to select
+    :param tag:
+    :type tag: str
+    :param case:
+    :type case: bool
+    :return: a bool object (True if cell should be selected)
+    """
+    if case:
+        return tag in cell.metadata.get('tags', {})
+    else:
+        return tag.lower() in {cell_tag.lower() for cell_tag in cell.metadata.get('tags', {})}
+
+
+def has_html_tag(cell: MarkdownCell, css_selector: str):
+    """
+    Select cells that have a certain HTML tag
+
+    :param cell: Cell object to select
+    :param css_selector: Css selector
+    :type css_selector: str
+    :return: a bool object (True if cell should be selected)
+    """
+    if not is_markdown(cell):
+        return False
+
+    return bool(cell.soup.select(css_selector))
 
 
 def is_new_slide(cell, subslide=True):
@@ -416,6 +448,8 @@ DefaultSelector.register_selector('is_empty', is_empty)
 DefaultSelector.register_selector('has_output', has_output)
 DefaultSelector.register_selector('has_output_type', has_output_type)
 DefaultSelector.register_selector('has_byte_size', has_byte_size)
+DefaultSelector.register_selector('has_html_tag', has_html_tag)
+DefaultSelector.register_selector('has_tag', has_tag)
 
 # Cell Types
 DefaultSelector.register_selector('has_type', has_type)

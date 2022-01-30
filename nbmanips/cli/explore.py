@@ -13,7 +13,8 @@ __all__ = [
     'first',
     'last',
     'list_',
-    'search'
+    'search',
+    'toc'
 ]
 
 
@@ -103,4 +104,16 @@ def search(notebook_path, text, case, output, regex):
     selector = get_selector()
 
     result = nb.select(selector).search_all(text, case, output, regex)
+    click.echo(result)
+
+
+@click.command(help="Return the numbers of the selected cells")
+@click.argument('notebook_path')
+@click.option('--width', '-w', type=int, required=False, default=None)
+@click.option('--index/--no-index', '-i/-ni', is_flag=True, default=True)
+def toc(notebook_path, width, index):
+    nb = Notebook.read(notebook_path)
+    selector = get_selector()
+
+    result = nb.select(selector).ptoc(width, index=index)
     click.echo(result)

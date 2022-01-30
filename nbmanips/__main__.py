@@ -5,6 +5,7 @@ from nbmanips.cli.select import select
 from nbmanips.cli.convert import convert
 import nbmanips.cli.explore as explore
 import nbmanips.cli.transform as transform
+import nbmanips.cli.collection as collection
 
 __all__ = [
     'nbmanips'
@@ -27,6 +28,7 @@ nbmanips.add_command(convert)
 nbmanips.add_command(select)
 _add_commands(explore)
 _add_commands(transform)
+_add_commands(collection)
 
 
 if __name__ == '__main__':
