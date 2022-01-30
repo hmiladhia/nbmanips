@@ -8,9 +8,13 @@ from nbmanips.selector import Selector
 
 
 class NotebookBase:
-    def __init__(self, content: Optional[dict], name=None, validate=True):
+    def __init__(self, content: Optional[dict] = None, name=None, validate=True):
+        if content is None:
+            content = dict(nbformat.v4.new_notebook())
+
         if validate:
             self.__validate(content)
+
         self.raw_nb = copy.deepcopy(content)
         self.name = name
         self._selector = Selector(None)
