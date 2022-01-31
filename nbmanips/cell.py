@@ -57,6 +57,10 @@ class Cell:
     def source(self):
         return self.get_source().strip()
 
+    @source.setter
+    def source(self, source: str):
+        self.set_source(source)
+
     @property
     def output(self):
         return self.get_output(text=True).strip()
@@ -95,12 +99,13 @@ class Cell:
         source = self.cell['source']
 
         if text and not isinstance(source, str):
-            return '\n'.join(source)
+            return ''.join(source)
         return source
 
-    def set_source(self, content, text=False):
+    def set_source(self, content: str, text=False):
         if text:
-            content = content.split('\n')
+            lines = content.split('\n')
+            content = [f'{line}\n' if i != len(lines) else line for i, line in enumerate(lines)]
         self.cell['source'] = content
 
     def contains(self, text, case=True, output=False, regex=False, flags=0):

@@ -57,11 +57,10 @@ class Notebook(
         :param regex: boolean whether to use regex or not
         """
 
-        n_cells = 0
         compiled_regex = re.compile(old if regex else re.escape(old), flags=0 if case else re.IGNORECASE)
-        for cell in self.select('contains', text=old, case=case, regex=regex).iter_cells():
-            cell.set_source(compiled_regex.sub(new, cell.get_source()).split('\n'))
-            n_cells += 1
+        selection = self.select('contains', text=old, case=case, regex=regex)
+        for n_cells, cell in enumerate(selection.iter_cells(), start=1):
+            cell.source = compiled_regex.sub(new, cell.get_source())
             if count is not None and n_cells >= count:
                 break
 
