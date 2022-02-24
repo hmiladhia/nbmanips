@@ -64,18 +64,28 @@ class Notebook(
             if count is not None and n_cells >= count:
                 break
 
-    def burn_attachments(self, relative_path=None):
+    def burn_attachments(self, relative_path=None, html=True):
         from functools import partial
-        from nbmanips.utils import burn_attachment_md, get_relative_path
+        from nbmanips.utils import burn_attachment_md
+        from nbmanips.utils import burn_attachment_html
+        from nbmanips.utils import get_relative_path
 
         relative_path = get_relative_path(self, relative_path)
 
-        compiled_regex = re.compile(r'!\[(?P<alt_text>.*?)]\((?P<PATH>.*?)\)')
+        compiled_md_regex = re.compile(r'!\[(?P<alt_text>.*?)]\((?P<PATH>.*?)\)')
+        compiled_html_regex = re.compile(r'<img\s(?P<PREFIX>.*?)src\s*=\s*"(?P<PATH>.*?)"(?P<SUFFIX>.*?)>')
         selection = self.select('markdown_cells')
         for cell in selection.iter_cells():
-            source = cell.get_source()
+            # replace markdown
             rep_func = partial(burn_attachment_md, cell=cell, relative_path=relative_path)
-            cell.source = compiled_regex.sub(rep_func, source)
+            cell.source = compiled_md_regex.sub(rep_func, cell.get_source())
+
+            if not html:
+                continue
+
+            # replace html
+            rep_func = partial(burn_attachment_html, cell=cell, relative_path=relative_path)
+            cell.source = compiled_html_regex.sub(rep_func, cell.get_source())
 
 
 class IPYNB(Notebook):

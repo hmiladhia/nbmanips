@@ -241,3 +241,16 @@ def burn_attachment_md(match, cell, relative_path):
 
     cell.attach(str(path))
     return f'![{alt_text}](attachment:{path.name})'
+
+
+def burn_attachment_html(match, cell, relative_path):
+    prefix = match.group('PREFIX')
+    path = relative_path / match.group('PATH')
+    suffix = match.group('SUFFIX')
+
+    if not path.exists():
+        path = match.group('PATH')
+        return f'<img {prefix}src="{path}"{suffix}>'
+
+    cell.attach(str(path))
+    return f'<img {prefix}src="attachment:{path.name}"{suffix}>'
