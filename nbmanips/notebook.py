@@ -64,6 +64,19 @@ class Notebook(
             if count is not None and n_cells >= count:
                 break
 
+    def burn_attachments(self, relative_path=None):
+        from functools import partial
+        from nbmanips.utils import burn_attachment_md, get_relative_path
+
+        relative_path = get_relative_path(self, relative_path)
+
+        compiled_regex = re.compile(r'!\[(?P<alt_text>.*?)]\((?P<PATH>.*?)\)')
+        selection = self.select('markdown_cells')
+        for cell in selection.iter_cells():
+            source = cell.get_source()
+            rep_func = partial(burn_attachment_md, cell=cell, relative_path=relative_path)
+            cell.source = compiled_regex.sub(rep_func, source)
+
 
 class IPYNB(Notebook):
     def __new__(cls, path, name=None):

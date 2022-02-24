@@ -2,6 +2,8 @@ import os
 import json
 import zipfile
 from io import StringIO
+from pathlib import Path
+
 from html2text import html2text
 
 from functools import wraps
@@ -218,3 +220,24 @@ def partial(func, *args, **keywords):
         new_keywords = {**f_keywords, **keywords}
         return func(*f_args, *args, **new_keywords)
     return new_func
+
+
+def get_relative_path(nb, relative_path=None):
+    if relative_path is None:
+        relative_path = getattr(nb, '_original_path')
+        if relative_path:
+            return Path(relative_path).parent
+        return Path.cwd()
+
+    return Path(relative_path)
+
+
+def burn_attachment_md(match, cell, relative_path):
+    alt_text = match.group('alt_text')
+    path = relative_path / match.group('PATH')
+    if not path.exists():
+        path = match.group('PATH')
+        return f'![{alt_text}]({path})'
+
+    cell.attach(str(path))
+    return f'![{alt_text}](attachment:{path.name})'
