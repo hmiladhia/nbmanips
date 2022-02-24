@@ -285,7 +285,7 @@ class MarkdownCell(Cell, cell_type="markdown"):
         return self.cell.setdefault('attachments', {})
 
     def attach(self, path: str, attachment_name: Optional[str] = None):
-        mime_type = get_mime_type(path)
+        mime_type = get_mime_type(str(path))
         path = Path(path)
         self.attachments[attachment_name or path.name] = {
             mime_type: base64.encodebytes(path.read_bytes()).decode('utf-8')
