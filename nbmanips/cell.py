@@ -1,5 +1,7 @@
-import uuid
 import re
+import uuid
+import base64
+from pathlib import Path
 from copy import deepcopy
 from typing import Any, Optional, Union
 
@@ -15,7 +17,7 @@ except ImportError:
 from nbconvert.filters.markdown_mistune import IPythonRenderer, MarkdownWithMath
 from bs4 import BeautifulSoup
 
-from nbmanips.cell_utils import printable_cell, FORMATTER, monochrome
+from nbmanips.cell_utils import printable_cell, FORMATTER, monochrome, get_mime_type
 from nbmanips.cell_output import CellOutput
 from nbmanips.utils import total_size
 
@@ -280,7 +282,14 @@ class MarkdownCell(Cell, cell_type="markdown"):
 
     @property
     def attachments(self):
-        return self.cell.get('attachments', {})
+        return self.cell.setdefault('attachments', {})
+
+    def attach(self, path: str, attachment_name: Optional[str] = None):
+        mime_type = get_mime_type(path)
+        path = Path(path)
+        self.attachments[attachment_name or path.name] = {
+            mime_type: base64.encodebytes(path.read_bytes()).decode('utf-8')
+        }
 
     @property
     def html(self):
