@@ -4,6 +4,9 @@
 __pycache__
 .pytest_cache
 
+# tests
+.coverage
+
 #env
 .venv
 
