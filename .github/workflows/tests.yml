@@ -5,6 +5,12 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_call:
+    inputs:
+      publish_coverage:
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   test:
@@ -27,5 +33,5 @@ jobs:
     - name: Test with tox
       run: tox
     - name: Upload coverage
-      if: ${{ (matrix.python-version == '3.8') && startsWith(matrix.os, 'ubuntu') }}
+      if: ${{ ${{ inputs.publish_coverage }} && (matrix.python-version == '3.8') && startsWith(matrix.os, 'ubuntu') }}
       uses: codecov/codecov-action@v2
