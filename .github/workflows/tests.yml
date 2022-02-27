@@ -1,4 +1,4 @@
-name: Tests
+name: Running Tests
 
 on:
   push:
@@ -19,6 +19,7 @@ jobs:
     with:
       commit_changes: false
   test:
+    name: Tests
     needs: [ pre_commit ]
     runs-on: ${{ matrix.os }}
     strategy:
