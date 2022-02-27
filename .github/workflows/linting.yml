@@ -1,7 +1,7 @@
 name: Reformatting & Linting
 
 on:
-  push
+  push:
   workflow_call:
     inputs:
       commit_changes:
