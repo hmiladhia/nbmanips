@@ -33,5 +33,5 @@ jobs:
     - name: Test with tox
       run: tox
     - name: Upload coverage
-      if: ${{ ${{ inputs.publish_coverage }} && (matrix.python-version == '3.8') && startsWith(matrix.os, 'ubuntu') }}
+      if: ${{ inputs.publish_coverage && (matrix.python-version == '3.8') && startsWith(matrix.os, 'ubuntu') }}
       uses: codecov/codecov-action@v2
