@@ -1,8 +1,7 @@
 name: Reformatting & Linting
 
 on:
-  push:
-    branches: [ main ] # todo:REMOVE
+  push
   workflow_call:
     inputs:
       commit_changes:
@@ -32,6 +31,7 @@ jobs:
       - name: Install-pre-commit
         run: python -m pip install --upgrade pre-commit
       - name: Run Pre-commit
+        if: ${{ inputs.commit_changes }}
         run: pre-commit run --all-files || (exit 0)
       - name: Commit changes
         if: ${{ inputs.commit_changes }}
