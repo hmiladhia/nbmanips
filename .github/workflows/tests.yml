@@ -1,7 +1,10 @@
 name: Tests
 
 on:
-  - pull_request
+  push:
+    branches: [ main, workflows/coverage ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   test:
@@ -23,3 +26,6 @@ jobs:
         pip install tox tox-gh-actions
     - name: Test with tox
       run: tox
+    - name: Upload coverage
+      if: ${{ (matrix.python-version == '3.8') && (matrix.os == 'ubuntu-latest') }}
+      uses: codecov/codecov-action@v2

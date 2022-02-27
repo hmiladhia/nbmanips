@@ -4,6 +4,7 @@
 ![PyPI - License](https://img.shields.io/pypi/l/nbmanips)
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/nbmanips)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nbmanips)
+[![codecov](https://codecov.io/gh/hmiladhia/nbmanips/branch/main/graph/badge.svg)](https://codecov.io/gh/hmiladhia/nbmanips)
 
 A collections of utilities to manipulate IPython/Jupyter Notebooks via a python script.
 
