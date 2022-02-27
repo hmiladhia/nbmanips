@@ -5,6 +5,12 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_call:
+    inputs:
+      commit_changes:
+        required: false
+        default: true
+        type: boolean
 
 jobs:
   pre_commit:
@@ -30,6 +36,7 @@ jobs:
       - name: Run Pre-commit
         run: pre-commit run --all-files || pre-commit run --all-files
       - name: Commit & Push changes
+        if: ${{ inputs.commit_changes }}
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"

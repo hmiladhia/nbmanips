@@ -13,7 +13,12 @@ on:
         type: boolean
 
 jobs:
+  pre_commit:
+    uses: ./.github/workflows/linting.yml
+    with:
+      commit_changes: false
   test:
+    needs: [ pre_commit ]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
