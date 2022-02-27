@@ -14,6 +14,7 @@ on:
 
 jobs:
   pre_commit:
+    name: Linting
     uses: ./.github/workflows/linting.yml
     with:
       commit_changes: false
