@@ -1,5 +1,5 @@
 import copy
-from typing import Callable, Optional, Any
+from typing import Any, Callable, Optional
 
 import nbformat
 
@@ -108,7 +108,7 @@ class NotebookBase:
         new_nb = self.__class__(raw_nb)
 
         # Concatenating the notebooks
-        for cell in (self.list_cells() + other.list_cells()):
+        for cell in self.list_cells() + other.list_cells():
             new_nb.add_cell(cell)
 
         return new_nb
@@ -144,7 +144,7 @@ class NotebookBase:
         if self.name:
             return f'<Notebook "{self.name}">'
         else:
-            return "<Notebook>"
+            return '<Notebook>'
 
     def __str__(self):
         return '\n'.join(str(cell) for cell in self.iter_cells())
@@ -179,8 +179,10 @@ class NotebookBase:
     @staticmethod
     def __validate(content: dict):
         if not isinstance(content, dict):
-            message = f"'content' must be of type 'dict': {type(content).__name__!r} given"
+            message = (
+                f"'content' must be of type 'dict': {type(content).__name__!r} given"
+            )
             if isinstance(content, str):
-                message += "\nUse Notebook.read(path) to read notebook from file"
+                message += '\nUse Notebook.read(path) to read notebook from file'
             raise ValueError(message)
         nbformat.validate(nbdict=content)

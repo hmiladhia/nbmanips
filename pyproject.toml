@@ -6,3 +6,17 @@ build-backend = "setuptools.build_meta"
 testpaths = [
     "tests",
 ]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+skip-string-normalization = true
+
+[tool.isort]
+line_length = 88
+profile = "black"
+
+[tool.mypy]
+exclude = [
+    '/utils\.py',
+]

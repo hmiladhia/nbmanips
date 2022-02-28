@@ -1,12 +1,11 @@
-import os
 import json
+import os
 import zipfile
+from functools import wraps
 from io import StringIO
 from pathlib import Path
 
 from html2text import html2text
-
-from functools import wraps
 
 try:
     import pandas as pd
@@ -42,24 +41,22 @@ def read_zpln(notebook_path: str, version=4, encoding='utf-8'):
     language = zep_nb.get('defaultInterpreterGroup', 'python')
     language_prefixes = zpln_prefixes.get(language, {'%' + language})
     notebook = {
-        "metadata": {
-            "language_info": {
-                "name": language
-            }
-        },
-        "nbformat": 4,
-        "nbformat_minor": 4,
-        "cells": []
+        'metadata': {'language_info': {'name': language}},
+        'nbformat': 4,
+        'nbformat_minor': 4,
+        'cells': [],
     }
 
     for paragraph in zep_nb.get('paragraphs', []):
         paragraph_config = paragraph.get('config', {})
-        source_hidden = paragraph_config.get("editorHide", False)
-        outputs_hidden = paragraph_config.get("tableHide", False)
+        source_hidden = paragraph_config.get('editorHide', False)
+        outputs_hidden = paragraph_config.get('tableHide', False)
         cell = {
             'metadata': {
                 'collapsed': source_hidden and outputs_hidden,
-                'jupyter': dict(source_hidden=source_hidden, outputs_hidden=outputs_hidden)
+                'jupyter': dict(
+                    source_hidden=source_hidden, outputs_hidden=outputs_hidden
+                ),
             }
         }
         title = paragraph.get('title', None)
@@ -86,30 +83,41 @@ def read_zpln(notebook_path: str, version=4, encoding='utf-8'):
 
         cell['cell_type'] = 'code'
         cell['outputs'] = []
-        if paragraph.get('results', None) and paragraph['results'].get('code', None).upper() != 'ERROR':
+        if (
+            paragraph.get('results', None)
+            and paragraph['results'].get('code', None).upper() != 'ERROR'
+        ):
             for result in paragraph['results'].get('msg', []):
                 result_type = result.get('type', 'TEXT').upper()
                 if result_type == 'TEXT':
                     data = result.get('data', '')
-                    cell['outputs'].append({'output_type': 'stream', 'text': data, 'name': 'stdout'})
+                    cell['outputs'].append(
+                        {'output_type': 'stream', 'text': data, 'name': 'stdout'}
+                    )
                 elif result_type == 'TABLE':
                     data = result.get('data', '')
                     if pd is None:
-                        cell['outputs'].append({'output_type': 'stream', 'text': data, 'name': 'stdout'})
+                        cell['outputs'].append(
+                            {'output_type': 'stream', 'text': data, 'name': 'stdout'}
+                        )
                     else:
                         data = pd.read_csv(StringIO(data), sep='\t').to_html()
-                        cell['outputs'].append({
-                            'output_type': 'display_data',
-                            'data': {'text/html': data},
-                            'metadata': {}
-                        })
+                        cell['outputs'].append(
+                            {
+                                'output_type': 'display_data',
+                                'data': {'text/html': data},
+                                'metadata': {},
+                            }
+                        )
                 elif result_type in 'HTML':
                     data = result.get('data', '')
-                    cell['outputs'].append({
-                        'output_type': 'display_data',
-                        'data': {'text/html': data},
-                        'metadata': {}
-                    })
+                    cell['outputs'].append(
+                        {
+                            'output_type': 'display_data',
+                            'data': {'text/html': data},
+                            'metadata': {},
+                        }
+                    )
 
         cell['execution_count'] = None
 
@@ -120,14 +128,18 @@ def read_zpln(notebook_path: str, version=4, encoding='utf-8'):
     return name, json.loads(raw_json)
 
 
-def read_dbc(notebook_path: str, version=4, filename=None, encoding='utf-8') -> (str, dict):
+def read_dbc(
+    notebook_path: str, version=4, filename=None, encoding='utf-8'
+) -> (str, dict):
     if zipfile.is_zipfile(notebook_path):
         with zipfile.ZipFile(notebook_path, 'r') as zf:
             if filename is None:
                 names = zf.namelist()
                 files = [name for name in names if not name.endswith('/')]
                 if len(files) > 1:
-                    raise ValueError(f'Multiple Notebooks in archive: {files}\nSpecify the notebook filename.')
+                    raise ValueError(
+                        f'Multiple Notebooks in archive: {files}\nSpecify the notebook filename.'
+                    )
                 filename = files[0]
 
             dbc_nb = json.loads(zf.read(filename).decode(encoding))
@@ -138,25 +150,19 @@ def read_dbc(notebook_path: str, version=4, filename=None, encoding='utf-8') -> 
             dbc_nb = json.load(f)
 
     name = dbc_nb.get('name', os.path.splitext(os.path.basename(notebook_path))[0])
-    language = dbc_nb.get('language', os.path.splitext(os.path.basename(notebook_path))[1])
+    language = dbc_nb.get(
+        'language', os.path.splitext(os.path.basename(notebook_path))[1]
+    )
     language_prefix = f'%{language}' if language != 'python' else '%py'
     notebook = {
-        "metadata": {
-            "language_info": {
-                "name": language
-            }
-        },
-        "nbformat": 4,
-        "nbformat_minor": 4,
-        "cells": []
+        'metadata': {'language_info': {'name': language}},
+        'nbformat': 4,
+        'nbformat_minor': 4,
+        'cells': [],
     }
 
     for command in dbc_nb.get('commands', []):
-        cell = {
-            'metadata': {
-                'collapsed': command.get('collapsed', False)
-            }
-        }
+        cell = {'metadata': {'collapsed': command.get('collapsed', False)}}
         source = command.get('command', '')
         prefix = source.split('\n')[0].strip() if source.startswith('%') else None
         if prefix:
@@ -177,9 +183,18 @@ def read_dbc(notebook_path: str, version=4, filename=None, encoding='utf-8') -> 
 
         cell['cell_type'] = 'code'
         cell['outputs'] = []
-        if command.get('results', None) and command['results'].get('type', None) == 'html':
+        if (
+            command.get('results', None)
+            and command['results'].get('type', None) == 'html'
+        ):
             html = command['results'].get('data', '')
-            cell['outputs'].append({'output_type': 'display_data', 'data': {'text/html': html}, 'metadata': {}})
+            cell['outputs'].append(
+                {
+                    'output_type': 'display_data',
+                    'data': {'text/html': html},
+                    'metadata': {},
+                }
+            )
 
         error_summary = html2text(command.get('errorSummary', None) or '')
         error = html2text(command.get('error', None) or '')
@@ -188,12 +203,14 @@ def read_dbc(notebook_path: str, version=4, filename=None, encoding='utf-8') -> 
                 ename, evalue = error_summary.split(':', 1)
             else:
                 ename, evalue = '', error_summary
-            cell['outputs'].append({
-                'output_type': 'error',
-                'ename': ename,
-                'evalue': evalue,
-                'traceback': error.split('\n'),
-            })
+            cell['outputs'].append(
+                {
+                    'output_type': 'error',
+                    'ename': ename,
+                    'evalue': evalue,
+                    'traceback': error.split('\n'),
+                }
+            )
 
         cell['execution_count'] = None
 
@@ -219,6 +236,7 @@ def partial(func, *args, **keywords):
     def new_func(*f_args, **f_keywords):
         new_keywords = {**f_keywords, **keywords}
         return func(*f_args, *args, **new_keywords)
+
     return new_func
 
 

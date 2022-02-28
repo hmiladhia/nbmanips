@@ -1,9 +1,9 @@
 # nbmanips
 ![PyPI](https://img.shields.io/pypi/v/nbmanips)
-![Tests](https://github.com/hmiladhia/nbmanips/actions/workflows/tests.yml/badge.svg)
 ![PyPI - License](https://img.shields.io/pypi/l/nbmanips)
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/nbmanips)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/nbmanips)
+
+![Tests](https://github.com/hmiladhia/nbmanips/actions/workflows/tests.yml/badge.svg)
 [![codecov](https://codecov.io/gh/hmiladhia/nbmanips/branch/main/graph/badge.svg)](https://codecov.io/gh/hmiladhia/nbmanips)
 
 A collections of utilities to manipulate IPython/Jupyter Notebooks via a python script.
@@ -49,7 +49,7 @@ nb.select(0).show()
 ```python
 nb[1:6:2].show()
 
-# OR 
+# OR
 selected_cells = slice(1, 6, 2)
 
 nb.select(selected_cells).show()
@@ -88,7 +88,7 @@ nb.select(['markdown_cells', 'is_empty']).show()
 # Show Markdown or Code Cells
 nb.select(['markdown_cells', 'code_cells'], type='or').show()
 ```
- 
+
 ### 3 - Export Formats
 You can export the notebooks to these formats:
 
@@ -101,10 +101,10 @@ You can export the notebooks to these formats:
 - to_text (textual representation of the notebook)
 
 ### 4 - Slide manipulations
-You can manipulate the slides by tagging which cells to keep and which to skip. 
+You can manipulate the slides by tagging which cells to keep and which to skip.
 The following actions are available:
 
-- set_slide 
+- set_slide
 - set_subslide
 - set_skip
 - set_fragment
@@ -126,7 +126,7 @@ nb.to_slides("new_slides.slides.html", theme='beige')
 
 ## II - CLI
 ### 1 - Show a notebook
-To get a readable representation of the notebook 
+To get a readable representation of the notebook
 ```bash
 nb show my_notebook.ipynb
 ```
@@ -198,7 +198,7 @@ nbmanips --help
 
 ## III - Optional Requirements
 
-There are optional requirements you may want to install to render images in the terminal. 
+There are optional requirements you may want to install to render images in the terminal.
 The results, however, are not always convincing.
 If you want to enable this feature, you can just run the following command:
 
@@ -209,4 +209,3 @@ pip install nbmanips[images]
 ## Roadmap
 
 - Add Custom Templates
-

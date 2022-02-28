@@ -1,15 +1,13 @@
 import click
 
-from nbmanips import __version__
-from nbmanips.cli.select import select
-from nbmanips.cli.convert import convert
+import nbmanips.cli.collection as collection
 import nbmanips.cli.explore as explore
 import nbmanips.cli.transform as transform
-import nbmanips.cli.collection as collection
+from nbmanips import __version__
+from nbmanips.cli.convert import convert
+from nbmanips.cli.select import select
 
-__all__ = [
-    'nbmanips'
-]
+__all__ = ['nbmanips']
 
 
 @click.group()
