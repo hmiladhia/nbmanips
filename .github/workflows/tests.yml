@@ -6,18 +6,11 @@ on:
   pull_request:
     branches: [ main ]
   workflow_call:
-    inputs:
-      publish_coverage:
-        required: false
-        default: true
-        type: boolean
 
 jobs:
   pre_commit:
     name: Linting
     uses: ./.github/workflows/linting.yml
-    with:
-      commit_changes: false
   test:
     name: Tests
     needs: [ pre_commit ]
@@ -42,5 +35,5 @@ jobs:
     - name: Test with tox
       run: tox
     - name: Upload coverage
-      if: ${{ github.event.inputs.publish_coverage && (matrix.python-version == '3.8') && startsWith(matrix.os, 'ubuntu') }}
+      if: (github.event_name != 'workflow_call') && (matrix.python-version == '3.8') && startsWith(matrix.os, 'ubuntu')
       uses: codecov/codecov-action@v2

@@ -8,10 +8,8 @@ jobs:
   test:
     name: Running Tests
     uses: ./.github/workflows/tests.yml
-    with:
-      publish_coverage: false
 
-  deploy:
+  publish:
     needs: [test]
     runs-on: ubuntu-latest
 
