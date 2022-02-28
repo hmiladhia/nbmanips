@@ -1,13 +1,19 @@
-name: Tests
+name: Running Tests
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_call:
 
 jobs:
+  pre_commit:
+    name: Linting
+    uses: ./.github/workflows/linting.yml
   test:
+    name: Tests
+    needs: [ pre_commit ]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -16,6 +22,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        ref: ${{github.event.pull_request.head.ref}}
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
@@ -27,5 +35,5 @@ jobs:
     - name: Test with tox
       run: tox
     - name: Upload coverage
-      if: ${{ (matrix.python-version == '3.8') && (matrix.os == 'ubuntu-latest') }}
+      if: (github.event_name != 'workflow_call') && (matrix.python-version == '3.8') && startsWith(matrix.os, 'ubuntu')
       uses: codecov/codecov-action@v2

@@ -16,7 +16,11 @@ def test_select_0(runner, test_files):
     selection_result = runner.invoke(cli, ['select', 'contains', 'df'])
     assert selection_result.exit_code == 0
 
-    result = runner.invoke(cli, ['count', str(test_files / 'nb3.ipynb')], input=selection_result.stdout_bytes)
+    result = runner.invoke(
+        cli,
+        ['count', str(test_files / 'nb3.ipynb')],
+        input=selection_result.stdout_bytes,
+    )
 
     assert result.exit_code == 0
     assert int(result.output.strip()) == 4
@@ -26,7 +30,11 @@ def test_select_1(runner, test_files):
     selection_result = runner.invoke(cli, ['select', 'has_output_type', 'text/plain'])
     assert selection_result.exit_code == 0
 
-    result = runner.invoke(cli, ['count', str(test_files / 'nb1.ipynb')], input=selection_result.stdout_bytes)
+    result = runner.invoke(
+        cli,
+        ['count', str(test_files / 'nb1.ipynb')],
+        input=selection_result.stdout_bytes,
+    )
 
     assert result.exit_code == 0
     assert result.output.strip() == '2'
@@ -34,6 +42,7 @@ def test_select_1(runner, test_files):
 
 def test_select_2(runner, test_files):
     import cloudpickle
+
     from nbmanips.selector import ISelector
 
     selection_result = runner.invoke(cli, ['select', 'is_empty'])
@@ -42,24 +51,35 @@ def test_select_2(runner, test_files):
     selector = cloudpickle.loads(selection_result.stdout_bytes)
     assert isinstance(selector, ISelector)
 
-    result = runner.invoke(cli, ['list', str(test_files / 'nb3.ipynb')], input=selection_result.stdout_bytes)
+    result = runner.invoke(
+        cli,
+        ['list', str(test_files / 'nb3.ipynb')],
+        input=selection_result.stdout_bytes,
+    )
 
     assert result.exit_code == 0
     assert result.output.strip() == '[5, 8]'
 
 
-@pytest.mark.parametrize('selection, expected_result', [
-    ('0', 1),
-    ('1:3', 2),
-    ('[-3:]', 3),
-    ('[-3]', 1),
-    ('[1:-2]', 6),
-])
+@pytest.mark.parametrize(
+    'selection, expected_result',
+    [
+        ('0', 1),
+        ('1:3', 2),
+        ('[-3:]', 3),
+        ('[-3]', 1),
+        ('[1:-2]', 6),
+    ],
+)
 def test_select_3(runner, test_files, selection, expected_result):
     selection_result = runner.invoke(cli, ['select', selection])
     assert selection_result.exit_code == 0
 
-    result = runner.invoke(cli, ['count', str(test_files / 'nb3.ipynb')], input=selection_result.stdout_bytes)
+    result = runner.invoke(
+        cli,
+        ['count', str(test_files / 'nb3.ipynb')],
+        input=selection_result.stdout_bytes,
+    )
 
     assert result.exit_code == 0
     assert int(result.output.strip()) == expected_result
@@ -71,7 +91,9 @@ def test_to_html(runner, test_files):
         with open('nb.ipynb', 'w') as f:
             f.write(nb3)
 
-        result = runner.invoke(cli, ['convert', 'html', 'nb.ipynb', '-o', 'exported.html'])
+        result = runner.invoke(
+            cli, ['convert', 'html', 'nb.ipynb', '-o', 'exported.html']
+        )
         assert result.exit_code == 0
         assert not Path('nb.html').exists()
         assert Path('exported.html').exists()
@@ -83,7 +105,9 @@ def test_to_slides(runner, test_files):
         with open('nb.ipynb', 'w') as f:
             f.write(nb3)
 
-        result = runner.invoke(cli, ['convert', 'slides', 'nb.ipynb', '-o', 'exported.slides.html'])
+        result = runner.invoke(
+            cli, ['convert', 'slides', 'nb.ipynb', '-o', 'exported.slides.html']
+        )
         assert result.exit_code == 0
         assert Path('exported.slides.html').exists()
 
@@ -128,7 +152,11 @@ def test_first(runner, test_files):
     selection_result = runner.invoke(cli, ['select', 'is_empty'])
     assert selection_result.exit_code == 0
 
-    result = runner.invoke(cli, ['first', str(test_files / 'nb3.ipynb')], input=selection_result.stdout_bytes)
+    result = runner.invoke(
+        cli,
+        ['first', str(test_files / 'nb3.ipynb')],
+        input=selection_result.stdout_bytes,
+    )
 
     assert result.exit_code == 0
     assert int(result.output.strip()) == 5
@@ -138,7 +166,11 @@ def test_last(runner, test_files):
     selection_result = runner.invoke(cli, ['select', 'is_empty'])
     assert selection_result.exit_code == 0
 
-    result = runner.invoke(cli, ['last', str(test_files / 'nb3.ipynb')], input=selection_result.stdout_bytes)
+    result = runner.invoke(
+        cli,
+        ['last', str(test_files / 'nb3.ipynb')],
+        input=selection_result.stdout_bytes,
+    )
 
     assert result.exit_code == 0
     assert int(result.output.strip()) == 8
@@ -148,7 +180,11 @@ def test_list(runner, test_files):
     selection_result = runner.invoke(cli, ['select', 'is_empty'])
     assert selection_result.exit_code == 0
 
-    result = runner.invoke(cli, ['list', str(test_files / 'nb3.ipynb')], input=selection_result.stdout_bytes)
+    result = runner.invoke(
+        cli,
+        ['list', str(test_files / 'nb3.ipynb')],
+        input=selection_result.stdout_bytes,
+    )
 
     assert result.exit_code == 0
     assert result.output.strip() == '[5, 8]'
@@ -171,15 +207,23 @@ def test_erase(runner, test_files):
         selection_result = runner.invoke(cli, ['select', '-i', 'is_empty'])
         assert selection_result.exit_code == 0
 
-        result = runner.invoke(cli, ['erase', 'nb.ipynb'], input=selection_result.stdout_bytes)
+        result = runner.invoke(
+            cli, ['erase', 'nb.ipynb'], input=selection_result.stdout_bytes
+        )
         assert result.exit_code == 1
 
-        result = runner.invoke(cli, ['erase', '-f', 'nb.ipynb'], input=selection_result.stdout_bytes)
+        result = runner.invoke(
+            cli, ['erase', '-f', 'nb.ipynb'], input=selection_result.stdout_bytes
+        )
         assert result.exit_code == 0
 
         assert IPYNB('nb.ipynb').select('is_empty').count() == 4
 
-        result = runner.invoke(cli, ['erase', 'nb.ipynb', '-o', 'nb1.ipynb'], input=selection_result.stdout_bytes)
+        result = runner.invoke(
+            cli,
+            ['erase', 'nb.ipynb', '-o', 'nb1.ipynb'],
+            input=selection_result.stdout_bytes,
+        )
         assert result.exit_code == 0
 
         assert IPYNB('nb1.ipynb').select('is_empty').count() == 4
@@ -195,17 +239,25 @@ def test_delete(runner, test_files):
         selection_result = runner.invoke(cli, ['select', 'is_empty'])
         assert selection_result.exit_code == 0
 
-        result = runner.invoke(cli, ['delete', 'nb.ipynb'], input=selection_result.stdout_bytes)
+        result = runner.invoke(
+            cli, ['delete', 'nb.ipynb'], input=selection_result.stdout_bytes
+        )
         assert result.exit_code == 1
 
-        result = runner.invoke(cli, ['delete', 'nb.ipynb', '-f'], input=selection_result.stdout_bytes)
+        result = runner.invoke(
+            cli, ['delete', 'nb.ipynb', '-f'], input=selection_result.stdout_bytes
+        )
         assert result.exit_code == 0
 
         nb = IPYNB('nb.ipynb')
         assert nb.select('is_empty').count() == 0
         assert nb.count() == 7
 
-        result = runner.invoke(cli, ['delete', 'nb.ipynb', '-o', 'nb1.ipynb'], input=selection_result.stdout_bytes)
+        result = runner.invoke(
+            cli,
+            ['delete', 'nb.ipynb', '-o', 'nb1.ipynb'],
+            input=selection_result.stdout_bytes,
+        )
         assert result.exit_code == 0
 
         nb = IPYNB('nb1.ipynb')
@@ -223,17 +275,25 @@ def test_keep(runner, test_files):
         selection_result = runner.invoke(cli, ['select', 'is_empty'])
         assert selection_result.exit_code == 0
 
-        result = runner.invoke(cli, ['keep', 'nb.ipynb'], input=selection_result.stdout_bytes)
+        result = runner.invoke(
+            cli, ['keep', 'nb.ipynb'], input=selection_result.stdout_bytes
+        )
         assert result.exit_code == 1
 
-        result = runner.invoke(cli, ['keep', 'nb.ipynb', '-f'], input=selection_result.stdout_bytes)
+        result = runner.invoke(
+            cli, ['keep', 'nb.ipynb', '-f'], input=selection_result.stdout_bytes
+        )
         assert result.exit_code == 0
 
         nb = IPYNB('nb.ipynb')
         assert nb.count() == 2
         assert nb.select('is_empty').count() == 2
 
-        result = runner.invoke(cli, ['keep', 'nb.ipynb', '-o', 'nb1.ipynb'], input=selection_result.stdout_bytes)
+        result = runner.invoke(
+            cli,
+            ['keep', 'nb.ipynb', '-o', 'nb1.ipynb'],
+            input=selection_result.stdout_bytes,
+        )
         assert result.exit_code == 0
 
         nb = IPYNB('nb1.ipynb')
@@ -251,14 +311,18 @@ def test_replace(runner, test_files):
         result = runner.invoke(cli, ['replace', '-t', 'df', '-n', 'data', 'nb.ipynb'])
         assert result.exit_code == 1
 
-        result = runner.invoke(cli, ['replace', '-t', 'df', '-n', 'data', '-f', 'nb.ipynb'])
+        result = runner.invoke(
+            cli, ['replace', '-t', 'df', '-n', 'data', '-f', 'nb.ipynb']
+        )
         assert result.exit_code == 0
 
         nb = IPYNB('nb.ipynb')
         assert len(nb.search_all('df')) == 0
         assert len(nb.search_all('data')) == 4
 
-        result = runner.invoke(cli, ['replace', '-t', 'df', '-n', 'data', 'nb.ipynb', '-o', 'nb1.ipynb'])
+        result = runner.invoke(
+            cli, ['replace', '-t', 'df', '-n', 'data', 'nb.ipynb', '-o', 'nb1.ipynb']
+        )
         assert result.exit_code == 0
 
         nb = IPYNB('nb1.ipynb')
@@ -327,7 +391,9 @@ def test_split(runner, test_files):
         for i in range(3):
             assert Path(f'nb-{i}.ipynb').exists()
 
-        result = runner.invoke(cli, ['split', 'nb.ipynb', '-i', '1,9', '-o', 'new_nb-%d.ipynb'])
+        result = runner.invoke(
+            cli, ['split', 'nb.ipynb', '-i', '1,9', '-o', 'new_nb-%d.ipynb']
+        )
         assert result.exit_code == 0
 
         for i in range(3):
@@ -383,7 +449,9 @@ def test_cat(runner, test_files):
         with open('nb2.ipynb', 'w') as f:
             f.write(nb2)
 
-        result = runner.invoke(cli, ['cat', 'nb1.ipynb', 'nb2.ipynb', '-o', 'nb3.ipynb'])
+        result = runner.invoke(
+            cli, ['cat', 'nb1.ipynb', 'nb2.ipynb', '-o', 'nb3.ipynb']
+        )
         assert result.exit_code == 0
 
         nb1 = IPYNB('nb1.ipynb')
@@ -395,7 +463,7 @@ def test_cat(runner, test_files):
         result = runner.invoke(
             cli,
             ['cat', 'nb1.ipynb', 'nb2.ipynb', '-o', 'nb4.ipynb', '-s', '0'],
-            input=selector_result.stdout_bytes
+            input=selector_result.stdout_bytes,
         )
         assert result.exit_code == 0
 
@@ -405,7 +473,7 @@ def test_cat(runner, test_files):
         result = runner.invoke(
             cli,
             ['cat', 'nb1.ipynb', 'nb2.ipynb', '-o', 'nb5.ipynb'],
-            input=selector_result.stdout_bytes
+            input=selector_result.stdout_bytes,
         )
         assert result.exit_code == 0
 

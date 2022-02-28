@@ -5,25 +5,20 @@ from operator import add
 import click
 
 from nbmanips import Notebook
-from nbmanips.cli import get_selector, export
+from nbmanips.cli import export, get_selector
 
-__all__ = [
-    'erase',
-    'delete',
-    'keep',
-    'replace',
-    'auto_slide',
-    'erase_output',
-    'split'
-]
+__all__ = ['erase', 'delete', 'keep', 'replace', 'auto_slide', 'erase_output', 'split']
 
 
-@click.command(help="Erase the content of the selected cells")
+@click.command(help='Erase the content of the selected cells')
 @click.argument('notebook_path')
 @click.option('--output', '-o', default=None, type=str)
 @click.option(
-    '--force', '-f', is_flag=True, default=False,
-    help='Do not prompt for confirmation if file already exists'
+    '--force',
+    '-f',
+    is_flag=True,
+    default=False,
+    help='Do not prompt for confirmation if file already exists',
 )
 def erase(notebook_path, output, force):
     nb = Notebook.read(notebook_path)
@@ -33,12 +28,15 @@ def erase(notebook_path, output, force):
     export(nb, notebook_path, output, force=force)
 
 
-@click.command(help="Delete the selected cells")
+@click.command(help='Delete the selected cells')
 @click.argument('notebook_path')
 @click.option('--output', '-o', default=None)
 @click.option(
-    '--force', '-f', is_flag=True, default=False,
-    help='Do not prompt for confirmation if file already exists'
+    '--force',
+    '-f',
+    is_flag=True,
+    default=False,
+    help='Do not prompt for confirmation if file already exists',
 )
 def delete(notebook_path, output, force):
     nb = Notebook.read(notebook_path)
@@ -48,12 +46,15 @@ def delete(notebook_path, output, force):
     export(nb, notebook_path, output, force=force)
 
 
-@click.command(help="Delete all the non-selected cells")
+@click.command(help='Delete all the non-selected cells')
 @click.argument('notebook_path')
 @click.option('--output', '-o', default=None)
 @click.option(
-    '--force', '-f', is_flag=True, default=False,
-    help='Do not prompt for confirmation if file already exists'
+    '--force',
+    '-f',
+    is_flag=True,
+    default=False,
+    help='Do not prompt for confirmation if file already exists',
 )
 def keep(notebook_path, output, force):
     nb = Notebook.read(notebook_path)
@@ -63,7 +64,7 @@ def keep(notebook_path, output, force):
     export(nb, notebook_path, output, force=force)
 
 
-@click.command(help="replace string in all selected cells")
+@click.command(help='replace string in all selected cells')
 @click.argument('notebook_path')
 @click.option('--output', '-o', default=None)
 @click.option('--old', '-t', required=True)
@@ -72,8 +73,11 @@ def keep(notebook_path, output, force):
 @click.option('--regex', '-r', is_flag=True, default=False)
 @click.option('--case/--no-case', '-c/-nc', default=True)
 @click.option(
-    '--force', '-f', is_flag=True, default=False,
-    help='Do not prompt for confirmation if file already exists'
+    '--force',
+    '-f',
+    is_flag=True,
+    default=False,
+    help='Do not prompt for confirmation if file already exists',
 )
 def replace(notebook_path, output, old, new, case, count_, regex, force):
     nb = Notebook.read(notebook_path)
@@ -83,15 +87,18 @@ def replace(notebook_path, output, old, new, case, count_, regex, force):
     export(nb, notebook_path, output, force=force)
 
 
-@click.command(help="replace string in all selected cells")
+@click.command(help='replace string in all selected cells')
 @click.argument('notebook_path')
 @click.option('--output', '-o', default=None)
 @click.option('--max-cells', type=int, default=3)
 @click.option('--max-images', type=int, default=1)
 @click.option('--delete-empty/--keep-empty', 'delete_empty', default=True)
 @click.option(
-    '--force', '-f', is_flag=True, default=False,
-    help='Do not prompt for confirmation if file already exists'
+    '--force',
+    '-f',
+    is_flag=True,
+    default=False,
+    help='Do not prompt for confirmation if file already exists',
 )
 def auto_slide(notebook_path, output, max_cells, max_images, delete_empty, force):
     nb = Notebook.read(notebook_path)
@@ -101,13 +108,16 @@ def auto_slide(notebook_path, output, max_cells, max_images, delete_empty, force
     export(nb, notebook_path, output, force=force)
 
 
-@click.command(help="Erase the output content of the selected cells")
+@click.command(help='Erase the output content of the selected cells')
 @click.argument('notebook_path')
 @click.option('--output', '-o', default=None)
 @click.option('--output-type', 'output_types', multiple=True)
 @click.option(
-    '--force', '-f', is_flag=True, default=False,
-    help='Do not prompt for confirmation if file already exists'
+    '--force',
+    '-f',
+    is_flag=True,
+    default=False,
+    help='Do not prompt for confirmation if file already exists',
 )
 def erase_output(notebook_path, output, output_types, force):
     nb = Notebook.read(notebook_path)
@@ -122,19 +132,24 @@ def erase_output(notebook_path, output, output_types, force):
     export(nb, notebook_path, output, force=force)
 
 
-@click.command(help="Split the notebook based the cell indexes")
+@click.command(help='Split the notebook based the cell indexes')
 @click.argument('notebook_path')
 @click.argument('indexes', nargs=-1, required=False)
 @click.option('--output', '-o', default=None)
 @click.option('--index', '-i', multiple=True)
 @click.option('--use-selection', '-s', is_flag=True, default=False)
 @click.option(
-    '--force', '-f', is_flag=True, default=False,
-    help='Do not prompt for confirmation if file already exists'
+    '--force',
+    '-f',
+    is_flag=True,
+    default=False,
+    help='Do not prompt for confirmation if file already exists',
 )
 def split(notebook_path, output, indexes, index, force, use_selection):
     if index or indexes:
-        indexes = reduce(add, [index.split(',') for index in list(indexes) + list(index)])
+        indexes = reduce(
+            add, [index.split(',') for index in list(indexes) + list(index)]
+        )
         indexes = [int(index) for index in indexes]
     elif not use_selection:
         raise ValueError('You need to specify the cells to split on')

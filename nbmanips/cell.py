@@ -1,7 +1,7 @@
-import uuid
 import re
+import uuid
 from copy import deepcopy
-from typing import Any, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 try:
     import pygments
@@ -12,16 +12,16 @@ except ImportError:
     pygments = None
     get_lexer_by_name = None
 
-from nbconvert.filters.markdown_mistune import IPythonRenderer, MarkdownWithMath
 from bs4 import BeautifulSoup
+from nbconvert.filters.markdown_mistune import IPythonRenderer, MarkdownWithMath
 
-from nbmanips.cell_utils import printable_cell, FORMATTER, monochrome
 from nbmanips.cell_output import CellOutput
+from nbmanips.cell_utils import FORMATTER, monochrome, printable_cell
 from nbmanips.utils import total_size
 
 
 class Cell:
-    _cell_types = {}
+    _cell_types: Dict[str, type] = {}
 
     def __init__(self, content, num=None):
         self.cell = content
@@ -75,7 +75,9 @@ class Cell:
             cell.id = new_id
         return cell
 
-    def get_output(self, text=True, parsers=None, parsers_config=None, excluded_data_types=None):
+    def get_output(
+        self, text=True, parsers=None, parsers_config=None, excluded_data_types=None
+    ):
         """
         Tries its best to return a readable output from cell
 
@@ -88,7 +90,9 @@ class Cell:
 
         outputs = []
         for cell_output in self.outputs:
-            text_output = cell_output.to_str(parsers, parsers_config, excluded_data_types)
+            text_output = cell_output.to_str(
+                parsers, parsers_config, excluded_data_types
+            )
             outputs.append(text_output)
 
         if text:
@@ -102,16 +106,19 @@ class Cell:
             return ''.join(source)
         return source
 
-    def set_source(self, content: str, text=False):
+    def set_source(self, content: Union[str, List[str]], text=False):
         if text:
+            assert isinstance(content, str), 'content is not of type str if text=True'
             lines = content.split('\n')
-            content = [f'{line}\n' if i != len(lines) else line for i, line in enumerate(lines)]
+            content = [
+                f'{line}\n' if i != len(lines) else line for i, line in enumerate(lines)
+            ]
         self.cell['source'] = content
 
     def contains(self, text, case=True, output=False, regex=False, flags=0):
         search_target = self.source
         if output:
-            search_target += ('\n' + self.output)
+            search_target += '\n' + self.output
 
         if not regex:
             text = re.escape(text)
@@ -153,23 +160,25 @@ class Cell:
         """
         Select cells that have a given output_type
 
-        :param output_types: Output Types(MIME type) to select: text/plain, text/html, image/png, ...
+        :param output_types: Output Types(MIME type) to select: text/plain, image/png, ...
         :type output_types: set
         :return: a bool object (True if cell should be selected)
         """
-        return any(cell_output.has_output_type(output_types) for cell_output in self.outputs)
+        return any(
+            cell_output.has_output_type(output_types) for cell_output in self.outputs
+        )
 
     def byte_size(self, output_types: Optional[set] = None, ignore_source=False):
         """
         returns the byte size of the cell.
 
-        :param output_types: Output Types(MIME type) to select: text/plain, text/html, image/png, ...
+        :param output_types: Output Types(MIME type) to select: text/plain, image/png, ...
         :type output_types: set
         :param ignore_source: True if you want to get the size of the output only
         :return: a bool object (True if cell should be selected)
         """
         size = 0 if ignore_source else total_size(self['source'])
-        size += sum([cell_output.byte_size(output_types) for cell_output in self.outputs])
+        size += sum(cell_output.byte_size(output_types) for cell_output in self.outputs)
         return size
 
     def to_str(self, width=None, *args, **kwargs):
@@ -179,7 +188,7 @@ class Cell:
         print(self)
 
     def __repr__(self):
-        return f"<Cell {self.num}>" if self.num else "<Cell>"
+        return f'<Cell {self.num}>' if self.num else '<Cell>'
 
     def __str__(self):
         return self.to_str(width=None, style='single', color=None)
@@ -194,7 +203,9 @@ class Cell:
         if 'metadata' not in self.cell:
             self.cell['metadata'] = {}
 
-        if key in self.cell['metadata'] and isinstance(self.cell['metadata'][key], dict):
+        if key in self.cell['metadata'] and isinstance(
+            self.cell['metadata'][key], dict
+        ):
             self.metadata[key].update(value)
         else:
             self.metadata[key] = value
@@ -244,10 +255,29 @@ class Cell:
             cls._cell_types[cell_type] = cls
 
 
-class CodeCell(Cell, cell_type="code"):
-    def to_str(self, width=None, style='single', use_pygments=None, pygments_lexer=None, color=None,
-               exclude_output=False, parsers=None, parsers_config=None, excluded_data_types=None, truncate=None):
-        sources = [printable_cell(self.source, width=width, style=style, color=color, pygments_lexer=pygments_lexer)]
+class CodeCell(Cell, cell_type='code'):
+    def to_str(
+        self,
+        width=None,
+        style='single',
+        use_pygments=None,
+        pygments_lexer=None,
+        color=None,
+        exclude_output=False,
+        parsers=None,
+        parsers_config=None,
+        excluded_data_types=None,
+        truncate=None,
+    ):
+        sources = [
+            printable_cell(
+                self.source,
+                width=width,
+                style=style,
+                color=color,
+                pygments_lexer=pygments_lexer,
+            )
+        ]
 
         if not exclude_output:
             output = self.get_output(
@@ -265,15 +295,25 @@ class CodeCell(Cell, cell_type="code"):
         return '\n'.join(sources)
 
 
-class MarkdownCell(Cell, cell_type="markdown"):
+class MarkdownCell(Cell, cell_type='markdown'):
     _bs4_parser = 'lxml'
 
-    def to_str(self, width=None, style='single', use_pygments=None, pygments_lexer=None, color=None, **kwargs):
+    def to_str(
+        self,
+        width=None,
+        style='single',
+        use_pygments=None,
+        pygments_lexer=None,
+        color=None,
+        **kwargs,
+    ):
         use_pygments = pygments is not None if use_pygments is None else use_pygments
 
         if use_pygments:
             if pygments is None:
-                raise ModuleNotFoundError("You need to install pygments first.\n pip install pygments")
+                raise ModuleNotFoundError(
+                    'You need to install pygments first.\n pip install pygments'
+                )
             return pygments.highlight(self.source, _MARKDOWN_LEXER, FORMATTER)[:-1]
         else:
             return self.source
@@ -285,9 +325,7 @@ class MarkdownCell(Cell, cell_type="markdown"):
     @property
     def html(self):
         renderer = IPythonRenderer(
-            escape=False,
-            attachments=self.attachments,
-            exclude_anchor_links=True
+            escape=False, attachments=self.attachments, exclude_anchor_links=True
         )
         return MarkdownWithMath(renderer=renderer).render(self.source)
 
@@ -296,5 +334,5 @@ class MarkdownCell(Cell, cell_type="markdown"):
         return BeautifulSoup(self.html, self._bs4_parser)
 
 
-class RawCell(Cell, cell_type="raw"):
+class RawCell(Cell, cell_type='raw'):
     pass

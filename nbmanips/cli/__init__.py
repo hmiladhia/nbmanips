@@ -10,8 +10,7 @@ def export(nb, input_path, output_path, force=False):
     output_path = input_path if output_path is None else output_path
     if not force and Path(output_path).exists():
         click.echo(
-            f'Notebook "{output_path}" already exists.'
-            ' Use --force to overwrite'
+            f'Notebook "{output_path}" already exists.' ' Use --force to overwrite'
         )
         raise click.Abort()
 

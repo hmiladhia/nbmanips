@@ -7,31 +7,44 @@ from nbmanips.cli import get_selector
 
 _COLORS = list(set(vars(colorama.Fore)) - {'RESET'})
 
-__all__ = [
-    'show',
-    'count',
-    'first',
-    'last',
-    'list_',
-    'search',
-    'toc'
-]
+__all__ = ['show', 'count', 'first', 'last', 'list_', 'search', 'toc']
 
 
-@click.command(help="show notebook in human readable format")
+@click.command(help='show notebook in human readable format')
 @click.argument('notebook_path')
 @click.option('--width', '-w', type=int, default=None)
 @click.option('--output/--no-output', '-o/-no', type=bool, default=True)
 @click.option('--exclude-output-type', '-e', 'excluded_data_types', multiple=True)
 @click.option('--pygments/--no-pygments', '-p/-np', type=bool, default=None)
-@click.option('--style', '-s', type=click.Choice(styles.keys(), case_sensitive=False), default='single')
-@click.option('--border-color', '-bc', type=click.Choice(_COLORS, case_sensitive=False), default=None)
+@click.option(
+    '--style',
+    '-s',
+    type=click.Choice(styles.keys(), case_sensitive=False),
+    default='single',
+)
+@click.option(
+    '--border-color',
+    '-bc',
+    type=click.Choice(_COLORS, case_sensitive=False),
+    default=None,
+)
 @click.option('--image-width', '-iw', type=int, default=None)
 @click.option('--image-color/--no-image-color', '-ic/-nic', type=bool, default=None)
 @click.option('--parser', '-p', 'parsers', type=str, multiple=True)
 @click.option('--truncate', '-t', type=int, default=None)
-def show(notebook_path, width, pygments, output, style, border_color,
-         parsers, image_width, image_color, excluded_data_types, truncate):
+def show(
+    notebook_path,
+    width,
+    pygments,
+    output,
+    style,
+    border_color,
+    parsers,
+    image_width,
+    image_color,
+    excluded_data_types,
+    truncate,
+):
     nb = Notebook.read(notebook_path)
     selector = get_selector()
 
@@ -53,7 +66,7 @@ def show(notebook_path, width, pygments, output, style, border_color,
     )
 
 
-@click.command(help="count selected cells")
+@click.command(help='count selected cells')
 @click.argument('notebook_path')
 def count(notebook_path):
     nb = Notebook.read(notebook_path)
@@ -63,7 +76,7 @@ def count(notebook_path):
     click.echo(result)
 
 
-@click.command(help="Return the number of the first selected cell")
+@click.command(help='Return the number of the first selected cell')
 @click.argument('notebook_path')
 def first(notebook_path):
     nb = Notebook.read(notebook_path)
@@ -73,7 +86,7 @@ def first(notebook_path):
     click.echo(result)
 
 
-@click.command(help="Return the number of the last selected cell")
+@click.command(help='Return the number of the last selected cell')
 @click.argument('notebook_path')
 def last(notebook_path):
     nb = Notebook.read(notebook_path)
@@ -83,7 +96,7 @@ def last(notebook_path):
     click.echo(result)
 
 
-@click.command(help="Return the numbers of the selected cells")
+@click.command(help='Return the numbers of the selected cells')
 @click.argument('notebook_path')
 def list_(notebook_path):
     nb = Notebook.read(notebook_path)
@@ -93,7 +106,7 @@ def list_(notebook_path):
     click.echo(result)
 
 
-@click.command(help="Search string in all selected cells")
+@click.command(help='Search string in all selected cells')
 @click.argument('notebook_path')
 @click.option('--text', '-t', required=True)
 @click.option('--case/--no-case', default=False)
@@ -107,7 +120,7 @@ def search(notebook_path, text, case, output, regex):
     click.echo(result)
 
 
-@click.command(help="Return the numbers of the selected cells")
+@click.command(help='Return the numbers of the selected cells')
 @click.argument('notebook_path')
 @click.option('--width', '-w', type=int, required=False, default=None)
 @click.option('--index/--no-index', '-i/-ni', is_flag=True, default=True)
