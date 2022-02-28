@@ -1,21 +1,28 @@
 name: Reformatting & Linting
 
-on: [push, workflow_call]
+on:
+  push:
+  workflow_call:
+    inputs:
+      commit_changes:
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   pre_commit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        if: github.event_name == 'push'
+        if: (github.event_name == 'push') && inputs.commit_changes
         name: 'Checkout (Push)'
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ secrets.ACTION_TOKEN }}
 
       - uses: actions/checkout@v2
-        if: github.event_name != 'push'
-        name: 'Checkout (pull_request)'
+        if: (github.event_name != 'push') || !inputs.commit_changes
+        name: 'Checkout'
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
@@ -37,7 +44,7 @@ jobs:
         run: python -m pip install --upgrade pre-commit
 
       - name: Run Pre-commit
-        if: (github.event_name == 'push') || ( github.event.inputs.commit_changes )
+        if: github.event_name == 'push'
         run: pre-commit run --all-files || (exit 0)
 
       - name: Commit changes
