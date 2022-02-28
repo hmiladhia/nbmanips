@@ -1,12 +1,14 @@
 import re
 
 from nbmanips.notebook_base import NotebookBase
-from nbmanips.notebook_mixins import SlideShowMixin
-from nbmanips.notebook_mixins import ClassicNotebook
-from nbmanips.notebook_mixins import ExportMixin
-from nbmanips.notebook_mixins import NotebookMetadata
-from nbmanips.notebook_mixins import NotebookCellMetadata
-from nbmanips.notebook_mixins import ContentAnalysisMixin
+from nbmanips.notebook_mixins import (
+    ClassicNotebook,
+    ContentAnalysisMixin,
+    ExportMixin,
+    NotebookCellMetadata,
+    NotebookMetadata,
+    SlideShowMixin,
+)
 
 
 class Notebook(
@@ -16,7 +18,7 @@ class Notebook(
     ContentAnalysisMixin,
     ExportMixin,
     NotebookMetadata,
-    NotebookBase
+    NotebookBase,
 ):
     def search(self, text, case=False, output=False, regex=False):
         """
@@ -29,7 +31,9 @@ class Notebook(
         :param regex: boolean whether to use regex or not
         :return:
         """
-        return self.select('contains', text=text, case=case, output=output, regex=regex).first()
+        return self.select(
+            'contains', text=text, case=case, output=output, regex=regex
+        ).first()
 
     def search_all(self, text, case=False, output=False, regex=False):
         """
@@ -43,7 +47,9 @@ class Notebook(
         :param regex: boolean whether to use regex or not
         :return:
         """
-        return self.select('contains', text=text, case=case, output=output, regex=regex).list()
+        return self.select(
+            'contains', text=text, case=case, output=output, regex=regex
+        ).list()
 
     def replace(self, old, new, count=None, case=True, regex=False):
         """
@@ -57,7 +63,9 @@ class Notebook(
         :param regex: boolean whether to use regex or not
         """
 
-        compiled_regex = re.compile(old if regex else re.escape(old), flags=0 if case else re.IGNORECASE)
+        compiled_regex = re.compile(
+            old if regex else re.escape(old), flags=0 if case else re.IGNORECASE
+        )
         selection = self.select('contains', text=old, case=case, regex=regex)
         for n_cells, cell in enumerate(selection.iter_cells(), start=1):
             cell.source = compiled_regex.sub(new, cell.get_source())

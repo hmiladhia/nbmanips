@@ -1,7 +1,7 @@
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from copy import copy
 from itertools import filterfalse
-from typing import Optional, Union, Callable, List
+from typing import Callable, List, Optional, Union
 
 from nbmanips.cell import Cell, MarkdownCell
 from nbmanips.utils import partial
@@ -18,7 +18,9 @@ class ISelector(ABC):
     def iter_cells(self, nb, neg=False):
         selector = self.get_callable(nb)
         filter_method = filterfalse if (self._neg ^ neg) else filter
-        return filter_method(selector, (Cell(cell, i) for i, cell in enumerate(nb["cells"])))
+        return filter_method(
+            selector, (Cell(cell, i) for i, cell in enumerate(nb['cells']))
+        )
 
     def __invert__(self):
         selector = copy(self)
@@ -64,7 +66,9 @@ class Selector(ISelector):
             return selector
         elif selector is None:
             return TrueSelector()
-        raise ValueError(f'selector needs to be of type: (str, int, list, slice, NoneType): {type(selector)}')
+        raise ValueError(
+            f'selector needs to be of type: (str, int, list, slice, NoneType): {type(selector)}'
+        )
 
     def get_callable(self, nb: dict) -> Callable:
         raise NotImplementedError()
@@ -74,7 +78,7 @@ class TrueSelector(ISelector):
     def iter_cells(self, nb, neg=False):
         if self._neg ^ neg:
             return (_ for _ in range(0))
-        return (Cell(cell, i) for i, cell in enumerate(nb["cells"]))
+        return (Cell(cell, i) for i, cell in enumerate(nb['cells']))
 
     def get_callable(self, nb):
         return lambda cell: True
@@ -145,7 +149,7 @@ class SliceSelector(ISelector):
     def __get_slice_selector(cls, selector: slice) -> callable:
         start, stop, step = selector.start, selector.stop, selector.step
         if step and step < 0:
-            start, stop = stop+1, start+1
+            start, stop = stop + 1, start + 1
 
         selector_list = []
         if start is not None:
@@ -183,7 +187,7 @@ class ListSelector(ISelector):
         if len(args) == len(selector):
             args_kwargs_list = args
         else:
-            args_kwargs_list = tuple(args[0]) if args else tuple([{} for _ in selector])
+            args_kwargs_list = tuple(args[0]) if args else tuple({} for _ in selector)
 
         # Parsing args
         args_list, kwargs_list = self.__parse_list_args(args_kwargs_list)
@@ -251,7 +255,12 @@ class ListSelector(ISelector):
             if isinstance(arg, dict):
                 args_list.append([])
                 kwargs_list.append(arg)
-            elif isinstance(arg, tuple) and len(arg) == 2 and hasattr(arg[0], '__iter__') and isinstance(arg[1], dict):
+            elif (
+                isinstance(arg, tuple)
+                and len(arg) == 2
+                and hasattr(arg[0], '__iter__')
+                and isinstance(arg[1], dict)
+            ):
                 args_list.append(arg[0])
                 kwargs_list.append(arg[1])
             elif hasattr(arg, '__iter__'):
@@ -263,6 +272,7 @@ class ListSelector(ISelector):
 
 
 # Default Selectors
+
 
 def contains(cell, text, case=True, output=False, regex=False):
     """
@@ -329,7 +339,7 @@ def has_output(cell, value=True):
     :param value: set to False if you want to select cells with no output
     :return: a bool object (True if cell should be selected)
     """
-    return (cell.output != "") == value
+    return (cell.output != '') == value
 
 
 def has_output_type(cell, output_type: Union[set, str]):
@@ -359,7 +369,13 @@ def is_empty(cell):
     return cell.source == '' and has_output(cell, False)
 
 
-def has_byte_size(cell, min_size=0, max_size: Optional[int] = None, output_types=None, ignore_source=False):
+def has_byte_size(
+    cell,
+    min_size=0,
+    max_size: Optional[int] = None,
+    output_types=None,
+    ignore_source=False,
+):
     """
     Selects cells with byte size less than max_size and more than min_size.
 
@@ -391,9 +407,14 @@ def has_slide_type(cell, slide_type):
     if isinstance(slide_type, str):
         slide_type = {slide_type}
 
-    return all(f(cell) for f in [lambda c: 'slideshow' in c.metadata,
-               lambda c: 'slide_type' in c.metadata['slideshow'],
-               lambda c: c.metadata['slideshow']['slide_type'] in slide_type])
+    return all(
+        f(cell)
+        for f in [
+            lambda c: 'slideshow' in c.metadata,
+            lambda c: 'slide_type' in c.metadata['slideshow'],
+            lambda c: c.metadata['slideshow']['slide_type'] in slide_type,
+        ]
+    )
 
 
 def has_tag(cell: Cell, tag: str, case=False):
@@ -410,7 +431,9 @@ def has_tag(cell: Cell, tag: str, case=False):
     if case:
         return tag in cell.metadata.get('tags', {})
     else:
-        return tag.lower() in {cell_tag.lower() for cell_tag in cell.metadata.get('tags', {})}
+        return tag.lower() in {
+            cell_tag.lower() for cell_tag in cell.metadata.get('tags', {})
+        }
 
 
 def has_html_tag(cell: MarkdownCell, css_selector: str):

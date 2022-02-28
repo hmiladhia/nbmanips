@@ -1,22 +1,27 @@
-import os
 import json
+import os
 import shutil
 import textwrap
-from pathlib import Path
 from copy import deepcopy
-from typing import Union, Any
-
+from pathlib import Path
+from typing import Any, Union
 
 try:
     import nbconvert
 except ImportError:
     nbconvert = None
 
-from nbmanips.notebook_base import NotebookBase
-from nbmanips.selector import is_new_slide, has_slide_type, has_output_type
-from nbmanips.utils import write_ipynb, dict_to_ipynb, get_ipynb_name
-from nbmanips.utils import read_ipynb, read_dbc, read_zpln
 from nbmanips.cell_utils import PYGMENTS_SUPPORTED
+from nbmanips.notebook_base import NotebookBase
+from nbmanips.selector import has_output_type, has_slide_type, is_new_slide
+from nbmanips.utils import (
+    dict_to_ipynb,
+    get_ipynb_name,
+    read_dbc,
+    read_ipynb,
+    read_zpln,
+    write_ipynb,
+)
 
 try:
     import pygments.util
@@ -116,7 +121,7 @@ class ClassicNotebook(NotebookBase):
             if cell.num == prev:
                 continue
 
-            notebooks.append(cp[prev:cell.num].copy())
+            notebooks.append(cp[prev : cell.num].copy())
 
             prev = cell.num
         notebooks.append(cp[prev:].copy())
@@ -139,7 +144,7 @@ class ClassicNotebook(NotebookBase):
 
 class SlideShowMixin(ClassicNotebook):
     def mark_slideshow(self):
-        self.raw_nb['metadata']["celltoolbar"] = "Slideshow"
+        self.raw_nb['metadata']['celltoolbar'] = 'Slideshow'
 
     def set_slide(self):
         self.tag_slide('slide')
@@ -176,12 +181,21 @@ class SlideShowMixin(ClassicNotebook):
             if is_image:
                 img_count += 1
 
-            if (n_cells is not None and cells_count > n_cells) or (n_images is not None and img_count > n_images):
+            if (n_cells is not None and cells_count > n_cells) or (
+                n_images is not None and img_count > n_images
+            ):
                 cell.update_metadata('slideshow', {'slide_type': 'subslide'})
                 cells_count = 1
                 img_count = 1 if is_image else 0
 
-    def auto_slide(self, max_cells_per_slide=3, max_images_per_slide=1, *_, delete_empty=True, title_tags='h1, h2'):
+    def auto_slide(
+        self,
+        max_cells_per_slide=3,
+        max_images_per_slide=1,
+        *_,
+        delete_empty=True,
+        title_tags='h1, h2',
+    ):
         # Delete Empty
         if delete_empty:
             self.select('is_empty').delete()
@@ -191,7 +205,9 @@ class SlideShowMixin(ClassicNotebook):
 
         # Create a new slide only
         for cell in reversed(list(self.iter_cells())):
-            if cell.num > 0 and is_new_slide(self[cell.num-1].first_cell()):  # previous cell is a new slide
+            if cell.num > 0 and is_new_slide(
+                self[cell.num - 1].first_cell()
+            ):  # previous cell is a new slide
                 cell.update_metadata('slideshow', {'slide_type': '-'})
 
         # Set max cells per slide
@@ -205,7 +221,7 @@ class ExportMixin(NotebookBase):
             'slides': nbconvert.SlidesExporter,
             'python': nbconvert.PythonExporter,
             'markdown': nbconvert.MarkdownExporter,
-            'script': nbconvert.ScriptExporter
+            'script': nbconvert.ScriptExporter,
         }
     }
 
@@ -245,7 +261,9 @@ class ExportMixin(NotebookBase):
         if template_name is not None:
             kwargs['template_name'] = template_name
 
-        exporter = self.get_exporter(exporter_name, *args, exporter_type='nbconvert', **kwargs)
+        exporter = self.get_exporter(
+            exporter_name, *args, exporter_type='nbconvert', **kwargs
+        )
 
         (body, resources) = exporter.from_notebook_node(notebook_node)
 
@@ -259,8 +277,17 @@ class ExportMixin(NotebookBase):
 
         writer.write(body, resources, file_name)
 
-    def to_html(self, path, exclude_code_cell=False, exclude_markdown=False, exclude_raw=False,
-                exclude_unknown=False, exclude_input=False, exclude_output=False, **kwargs):
+    def to_html(
+        self,
+        path,
+        exclude_code_cell=False,
+        exclude_markdown=False,
+        exclude_raw=False,
+        exclude_unknown=False,
+        exclude_input=False,
+        exclude_output=False,
+        **kwargs,
+    ):
         """
         Exports a basic HTML document.
 
@@ -273,9 +300,17 @@ class ExportMixin(NotebookBase):
         :param exclude_output: This allows you to exclude code cell outputs from all templates if set to True.
         :param kwargs: exclude_input_prompt, exclude_output_prompt, ...
         """
-        return self.nbconvert('html', path, exclude_code_cell=exclude_code_cell, exclude_markdown=exclude_markdown,
-                              exclude_raw=exclude_raw, exclude_unknown=exclude_unknown, exclude_input=exclude_input,
-                              exclude_output=exclude_output, **kwargs)
+        return self.nbconvert(
+            'html',
+            path,
+            exclude_code_cell=exclude_code_cell,
+            exclude_markdown=exclude_markdown,
+            exclude_raw=exclude_raw,
+            exclude_unknown=exclude_unknown,
+            exclude_input=exclude_input,
+            exclude_output=exclude_output,
+            **kwargs,
+        )
 
     def to_py(self, path, **kwargs):
         """
@@ -287,8 +322,17 @@ class ExportMixin(NotebookBase):
         """
         return self.nbconvert('python', path, **kwargs)
 
-    def to_md(self, path, exclude_code_cell=False, exclude_markdown=False, exclude_raw=False,
-              exclude_unknown=False, exclude_input=False, exclude_output=False, **kwargs):
+    def to_md(
+        self,
+        path,
+        exclude_code_cell=False,
+        exclude_markdown=False,
+        exclude_raw=False,
+        exclude_unknown=False,
+        exclude_input=False,
+        exclude_output=False,
+        **kwargs,
+    ):
         """
         Exports to a markdown document (.md)
 
@@ -301,11 +345,21 @@ class ExportMixin(NotebookBase):
         :param exclude_output: This allows you to exclude code cell outputs from all templates if set to True.
         :param kwargs: exclude_input_prompt, exclude_output_prompt, ...
         """
-        return self.nbconvert('markdown', path, exclude_code_cell=exclude_code_cell, exclude_markdown=exclude_markdown,
-                              exclude_raw=exclude_raw, exclude_unknown=exclude_unknown, exclude_input=exclude_input,
-                              exclude_output=exclude_output, **kwargs)
+        return self.nbconvert(
+            'markdown',
+            path,
+            exclude_code_cell=exclude_code_cell,
+            exclude_markdown=exclude_markdown,
+            exclude_raw=exclude_raw,
+            exclude_unknown=exclude_unknown,
+            exclude_input=exclude_input,
+            exclude_output=exclude_output,
+            **kwargs,
+        )
 
-    def to_slides(self, path, scroll=True, transition='slide', theme='simple', **kwargs):
+    def to_slides(
+        self, path, scroll=True, transition='slide', theme='simple', **kwargs
+    ):
         """
         Exports HTML slides with reveal.js
 
@@ -320,10 +374,18 @@ class ExportMixin(NotebookBase):
         :param kwargs: any additional keyword arguments to nbconvert exporter
         :type kwargs: exclude_code_cell, exclude_markdown, exclude_input, exclude_output, ...
         """
-        return self.nbconvert('slides', path, reveal_scroll=scroll, reveal_transition=transition,
-                              reveal_theme=theme, **kwargs)
+        return self.nbconvert(
+            'slides',
+            path,
+            reveal_scroll=scroll,
+            reveal_transition=transition,
+            reveal_theme=theme,
+            **kwargs,
+        )
 
-    def to_dbc(self, path, filename=None, name=None, language=None, version='NotebookV1'):
+    def to_dbc(
+        self, path, filename=None, name=None, language=None, version='NotebookV1'
+    ):
         """
         Exports Notebook to dbc archive file
 
@@ -346,9 +408,15 @@ class ExportMixin(NotebookBase):
 
     def _get_pygments_lexer(self, use_pygments):
         if use_pygments:
-            pygments_lexer = self.metadata.get('language_info', {}).get('pygments_lexer', None)
-            pygments_lexer = pygments_lexer or self.metadata.get('language_info', {}).get('name', None)
-            pygments_lexer = pygments_lexer or self.metadata.get('kernelspec', {}).get('language', None)
+            pygments_lexer = self.metadata.get('language_info', {}).get(
+                'pygments_lexer', None
+            )
+            pygments_lexer = pygments_lexer or self.metadata.get(
+                'language_info', {}
+            ).get('name', None)
+            pygments_lexer = pygments_lexer or self.metadata.get('kernelspec', {}).get(
+                'language', None
+            )
         else:
             pygments_lexer = None
 
@@ -356,15 +424,27 @@ class ExportMixin(NotebookBase):
             return pygments_lexer
 
         if get_lexer_by_name is None:
-            raise ModuleNotFoundError("You need to install pygments first.\n pip install pygments")
+            raise ModuleNotFoundError(
+                'You need to install pygments first.\n pip install pygments'
+            )
 
         try:
             return get_lexer_by_name(pygments_lexer)
         except pygments.util.ClassNotFound:
             return None
 
-    def to_str(self, width=None, exclude_output=False, use_pygments=None, style='single', border_color=None,
-               parsers=None, parsers_config=None, excluded_data_types=None, truncate=None):
+    def to_str(
+        self,
+        width=None,
+        exclude_output=False,
+        use_pygments=None,
+        style='single',
+        border_color=None,
+        parsers=None,
+        parsers_config=None,
+        excluded_data_types=None,
+        truncate=None,
+    ):
         use_pygments = PYGMENTS_SUPPORTED if use_pygments is None else use_pygments
         pygments_lexer = self._get_pygments_lexer(use_pygments)
 
@@ -380,7 +460,8 @@ class ExportMixin(NotebookBase):
                 parsers_config=parsers_config,
                 excluded_data_types=excluded_data_types,
                 truncate=truncate,
-            ) for cell in self.iter_cells()
+            )
+            for cell in self.iter_cells()
         )
 
     def to_text(self, path, *args, **kwargs):
@@ -402,8 +483,18 @@ class ExportMixin(NotebookBase):
         """
         write_ipynb(self.raw_nb, path)
 
-    def show(self, width=None, exclude_output=False, use_pygments=None, style='single', border_color=None,
-             parsers=None, parsers_config=None, excluded_data_types=None, truncate=None):
+    def show(
+        self,
+        width=None,
+        exclude_output=False,
+        use_pygments=None,
+        style='single',
+        border_color=None,
+        parsers=None,
+        parsers_config=None,
+        excluded_data_types=None,
+        truncate=None,
+    ):
         """
         Show the selected cells
         :param width:
@@ -415,17 +506,19 @@ class ExportMixin(NotebookBase):
         :param parsers_config:
         :param excluded_data_types:
         """
-        print(self.to_str(
-            width=width,
-            use_pygments=use_pygments,
-            exclude_output=exclude_output,
-            style=style,
-            border_color=border_color,
-            parsers=parsers,
-            parsers_config=parsers_config,
-            excluded_data_types=excluded_data_types,
-            truncate=truncate,
-        ))
+        print(
+            self.to_str(
+                width=width,
+                use_pygments=use_pygments,
+                exclude_output=exclude_output,
+                style=style,
+                border_color=border_color,
+                parsers=parsers,
+                parsers_config=parsers_config,
+                excluded_data_types=excluded_data_types,
+                truncate=truncate,
+            )
+        )
 
     @classmethod
     def read_ipynb(cls, path, name=None):
@@ -478,7 +571,9 @@ class NotebookMetadata(NotebookBase):
     def language(self):
         lang = self.metadata.get('kernelspec', {}).get('language', None)
         lang = lang or self.metadata.get('language_info', {}).get('name', None)
-        return lang or self.metadata.get('language_info', {}).get('pygments_lexer', None)
+        return lang or self.metadata.get('language_info', {}).get(
+            'pygments_lexer', None
+        )
 
     def add_author(self, name, **kwargs):
         """
@@ -507,9 +602,7 @@ class NotebookMetadata(NotebookBase):
         :param kwargs: optional keyword arguments
         """
         # Create kernelspec
-        kernelspec = {'argv': argv,
-                      'display_name': display_name,
-                      'language': language}
+        kernelspec = {'argv': argv, 'display_name': display_name, 'language': language}
         kernelspec.update(kwargs)
 
         # set kernelspec
@@ -652,18 +745,20 @@ class ContentAnalysisMixin(NotebookBase):
         numbered_toc = []
         stack = [0, 0, 0, 0, 0, 0]
         for ind, title, _ in toc:
-            for i in range(ind+1, len(stack)):
+            for i in range(ind + 1, len(stack)):
                 stack[i] = 0
             stack[ind] += 1
             numbered_toc.append((stack[ind], ind, title))
 
         indented_toc = [
-            '  ' * (ind - min_indentation) +
-            ("- " if bullets else f"{num}. ") +
-            f"[{title}](#{title.replace(' ', '-')})\n"
+            '  ' * (ind - min_indentation)
+            + ('- ' if bullets else f'{num}. ')
+            + f"[{title}](#{title.replace(' ', '-')})\n"
             for num, ind, title in numbered_toc
         ]
 
-        toc_cell = Cell({'cell_type': 'markdown', 'source': '\n'.join(indented_toc), 'metadata': {}})
+        toc_cell = Cell(
+            {'cell_type': 'markdown', 'source': '\n'.join(indented_toc), 'metadata': {}}
+        )
 
         self.add_cell(toc_cell, pos)

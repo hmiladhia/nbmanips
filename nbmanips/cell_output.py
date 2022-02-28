@@ -1,10 +1,7 @@
 import html
 from typing import Optional, Union
 
-from nbmanips.cell_utils import ParserBase
-from nbmanips.cell_utils import TextParser
-from nbmanips.cell_utils import HtmlParser
-from nbmanips.cell_utils import ImageParser
+from nbmanips.cell_utils import HtmlParser, ImageParser, ParserBase, TextParser
 from nbmanips.utils import total_size
 
 
@@ -70,7 +67,9 @@ class CellOutput:
             return cls._parsers[parser_key], parser_config_dict.get(parser_key, {})
         else:
             parser_key = parser_key.split('/')[0]
-            return cls._parsers.get(parser_key, None), parser_config_dict.get(parser_key, {})
+            return cls._parsers.get(parser_key, None), parser_config_dict.get(
+                parser_key, {}
+            )
 
     @property
     def default_parsers(self) -> set:
@@ -101,7 +100,9 @@ class StreamOutput(CellOutput, output_type='stream'):
 
     def to_str(self, parsers=None, parsers_config=None, excluded_data_types=None):
         parsers_config = parsers_config or {}
-        excluded_data_types = set() if excluded_data_types is None else set(excluded_data_types)
+        excluded_data_types = (
+            set() if excluded_data_types is None else set(excluded_data_types)
+        )
         if self.output_types & excluded_data_types:
             return ''
 
@@ -115,7 +116,9 @@ class StreamOutput(CellOutput, output_type='stream'):
         return output_text
 
     def to_html(self, excluded_data_types=None):
-        excluded_data_types = set() if excluded_data_types is None else set(excluded_data_types)
+        excluded_data_types = (
+            set() if excluded_data_types is None else set(excluded_data_types)
+        )
         if self.output_types & excluded_data_types:
             return ''
         output_text = self.text
@@ -134,14 +137,23 @@ class DataOutput(CellOutput):
     def _get_key(cls, dt, parsers):
         alt_dt = dt.split('/')[0]
         s1 = dt not in parsers and alt_dt not in parsers
-        s2 = -(cls._default_data_types.index(dt) if dt in cls._default_data_types else (
-            cls._default_data_types.index(alt_dt) if alt_dt in cls._default_data_types else -1))
+        s2 = -(
+            cls._default_data_types.index(dt)
+            if dt in cls._default_data_types
+            else (
+                cls._default_data_types.index(alt_dt)
+                if alt_dt in cls._default_data_types
+                else -1
+            )
+        )
         return s1, s2
 
     def to_str(self, parsers=None, parsers_config=None, excluded_data_types=None):
         parsers = self.default_parsers if parsers is None else set(parsers)
         parsers_config = parsers_config or {}
-        excluded_data_types = set() if excluded_data_types is None else set(excluded_data_types)
+        excluded_data_types = (
+            set() if excluded_data_types is None else set(excluded_data_types)
+        )
 
         data = self.content['data']
         for data_type in sorted(data, key=lambda x: self._get_key(x, parsers)):
@@ -161,7 +173,9 @@ class DataOutput(CellOutput):
         return ''
 
     def to_html(self, excluded_data_types=None):
-        excluded_data_types = set() if excluded_data_types is None else set(excluded_data_types)
+        excluded_data_types = (
+            set() if excluded_data_types is None else set(excluded_data_types)
+        )
 
         data = self.content['data'].copy()
         for data_type in list(data.keys()):
@@ -209,7 +223,13 @@ class DataOutput(CellOutput):
         elif not self.has_output_type(output_types):
             return 0
         else:
-            return total_size({key: value for key, value in self.content['data'].items() if key in output_types})
+            return total_size(
+                {
+                    key: value
+                    for key, value in self.content['data'].items()
+                    if key in output_types
+                }
+            )
 
 
 class ErrorOutput(CellOutput, output_type='error'):
@@ -231,22 +251,26 @@ class ErrorOutput(CellOutput, output_type='error'):
 
     def to_str(self, parsers=None, parsers_config=None, excluded_data_types=None):
         parsers_config = parsers_config or {}
-        excluded_data_types = set() if excluded_data_types is None else set(excluded_data_types)
+        excluded_data_types = (
+            set() if excluded_data_types is None else set(excluded_data_types)
+        )
         if self.output_types & excluded_data_types:
             return ''
 
-        output_text = '\n'.join(self.traceback + [f"{self.ename}: {self.evalue}"])
+        output_text = '\n'.join(self.traceback + [f'{self.ename}: {self.evalue}'])
         parser, parser_config = self.get_parser('text/error', parsers_config)
         if parser:
             return parser.parse(output_text, **parser_config)
         return output_text
 
     def to_html(self, excluded_data_types=None):
-        excluded_data_types = set() if excluded_data_types is None else set(excluded_data_types)
+        excluded_data_types = (
+            set() if excluded_data_types is None else set(excluded_data_types)
+        )
         if self.output_types & excluded_data_types:
             return ''
 
-        return _to_html('\n'.join(self.traceback + [f"{self.ename}: {self.evalue}"]))
+        return _to_html('\n'.join(self.traceback + [f'{self.ename}: {self.evalue}']))
 
     def erase_output(self, output_types: set):
         return None if self.has_output_type(output_types) else self.content
@@ -259,7 +283,7 @@ class DisplayData(DataOutput, output_type='display_data'):
 class ExecuteResult(DataOutput, output_type='execute_result'):
     @property
     def execution_count(self):
-        return self.content.get("execution_count", None)
+        return self.content.get('execution_count', None)
 
 
 CellOutput.register_parser('text', TextParser())

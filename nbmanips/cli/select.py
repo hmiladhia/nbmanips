@@ -1,13 +1,13 @@
-import re
 import copy
+import re
 from functools import reduce
 
 import click
 import cloudpickle
 from click import Group
 
-from nbmanips.selector import Selector, DefaultSelector
 from nbmanips.cli import get_selector
+from nbmanips.selector import DefaultSelector, Selector
 
 __all__ = [
     'select',
@@ -90,7 +90,7 @@ def get_params(ctx, **kwargs):
     return {
         'or_': ctx.parent.params['or_'] or ctx.params['or_'],
         'invert': ctx.parent.params['invert'] or ctx.params['invert'],
-        'kwargs': kwargs
+        'kwargs': kwargs,
     }
 
 
@@ -98,7 +98,7 @@ def select_params(func):
     decorators = [
         click.option('--or', '-o', 'or_', is_flag=True, default=False),
         click.option('--invert', '-i', is_flag=True, default=False),
-        func
+        func,
     ]
 
     return reduce(lambda f, g: g(f), decorators[::-1])
@@ -131,7 +131,9 @@ def select_unknown(ctx, selector, arguments, kwargs, **_):
     _select_unknown(selector, arguments, **params)
 
 
-@select.command(name='has_output_type', help='Select cells that have a given output_type')
+@select.command(
+    name='has_output_type', help='Select cells that have a given output_type'
+)
 @click.argument('output_type', nargs=-1, required=True)
 @select_params
 @click.pass_context

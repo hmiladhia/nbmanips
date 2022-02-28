@@ -1,5 +1,5 @@
-import os
 import json
+import os
 import zipfile
 
 from nbmanips.notebook import Notebook
@@ -22,7 +22,9 @@ def _get_dirs(path, common_path):
 
 class DbcExporter:
     @staticmethod
-    def _to_dbc_notebook(nb: Notebook, name=None, language=None, version='NotebookV1') -> dict:
+    def _to_dbc_notebook(
+        nb: Notebook, name=None, language=None, version='NotebookV1'
+    ) -> dict:
         if version != 'NotebookV1':
             raise ValueError(f'Unsupported version: {version}')
 
@@ -47,32 +49,42 @@ class DbcExporter:
 
             jupyter = cell.metadata.get('jupyter', {})
 
-            results = [output.to_html() for output in cell.outputs if output.output_type != 'error']
-            errors = [output for output in cell.outputs if output.output_type == 'error']
+            results = [
+                output.to_html()
+                for output in cell.outputs
+                if output.output_type != 'error'
+            ]
+            errors = [
+                output for output in cell.outputs if output.output_type == 'error'
+            ]
 
             command = {
-                "version": "CommandV1",
-                "commandTitle": cell.metadata.get('name', ''),
-                "command": source,
-                "results": None,
-                "errorSummary": None,
-                "error": None,
-                "collapsed": cell.metadata.get('collapsed', False),
-                "hideCommandCode": jupyter.get('source_hidden', False),
-                "hideCommandResult": jupyter.get('outputs_hidden', False),
+                'version': 'CommandV1',
+                'commandTitle': cell.metadata.get('name', ''),
+                'command': source,
+                'results': None,
+                'errorSummary': None,
+                'error': None,
+                'collapsed': cell.metadata.get('collapsed', False),
+                'hideCommandCode': jupyter.get('source_hidden', False),
+                'hideCommandResult': jupyter.get('outputs_hidden', False),
             }
 
             if results:
                 content = '\n'.join(results)
-                command["results"] = {
-                    "type": "html",
-                    "data": f"<div class=\"ansiout\">{content}</div>",
+                command['results'] = {
+                    'type': 'html',
+                    'data': f"<div class=\"ansiout\">{content}</div>",
                 }
 
             if errors:
                 error = errors[0]
-                command["errorSummary"] = f"<span class=\"ansired\">{error.ename}</span>: {error.evalue}"
-                command["error"] = f"<div class=\"ansiout\">{error.to_html()}\n{command['errorSummary']}</div>"
+                command[
+                    'errorSummary'
+                ] = f"<span class=\"ansired\">{error.ename}</span>: {error.evalue}"
+                command[
+                    'error'
+                ] = f"<div class=\"ansiout\">{error.to_html()}\n{command['errorSummary']}</div>"
 
             notebook['commands'].append(command)
 
@@ -87,14 +99,20 @@ class DbcExporter:
     @staticmethod
     def _check_common_path(file_list, common_path):
         if common_path is None:
-            common_path = os.path.commonpath([_parent_directory(path) for path in file_list])
+            common_path = os.path.commonpath(
+                [_parent_directory(path) for path in file_list]
+            )
         else:
             common_path = os.path.abspath(common_path)
             if not os.path.isdir(common_path):
                 raise ValueError(f'common_path ({common_path}) is not a directory')
-            invalid = list(filter(lambda file: not file.startswith(common_path), file_list))
+            invalid = list(
+                filter(lambda file: not file.startswith(common_path), file_list)
+            )
             if invalid:
-                raise ValueError(f'files: {invalid} should start with common_path: {common_path}')
+                raise ValueError(
+                    f'files: {invalid} should start with common_path: {common_path}'
+                )
         return common_path
 
     def write_dbc(self, file_list, output_path, common_path=None):
@@ -106,10 +124,14 @@ class DbcExporter:
         with zipfile.ZipFile(output_path, mode='w') as zf:
             for file_path in file_list:
                 dbc_nb = self._to_dbc_notebook(Notebook.read_ipynb(file_path))
-                default_filename = f"{dbc_nb['name']}.{dbc_nb.get('language', 'python')}"
+                default_filename = (
+                    f"{dbc_nb['name']}.{dbc_nb.get('language', 'python')}"
+                )
                 parent_path = _parent_directory(file_path)
                 dirs |= _get_dirs(parent_path, common_path)
-                zip_path = os.path.join(os.path.relpath(parent_path, common_path), default_filename)
+                zip_path = os.path.join(
+                    os.path.relpath(parent_path, common_path), default_filename
+                )
                 zf.writestr(zip_path, json.dumps(dbc_nb))
 
             for directory in dirs:
@@ -118,7 +140,7 @@ class DbcExporter:
                     'version': 'FolderV1',
                     'name': directory,
                     'guid': '',
-                    'children': []
+                    'children': [],
                 }
                 zf.writestr(zip_info, json.dumps(content))
 
