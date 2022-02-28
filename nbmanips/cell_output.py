@@ -1,5 +1,5 @@
 import html
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 
 from nbmanips.cell_utils import HtmlParser, ImageParser, ParserBase, TextParser
 from nbmanips.utils import total_size
@@ -23,8 +23,8 @@ def _to_html(text):
 
 class CellOutput:
     output_type = None
-    _output_types = {}
-    _parsers = {}
+    _output_types: Dict[str, type] = {}
+    _parsers: Dict[str, ParserBase] = {}
 
     def __init__(self, content):
         self.content = content

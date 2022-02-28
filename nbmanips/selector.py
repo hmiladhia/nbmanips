@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from copy import copy
 from itertools import filterfalse
-from typing import Callable, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from nbmanips.cell import Cell, MarkdownCell
 from nbmanips.utils import partial
@@ -12,7 +12,7 @@ class ISelector(ABC):
         self._neg = False
 
     @abstractmethod
-    def get_callable(self, nb: dict) -> Callable:
+    def get_callable(self, nb: dict) -> Callable[..., bool]:
         pass
 
     def iter_cells(self, nb, neg=False):
@@ -113,12 +113,12 @@ class CallableSelector(ISelector):
 
 
 class DefaultSelector(CallableSelector):
-    default_selectors = {}
+    default_selectors: Dict[str, Callable] = {}
 
     def __init__(self, selector: str, *args, **kwargs):
         # TODO: use signature ?
-        selector = self.default_selectors[selector]
-        super(DefaultSelector, self).__init__(selector, *args, **kwargs)
+        callable_selector = self.default_selectors[selector]
+        super(DefaultSelector, self).__init__(callable_selector, *args, **kwargs)
 
     @classmethod
     def register_selector(cls, key, selector):
@@ -130,7 +130,7 @@ class SliceSelector(ISelector):
         self._slice = selector
         super().__init__()
 
-    def get_callable(self, nb: dict) -> Callable:
+    def get_callable(self, nb: dict) -> Callable[[Cell], bool]:
         new_slice = self.__adapt_slice(self._slice, len(nb.get('cells', [])))
         return self.__get_slice_selector(new_slice)
 
@@ -146,7 +146,7 @@ class SliceSelector(ISelector):
         return new_slice
 
     @classmethod
-    def __get_slice_selector(cls, selector: slice) -> callable:
+    def __get_slice_selector(cls, selector: slice) -> Callable[[Cell], bool]:
         start, stop, step = selector.start, selector.stop, selector.step
         if step and step < 0:
             start, stop = stop + 1, start + 1
@@ -249,8 +249,9 @@ class ListSelector(ISelector):
         return _type == 'and'
 
     @staticmethod
-    def __parse_list_args(list_args: tuple) -> (list, list):
-        args_list, kwargs_list = [], []
+    def __parse_list_args(list_args: tuple) -> Tuple[list, list]:
+        args_list: list = []
+        kwargs_list: list = []
         for arg in list_args:
             if isinstance(arg, dict):
                 args_list.append([])

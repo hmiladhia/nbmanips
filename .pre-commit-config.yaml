@@ -26,8 +26,11 @@ repos:
     rev: 4.0.1
     hooks:
     -   id: flake8
-#- repo: https://github.com/pre-commit/mirrors-mypy
-#  rev: v0.931
-#  hooks:
-#      - id: mypy
-#        args: [--no-strict-optional, --ignore-missing-imports]
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: v0.931
+  hooks:
+      - id: mypy
+        files: ^nbmanips/
+        # exclude utils.py for now
+        exclude: 'nbmanips/utils\.py$'
+        args: [--no-strict-optional, --ignore-missing-imports, --follow-imports, silent]

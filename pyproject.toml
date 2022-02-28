@@ -15,3 +15,8 @@ skip-string-normalization = true
 [tool.isort]
 line_length = 88
 profile = "black"
+
+[tool.mypy]
+exclude = [
+    '/utils\.py',
+]

@@ -1,7 +1,7 @@
 import re
 import uuid
 from copy import deepcopy
-from typing import Any, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 try:
     import pygments
@@ -21,7 +21,7 @@ from nbmanips.utils import total_size
 
 
 class Cell:
-    _cell_types = {}
+    _cell_types: Dict[str, type] = {}
 
     def __init__(self, content, num=None):
         self.cell = content
@@ -106,8 +106,9 @@ class Cell:
             return ''.join(source)
         return source
 
-    def set_source(self, content: str, text=False):
+    def set_source(self, content: Union[str, List[str]], text=False):
         if text:
+            assert isinstance(content, str), 'content is not of type str if text=True'
             lines = content.split('\n')
             content = [
                 f'{line}\n' if i != len(lines) else line for i, line in enumerate(lines)
