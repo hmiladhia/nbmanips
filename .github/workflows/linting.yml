@@ -6,7 +6,7 @@ on:
     inputs:
       commit_changes:
         required: false
-        default: false
+        default: true
         type: boolean
 
 jobs:
@@ -14,8 +14,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        if: (github.event_name == 'push') || ( github.event.inputs.commit_changes )
+        name: 'Checkout (Push)'
         with:
-          ref: ${{github.event.pull_request.head.ref}}
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.ACTION_TOKEN }}
+      - uses: actions/checkout@v2
+        if: (github.event_name != 'push') && ( !github.event.inputs.commit_changes )
+        name: 'Checkout (pull_request)'
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
       - name: Cache pre-commit paths
         uses: actions/cache@v2
         with:
@@ -31,21 +39,18 @@ jobs:
       - name: Install-pre-commit
         run: python -m pip install --upgrade pre-commit
       - name: Run Pre-commit
-        if: (github.event_name  == 'push') || ${{ inputs.commit_changes }}
-        run: |
-          echo ${{ github.event.type }}
-          echo ${{ github.event.type == "push" }}
-          echo ${{ inputs.commit_changes }}
-          pre-commit run --all-files || (exit 0)
+        if: (github.event_name == 'push') || ( github.event.inputs.commit_changes )
+        run: pre-commit run --all-files || (exit 0)
       - name: Commit changes
-        if: (github.event_name  == 'push') || ${{ inputs.commit_changes }}
+        if: (github.event_name == 'push') || github.event.inputs.commit_changes
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git commit -am "Ran pre-commit: Reformatting & Linting"
+          git commit -am "Ran pre-commit: Reformatting & Linting" || (exit 0)
       - name: Run Pre-commit Checks
-        run: pre-commit run --all-files --show-diff-on-failure
+        run: |
+          pre-commit run --all-files --show-diff-on-failure
       - name: Push changes
-        if: (github.event_name  == 'push') || ${{ inputs.commit_changes }}
+        if: (github.event_name == 'push') || ( github.event.inputs.commit_changes )
         run: |
           git push
