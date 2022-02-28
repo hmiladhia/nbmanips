@@ -292,12 +292,12 @@ class ExportMixin(NotebookBase):
         Exports a basic HTML document.
 
         :param path: path to export to
-        :param exclude_code_cell: This allows you to exclude code cells from all templates if set to True.
-        :param exclude_markdown: This allows you to exclude markdown cells from all templates if set to True.
-        :param exclude_raw: This allows you to exclude raw cells from all templates if set to True.
-        :param exclude_unknown: This allows you to exclude unknown cells from all templates if set to True.
-        :param exclude_input: This allows you to exclude input prompts from all templates if set to True.
-        :param exclude_output: This allows you to exclude code cell outputs from all templates if set to True.
+        :param exclude_code_cell: exclude code cells from all templates if set to True.
+        :param exclude_markdown: exclude markdown cells from all templates if set to True.
+        :param exclude_raw: exclude raw cells from all templates if set to True.
+        :param exclude_unknown: exclude unknown cells from all templates if set to True.
+        :param exclude_input: exclude input prompts from all templates if set to True.
+        :param exclude_output: exclude code cell outputs from all templates if set to True.
         :param kwargs: exclude_input_prompt, exclude_output_prompt, ...
         """
         return self.nbconvert(
@@ -337,12 +337,12 @@ class ExportMixin(NotebookBase):
         Exports to a markdown document (.md)
 
         :param path: path to export to
-        :param exclude_code_cell: This allows you to exclude code cells from all templates if set to True.
-        :param exclude_markdown: This allows you to exclude markdown cells from all templates if set to True.
-        :param exclude_raw: This allows you to exclude raw cells from all templates if set to True.
-        :param exclude_unknown: This allows you to exclude unknown cells from all templates if set to True.
-        :param exclude_input: This allows you to exclude input prompts from all templates if set to True.
-        :param exclude_output: This allows you to exclude code cell outputs from all templates if set to True.
+        :param exclude_code_cell: exclude code cells from all templates if set to True.
+        :param exclude_markdown: exclude markdown cells from all templates if set to True.
+        :param exclude_raw: exclude raw cells from all templates if set to True.
+        :param exclude_unknown: exclude unknown cells from all templates if set to True.
+        :param exclude_input: exclude input prompts from all templates if set to True.
+        :param exclude_output: exclude code cell outputs from all templates if set to True.
         :param kwargs: exclude_input_prompt, exclude_output_prompt, ...
         """
         return self.nbconvert(
@@ -594,10 +594,13 @@ class NotebookMetadata(NotebookBase):
     def set_kernelspec(self, argv, display_name, language, **kwargs):
         """
         set the kernel specs.
-        See https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernelspecs for more information
+
+        See https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernelspecs
+        for more information
+
         :param argv: A list of command line arguments used to start the kernel.
-        :param display_name:The kernel’s name as it should be displayed in the UI. Unlike the kernel name used in
-        the API, this can contain arbitrary unicode characters.
+        :param display_name:The kernel’s name as it should be displayed in the UI.
+            Unlike the kernel name used in the API, this can contain arbitrary unicode characters.
         :param language: The name of the language of the kernel.
         :param kwargs: optional keyword arguments
         """

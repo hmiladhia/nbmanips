@@ -46,7 +46,7 @@ class CellOutput:
         """
         Select cells that have a given output_type
 
-        :param output_types: Output Types(MIME types) to select: text/plain, text/html, image/png, ...
+        :param output_types: Output Types(MIME types) to select: text/plain, image/png, ...
         :type output_types: set
         :return: a bool object (True if cell should be selected)
         """

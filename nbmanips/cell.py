@@ -159,7 +159,7 @@ class Cell:
         """
         Select cells that have a given output_type
 
-        :param output_types: Output Types(MIME type) to select: text/plain, text/html, image/png, ...
+        :param output_types: Output Types(MIME type) to select: text/plain, image/png, ...
         :type output_types: set
         :return: a bool object (True if cell should be selected)
         """
@@ -171,7 +171,7 @@ class Cell:
         """
         returns the byte size of the cell.
 
-        :param output_types: Output Types(MIME type) to select: text/plain, text/html, image/png, ...
+        :param output_types: Output Types(MIME type) to select: text/plain, image/png, ...
         :type output_types: set
         :param ignore_source: True if you want to get the size of the output only
         :return: a bool object (True if cell should be selected)
