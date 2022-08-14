@@ -72,26 +72,26 @@ class Notebook(
             if count is not None and n_cells >= count:
                 break
 
-    def burn_attachments(self, relative_path=None, html=True):
+    def burn_attachments(self, assets_path=None, html=True):
         from functools import partial
 
         from nbmanips.utils import (
             burn_attachment_html,
             burn_attachment_md,
-            get_relative_path,
+            get_assets_path,
         )
 
-        relative_path = get_relative_path(self, relative_path)
-
-        compiled_md_regex = re.compile(r'!\[(?P<alt_text>.*?)]\((?P<PATH>.*?)\)')
+        assets_path = get_assets_path(self, assets_path)
+        compiled_md_regex = re.compile(r'!\[(?P<ALT_TEXT>.*?)]\((?P<PATH>.*?)\)')
         compiled_html_regex = re.compile(
-            r'<img\s(?P<PREFIX>.*?)src\s*=\s*"(?P<PATH>.*?)"(?P<SUFFIX>.*?)>'
+            r'<img\s(?P<PREFIX>.*?)'
+            r'src\s*=\s*\"?(?P<PATH>(?<=\")[^\"]*(?=\")|(?:[^\"\s]|(?<=\\)\s)*)\"?'
+            r'(?P<SUFFIX>.*?)>'
         )
-        selection = self.select('markdown_cells')
-        for cell in selection.iter_cells():
+        for cell in self.select('markdown_cells').iter_cells():
             # replace markdown
             rep_func = partial(
-                burn_attachment_md, cell=cell, relative_path=relative_path
+                burn_attachment_md, cell=cell, assets_path=assets_path
             )
             cell.source = compiled_md_regex.sub(rep_func, cell.get_source())
 
@@ -100,7 +100,7 @@ class Notebook(
 
             # replace html
             rep_func = partial(
-                burn_attachment_html, cell=cell, relative_path=relative_path
+                burn_attachment_html, cell=cell, assets_path=assets_path
             )
             cell.source = compiled_html_regex.sub(rep_func, cell.get_source())
 
@@ -118,3 +118,4 @@ class DBC(Notebook):
 class ZPLN(Notebook):
     def __new__(cls, path, name=None, encoding='utf-8'):
         return Notebook.read_zpln(path, encoding=encoding, name=name)
+

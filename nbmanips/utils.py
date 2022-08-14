@@ -1,18 +1,20 @@
-import json
 import os
+import re
+import json
 import zipfile
-from functools import wraps
+import warnings
+import urllib.parse
 from io import StringIO
 from pathlib import Path
+from functools import wraps
 
+import nbformat
 from html2text import html2text
 
 try:
     import pandas as pd
 except ImportError:
     pd = None
-
-import nbformat
 
 
 def total_size(o):
@@ -240,35 +242,36 @@ def partial(func, *args, **keywords):
     return new_func
 
 
-def get_relative_path(nb, relative_path=None):
-    if relative_path is None:
-        relative_path = getattr(nb, '_original_path')
-        if relative_path:
-            return Path(relative_path).parent
+def get_assets_path(nb, assets_path=None):
+    if assets_path is None:
+        assets_path = getattr(nb, '_original_path')
+        if assets_path:
+            return Path(assets_path).parent
         return Path.cwd()
 
-    return Path(relative_path)
+    return Path(assets_path)
 
 
-def burn_attachment_md(match, cell, relative_path):
-    alt_text = match.group('alt_text')
-    path = relative_path / match.group('PATH')
+def _burn_attachment_base(match: re.Match, cell, assets_path: Path, expr):
+    path = match.group('PATH')
+    if path.startswith('attachment:'):
+        return match.group(0)
+
+    path = assets_path / urllib.parse.unquote(path)
     if not path.exists():
         path = match.group('PATH')
-        return f'![{alt_text}]({path})'
+        warnings.warn(f"Couldn't find '{path}'")
+        return match.group(0)
+    
+    match_dict = match.groupdict()
+    attachment_name = match_dict.pop('PATH').replace(' ', '%20')
+    cell.attach(str(path), attachment_name=attachment_name)
+    return expr.format(**match_dict, attachment_name=attachment_name)
 
-    cell.attach(str(path))
-    return f'![{alt_text}](attachment:{path.name})'
+
+def burn_attachment_md(match: re.Match, cell, assets_path: Path) -> str:
+    return _burn_attachment_base(match, cell, assets_path, expr='![{ALT_TEXT}](attachment:{attachment_name})')
 
 
-def burn_attachment_html(match, cell, relative_path):
-    prefix = match.group('PREFIX')
-    path = relative_path / match.group('PATH')
-    suffix = match.group('SUFFIX')
-
-    if not path.exists():
-        path = match.group('PATH')
-        return f'<img {prefix}src="{path}"{suffix}>'
-
-    cell.attach(str(path))
-    return f'<img {prefix}src="attachment:{path.name}"{suffix}>'
+def burn_attachment_html(match: re.Match, cell, assets_path: Path) -> str:
+    return _burn_attachment_base(match, cell, assets_path, expr='<img {PREFIX}src="attachment:{attachment_name}"{SUFFIX}>')
