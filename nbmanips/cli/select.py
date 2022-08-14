@@ -7,7 +7,8 @@ import cloudpickle
 from click import Group
 
 from nbmanips.cli import get_selector
-from nbmanips.selector import DefaultSelector, Selector
+from nbmanips.selector import Selector
+from nbmanips.selector.default_selector import DefaultSelector
 
 __all__ = [
     'select',

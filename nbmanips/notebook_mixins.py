@@ -13,7 +13,6 @@ except ImportError:
 
 from nbmanips.cell_utils import PYGMENTS_SUPPORTED
 from nbmanips.notebook_base import NotebookBase
-from nbmanips.selector import has_output_type, has_slide_type, is_new_slide
 from nbmanips.utils import (
     dict_to_ipynb,
     get_ipynb_name,
@@ -166,6 +165,12 @@ class SlideShowMixin(ClassicNotebook):
         self.update_cell_metadata('slideshow', {'slide_type': tag})
 
     def max_cells_per_slide(self, n_cells=3, n_images=1):
+        from nbmanips.selector.default_selector import (
+            has_output_type,
+            has_slide_type,
+            is_new_slide,
+        )
+
         cells_count = 0
         img_count = 0
         for cell in self.iter_cells():
@@ -196,6 +201,8 @@ class SlideShowMixin(ClassicNotebook):
         delete_empty=True,
         title_tags='h1, h2',
     ):
+        from nbmanips.selector.default_selector import is_new_slide
+
         # Delete Empty
         if delete_empty:
             self.select('is_empty').delete()
