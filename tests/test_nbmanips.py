@@ -381,29 +381,33 @@ def test_exclude_output(nb1, exclude_output, expected):
 
 
 def test_attachments(nb7: Notebook):
-    from pathlib import Path
     nb7.burn_attachments()
-    
+
     expected_outputs = {
         5: '![python](attachment:assets/python.png)',
         6: '<img src="attachment:assets/python.png"/>',
         7: '<img src="attachment:assets/python.png"/>',
-        8: '\n'.join([
-            '![python](attachment:assets/python.png)',
-            '',
-            '<img src="attachment:assets/python.png"/>'
-            ]),
-        9: '\n'.join([
-            '![python](attachment:assets/python%20logo.svg)',
-            '![python](assets/python_logo.svg)' # Does Not Exist
-        ]),
-        10: '\n'.join([
-            '![python](attachment:assets/python%20logo.svg)',
-            '<img src="attachment:assets/python%20logo.svg" />',
-            '<img src="attachment:assets/python%20logo.svg" />',
-            '<img src="attachment:assets/python%20logo.svg" />',
-        ])
-           
+        8: '\n'.join(
+            [
+                '![python](attachment:assets/python.png)',
+                '',
+                '<img src="attachment:assets/python.png"/>',
+            ]
+        ),
+        9: '\n'.join(
+            [
+                '![python](attachment:assets/python%20logo.svg)',
+                '![python](assets/python_logo.svg)',  # Does Not Exist
+            ]
+        ),
+        10: '\n'.join(
+            [
+                '![python](attachment:assets/python%20logo.svg)',
+                '<img src="attachment:assets/python%20logo.svg" />',
+                '<img src="attachment:assets/python%20logo.svg" />',
+                '<img src="attachment:assets/python%20logo.svg" />',
+            ]
+        ),
     }
     for cell_idx, source in expected_outputs.items():
         cell = nb7.cells[cell_idx]

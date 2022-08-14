@@ -143,6 +143,3 @@ class DbcExporter:
                     'children': [],
                 }
                 zf.writestr(zip_info, json.dumps(content))
-
-
-Notebook.register_exporter('dbc', DbcExporter, exporter_type='nbmanips')

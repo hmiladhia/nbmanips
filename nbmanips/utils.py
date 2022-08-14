@@ -1,12 +1,12 @@
-import os
 import json
-import zipfile
-import warnings
+import os
 import urllib.parse
-from io import StringIO
-from typing import Tuple
-from pathlib import Path
+import warnings
+import zipfile
 from functools import wraps
+from io import StringIO
+from pathlib import Path
+from typing import Tuple
 
 import nbformat
 from html2text import html2text
@@ -31,6 +31,7 @@ HTML_IMG_EXPRESSION = r'<img {PREFIX}src="attachment:{attachment_name}"{SUFFIX}>
 ZPLN_PREFIXES = {
     'python': {'%python', '%pyspark', '%spark.pyspark'},
 }
+
 
 def total_size(o):
     return len(json.dumps(o).encode('utf-8'))
@@ -141,12 +142,9 @@ def read_zpln(notebook_path: str, version=4, encoding='utf-8'):
 
 
 def read_dbc(
-        notebook_path: str,
-        version=4, 
-        filename=None, 
-        encoding='utf-8'
-    ) -> Tuple[str, dict]:
-    
+    notebook_path: str, version=4, filename=None, encoding='utf-8'
+) -> Tuple[str, dict]:
+
     if zipfile.is_zipfile(notebook_path):
         with zipfile.ZipFile(notebook_path, 'r') as zf:
             if filename is None:
@@ -276,7 +274,7 @@ def burn_attachment(match, cell, assets_path: Path, expr):
         path = match.group('PATH')
         warnings.warn(f"Couldn't find '{path}'")
         return match.group(0)
-    
+
     match_dict = match.groupdict()
     attachment_name = match_dict.pop('PATH').replace(' ', '%20')
     cell.attach(str(path), attachment_name=attachment_name)

@@ -2,8 +2,8 @@ import json
 import os
 import shutil
 import textwrap
-from pathlib import Path
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, Union
 
 try:
@@ -698,18 +698,18 @@ class NotebookCellMetadata(ClassicNotebook):
         :param value: boolean
         """
         self.update_cell_metadata('jupyter', {'outputs_hidden': value})
-    
+
     def burn_attachments(self, assets_path=None, html=True):
         import re
         from functools import partial
 
         from nbmanips.utils import (
-            burn_attachment,
-            get_assets_path,
-            MD_IMG_REGEX,
+            HTML_IMG_EXPRESSION,
             HTML_IMG_REGEX,
             MD_IMG_EXPRESSION,
-            HTML_IMG_EXPRESSION
+            MD_IMG_REGEX,
+            burn_attachment,
+            get_assets_path,
         )
 
         assets_path = get_assets_path(self, assets_path)
@@ -719,7 +719,10 @@ class NotebookCellMetadata(ClassicNotebook):
         for cell in self.select('markdown_cells').iter_cells():
             # replace markdown
             rep_func = partial(
-                burn_attachment, cell=cell, assets_path=assets_path, expr=MD_IMG_EXPRESSION
+                burn_attachment,
+                cell=cell,
+                assets_path=assets_path,
+                expr=MD_IMG_EXPRESSION,
             )
             cell.source = compiled_md_regex.sub(rep_func, cell.get_source())
 
@@ -728,7 +731,10 @@ class NotebookCellMetadata(ClassicNotebook):
 
             # replace html
             rep_func = partial(
-                burn_attachment, cell=cell, assets_path=assets_path, expr=HTML_IMG_EXPRESSION
+                burn_attachment,
+                cell=cell,
+                assets_path=assets_path,
+                expr=HTML_IMG_EXPRESSION,
             )
             cell.source = compiled_html_regex.sub(rep_func, cell.get_source())
 
