@@ -256,7 +256,7 @@ def partial(func, *args, **keywords):
 
 def get_assets_path(nb, assets_path=None):
     if assets_path is None:
-        assets_path = getattr(nb, '_original_path')
+        assets_path = getattr(nb, '_original_path', None)
         if assets_path:
             return Path(assets_path).parent
         return Path.cwd()

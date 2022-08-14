@@ -43,6 +43,12 @@ class NotebookBase:
     def reset_selection(self):
         notebook_selection = self.__class__(None, self.name, validate=False)
         notebook_selection.raw_nb = self.raw_nb
+
+        # Adding Original Notebook Path if defined
+        original_path = getattr(self, '_original_path', None)
+        if original_path:
+            notebook_selection._original_path = original_path
+
         return notebook_selection
 
     def iter_cells(self, neg=False):
