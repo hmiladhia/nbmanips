@@ -1,5 +1,3 @@
-import re
-
 from nbmanips.notebook_base import NotebookBase
 from nbmanips.notebook_mixins import (
     ClassicNotebook,
@@ -62,6 +60,7 @@ class Notebook(
         :type case: default True
         :param regex: boolean whether to use regex or not
         """
+        import re
 
         compiled_regex = re.compile(
             old if regex else re.escape(old), flags=0 if case else re.IGNORECASE
@@ -71,38 +70,6 @@ class Notebook(
             cell.source = compiled_regex.sub(new, cell.get_source())
             if count is not None and n_cells >= count:
                 break
-
-    def burn_attachments(self, assets_path=None, html=True):
-        from functools import partial
-
-        from nbmanips.utils import (
-            burn_attachment_html,
-            burn_attachment_md,
-            get_assets_path,
-        )
-
-        assets_path = get_assets_path(self, assets_path)
-        compiled_md_regex = re.compile(r'!\[(?P<ALT_TEXT>.*?)]\((?P<PATH>.*?)\)')
-        compiled_html_regex = re.compile(
-            r'<img\s(?P<PREFIX>.*?)'
-            r'src\s*=\s*\"?(?P<PATH>(?<=\")[^\"]*(?=\")|(?:[^\"\s]|(?<=\\)\s)*)\"?'
-            r'(?P<SUFFIX>.*?)>'
-        )
-        for cell in self.select('markdown_cells').iter_cells():
-            # replace markdown
-            rep_func = partial(
-                burn_attachment_md, cell=cell, assets_path=assets_path
-            )
-            cell.source = compiled_md_regex.sub(rep_func, cell.get_source())
-
-            if not html:
-                continue
-
-            # replace html
-            rep_func = partial(
-                burn_attachment_html, cell=cell, assets_path=assets_path
-            )
-            cell.source = compiled_html_regex.sub(rep_func, cell.get_source())
 
 
 class IPYNB(Notebook):

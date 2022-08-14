@@ -1,10 +1,10 @@
 import os
-import re
 import json
 import zipfile
 import warnings
 import urllib.parse
 from io import StringIO
+from typing import Tuple
 from pathlib import Path
 from functools import wraps
 
@@ -16,6 +16,21 @@ try:
 except ImportError:
     pd = None
 
+# -- Constants --
+# --- Attachment Constants ---
+MD_IMG_REGEX = r'!\[(?P<ALT_TEXT>.*?)]\((?P<PATH>.*?)\)'
+MD_IMG_EXPRESSION = r'![{ALT_TEXT}](attachment:{attachment_name})'
+HTML_IMG_REGEX = (
+    r'<img\s(?P<PREFIX>.*?)'
+    r'src\s*=\s*\"?(?P<PATH>(?<=\")[^\"]*(?=\")|(?:[^\"\s]|(?<=\\)\s)*)\"?'
+    r'(?P<SUFFIX>.*?)>'
+)
+HTML_IMG_EXPRESSION = r'<img {PREFIX}src="attachment:{attachment_name}"{SUFFIX}>'
+
+# --- READERS Constants ---
+ZPLN_PREFIXES = {
+    'python': {'%python', '%pyspark', '%spark.pyspark'},
+}
 
 def total_size(o):
     return len(json.dumps(o).encode('utf-8'))
@@ -31,17 +46,12 @@ def read_ipynb(notebook_path: str, version=4) -> dict:
     return json.loads(raw_json)
 
 
-zpln_prefixes = {
-    'python': {'%python', '%pyspark', '%spark.pyspark'},
-}
-
-
 def read_zpln(notebook_path: str, version=4, encoding='utf-8'):
     with open(notebook_path, 'r', encoding=encoding) as f:
         zep_nb = json.load(f)
     name = zep_nb.get('name', os.path.splitext(os.path.basename(notebook_path))[0])
     language = zep_nb.get('defaultInterpreterGroup', 'python')
-    language_prefixes = zpln_prefixes.get(language, {'%' + language})
+    language_prefixes = ZPLN_PREFIXES.get(language, {'%' + language})
     notebook = {
         'metadata': {'language_info': {'name': language}},
         'nbformat': 4,
@@ -131,8 +141,12 @@ def read_zpln(notebook_path: str, version=4, encoding='utf-8'):
 
 
 def read_dbc(
-    notebook_path: str, version=4, filename=None, encoding='utf-8'
-) -> (str, dict):
+        notebook_path: str,
+        version=4, 
+        filename=None, 
+        encoding='utf-8'
+    ) -> Tuple[str, dict]:
+    
     if zipfile.is_zipfile(notebook_path):
         with zipfile.ZipFile(notebook_path, 'r') as zf:
             if filename is None:
@@ -252,7 +266,7 @@ def get_assets_path(nb, assets_path=None):
     return Path(assets_path)
 
 
-def _burn_attachment_base(match: re.Match, cell, assets_path: Path, expr):
+def burn_attachment(match, cell, assets_path: Path, expr):
     path = match.group('PATH')
     if path.startswith('attachment:'):
         return match.group(0)
@@ -267,11 +281,3 @@ def _burn_attachment_base(match: re.Match, cell, assets_path: Path, expr):
     attachment_name = match_dict.pop('PATH').replace(' ', '%20')
     cell.attach(str(path), attachment_name=attachment_name)
     return expr.format(**match_dict, attachment_name=attachment_name)
-
-
-def burn_attachment_md(match: re.Match, cell, assets_path: Path) -> str:
-    return _burn_attachment_base(match, cell, assets_path, expr='![{ALT_TEXT}](attachment:{attachment_name})')
-
-
-def burn_attachment_html(match: re.Match, cell, assets_path: Path) -> str:
-    return _burn_attachment_base(match, cell, assets_path, expr='<img {PREFIX}src="attachment:{attachment_name}"{SUFFIX}>')
