@@ -2,7 +2,7 @@ import click
 import colorama
 
 from nbmanips import Notebook
-from nbmanips.cell_utils import styles
+from nbmanips.cell.cell_utils import styles
 from nbmanips.cli import get_selector
 
 _COLORS = list(set(vars(colorama.Fore)) - {'RESET'})

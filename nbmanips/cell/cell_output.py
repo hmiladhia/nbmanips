@@ -1,24 +1,9 @@
-import html
-from typing import Dict, Optional, Union
+from typing import Dict, Optional
 
-from nbmanips.cell_utils import HtmlParser, ImageParser, ParserBase, TextParser
 from nbmanips.utils import total_size
 
-
-def _get_output_types(output_type: Union[set, dict, str]) -> set:
-    if isinstance(output_type, str):
-        if '/' in output_type:
-            return {output_type, output_type.split('/')[0]}
-        return {output_type}
-
-    output_types = set()
-    for output in output_type:
-        output_types |= _get_output_types(output)
-    return output_types
-
-
-def _to_html(text):
-    return html.escape(text).encode('ascii', 'xmlcharrefreplace').decode('ascii')
+from .cell_utils import _get_output_types, _to_html
+from .output_parsers import ParserBase
 
 
 class CellOutput:
@@ -284,8 +269,3 @@ class ExecuteResult(DataOutput, output_type='execute_result'):
     @property
     def execution_count(self):
         return self.content.get('execution_count', None)
-
-
-CellOutput.register_parser('text', TextParser())
-CellOutput.register_parser('text/html', HtmlParser())
-CellOutput.register_parser('image', ImageParser())

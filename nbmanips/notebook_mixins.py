@@ -11,7 +11,7 @@ try:
 except ImportError:
     nbconvert = None
 
-from nbmanips.cell_utils import PYGMENTS_SUPPORTED
+from nbmanips.cell.cell_utils import PYGMENTS_SUPPORTED
 from nbmanips.notebook_base import NotebookBase
 from nbmanips.utils import (
     dict_to_ipynb,

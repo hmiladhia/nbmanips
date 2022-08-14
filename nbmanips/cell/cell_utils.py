@@ -1,10 +1,10 @@
 import re
 import shutil
-from abc import ABCMeta, abstractmethod
 from mimetypes import guess_type
 from textwrap import wrap
+from typing import Union
 
-from nbmanips.color import supports_color
+from nbmanips.cell.color import supports_color
 
 try:
     import pygments
@@ -23,15 +23,6 @@ try:
 except ImportError:
     colorama = None
 
-try:
-    from html2text import html2text
-except ImportError:
-    html2text = None
-
-try:
-    from img2text import img_to_ascii
-except ImportError:
-    img_to_ascii = None
 
 styles = {
     'single': '││┌─┐└─┘',
@@ -119,60 +110,19 @@ def get_mime_type(path):
     return guess_type(path)[0]
 
 
-class ParserBase(metaclass=ABCMeta):
-    @abstractmethod
-    def parse(self, content, **kwargs):
-        return content
+def _get_output_types(output_type: Union[set, dict, str]) -> set:
+    if isinstance(output_type, str):
+        if '/' in output_type:
+            return {output_type, output_type.split('/')[0]}
+        return {output_type}
 
-    @property
-    def default_state(self):
-        return True
-
-
-class TextParser(ParserBase):
-    def parse(self, content, **kwargs):
-        return content
+    output_types = set()
+    for output in output_type:
+        output_types |= _get_output_types(output)
+    return output_types
 
 
-class ImageParser(ParserBase):
-    def parse(
-        self,
-        content,
-        width=80,
-        colorful=COLOR_SUPPORTED,
-        bright=COLOR_SUPPORTED,
-        reverse=True,
-        **kwargs,
-    ):
-        if callable(img_to_ascii):
-            return img_to_ascii(
-                content,
-                base64=True,
-                colorful=colorful,
-                reverse=reverse,
-                width=width,
-                bright=bright,
-                **kwargs,
-            )
-        else:
-            raise ModuleNotFoundError(
-                'You need to pip install img2text for readable option'
-            )
+def _to_html(text):
+    import html
 
-    @property
-    def default_state(self):
-        return img_to_ascii is not None
-
-
-class HtmlParser(ParserBase):
-    def parse(self, content, width=78, **kwargs):
-        if callable(html2text):
-            return html2text(content, bodywidth=width, **kwargs)
-        else:
-            raise ModuleNotFoundError(
-                'You need to pip install html2txt for readable option'
-            )
-
-    @property
-    def default_state(self):
-        return html2text is not None
+    return html.escape(text).encode('ascii', 'xmlcharrefreplace').decode('ascii')
