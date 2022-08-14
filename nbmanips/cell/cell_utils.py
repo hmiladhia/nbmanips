@@ -1,6 +1,9 @@
 import re
 import shutil
+import urllib.parse
+import warnings
 from mimetypes import guess_type
+from pathlib import Path
 from textwrap import wrap
 from typing import Union
 
@@ -24,6 +27,18 @@ except ImportError:
     colorama = None
 
 
+# -- Constants --
+# --- Attachment Constants ---
+MD_IMG_REGEX = r'!\[(?P<ALT_TEXT>.*?)]\((?P<PATH>.*?)\)'
+MD_IMG_EXPRESSION = r'![{ALT_TEXT}](attachment:{attachment_name})'
+HTML_IMG_REGEX = (
+    r'<img\s(?P<PREFIX>.*?)'
+    r'src\s*=\s*\"?(?P<PATH>(?<=\")[^\"]*(?=\")|(?:[^\"\s]|(?<=\\)\s)*[^\s\\/])\"?'
+    r'(?P<SUFFIX>.*?)>'
+)
+HTML_IMG_EXPRESSION = r'<img {PREFIX}src="attachment:{attachment_name}"{SUFFIX}>'
+
+# -- Styles --
 styles = {
     'single': '││┌─┐└─┘',
     'double': '║║╔═╗╚═╝',
@@ -126,3 +141,30 @@ def _to_html(text):
     import html
 
     return html.escape(text).encode('ascii', 'xmlcharrefreplace').decode('ascii')
+
+
+def get_assets_path(nb, assets_path=None):
+    if assets_path is None:
+        assets_path = getattr(nb, '_original_path', None)
+        if assets_path:
+            return Path(assets_path).parent
+        return Path.cwd()
+
+    return Path(assets_path)
+
+
+def burn_attachment(match, cell, assets_path: Path, expr):
+    path = match.group('PATH')
+    if path.startswith('attachment:'):
+        return match.group(0)
+
+    path = assets_path / urllib.parse.unquote(path)
+    if not path.exists():
+        path = match.group('PATH')
+        warnings.warn(f"Couldn't find '{path}'")
+        return match.group(0)
+
+    match_dict = match.groupdict()
+    attachment_name = match_dict.pop('PATH').replace(' ', '%20')
+    cell.attach(str(path), attachment_name=attachment_name)
+    return expr.format(**match_dict, attachment_name=attachment_name)

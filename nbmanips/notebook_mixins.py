@@ -710,7 +710,7 @@ class NotebookCellMetadata(ClassicNotebook):
         import re
         from functools import partial
 
-        from nbmanips.utils import (
+        from nbmanips.cell.cell_utils import (
             HTML_IMG_EXPRESSION,
             HTML_IMG_REGEX,
             MD_IMG_EXPRESSION,
