@@ -22,7 +22,7 @@ MD_IMG_REGEX = r'!\[(?P<ALT_TEXT>.*?)]\((?P<PATH>.*?)\)'
 MD_IMG_EXPRESSION = r'![{ALT_TEXT}](attachment:{attachment_name})'
 HTML_IMG_REGEX = (
     r'<img\s(?P<PREFIX>.*?)'
-    r'src\s*=\s*\"?(?P<PATH>(?<=\")[^\"]*(?=\")|(?:[^\"\s]|(?<=\\)\s)*)\"?'
+    r'src\s*=\s*\"?(?P<PATH>(?<=\")[^\"]*(?=\")|(?:[^\"\s]|(?<=\\)\s)*[^\s\\/])\"?'
     r'(?P<SUFFIX>.*?)>'
 )
 HTML_IMG_EXPRESSION = r'<img {PREFIX}src="attachment:{attachment_name}"{SUFFIX}>'
