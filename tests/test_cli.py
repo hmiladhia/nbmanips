@@ -88,8 +88,7 @@ def test_select_3(runner, test_files, selection, expected_result):
 def test_to_html(runner, test_files):
     nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
-        with open('nb.ipynb', 'w') as f:
-            f.write(nb3)
+        Path('nb.ipynb').write_text(nb3)
 
         result = runner.invoke(
             cli, ['convert', 'html', 'nb.ipynb', '-o', 'exported.html']
@@ -102,8 +101,7 @@ def test_to_html(runner, test_files):
 def test_to_slides(runner, test_files):
     nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
-        with open('nb.ipynb', 'w') as f:
-            f.write(nb3)
+        Path('nb.ipynb').write_text(nb3)
 
         result = runner.invoke(
             cli, ['convert', 'slides', 'nb.ipynb', '-o', 'exported.slides.html']
@@ -115,8 +113,7 @@ def test_to_slides(runner, test_files):
 def test_to_py(runner, test_files):
     nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
-        with open('nb.ipynb', 'w') as f:
-            f.write(nb3)
+        Path('nb.ipynb').write_text(nb3)
 
         result = runner.invoke(cli, ['convert', 'py', 'nb.ipynb', '-o', 'exported.py'])
         assert result.exit_code == 0
@@ -126,8 +123,7 @@ def test_to_py(runner, test_files):
 def test_to_md(runner, test_files):
     nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
-        with open('nb.ipynb', 'w') as f:
-            f.write(nb3)
+        Path('nb.ipynb').write_text(nb3)
 
         result = runner.invoke(cli, ['convert', 'md', 'nb.ipynb', '-o', 'exported.md'])
         assert result.exit_code == 0
@@ -200,8 +196,7 @@ def test_search(runner, test_files):
 def test_erase(runner, test_files):
     nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
-        with open('nb.ipynb', 'w') as f:
-            f.write(nb3)
+        Path('nb.ipynb').write_text(nb3)
         assert IPYNB('nb.ipynb').select('is_empty').count() == 2
 
         selection_result = runner.invoke(cli, ['select', '-i', 'is_empty'])
@@ -232,8 +227,7 @@ def test_erase(runner, test_files):
 def test_delete(runner, test_files):
     nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
-        with open('nb.ipynb', 'w') as f:
-            f.write(nb3)
+        Path('nb.ipynb').write_text(nb3)
         assert IPYNB('nb.ipynb').count() == 9
 
         selection_result = runner.invoke(cli, ['select', 'is_empty'])
@@ -268,8 +262,8 @@ def test_delete(runner, test_files):
 def test_keep(runner, test_files):
     nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
-        with open('nb.ipynb', 'w') as f:
-            f.write(nb3)
+        Path('nb.ipynb').write_text(nb3)
+
         assert IPYNB('nb.ipynb').count() == 9
 
         selection_result = runner.invoke(cli, ['select', 'is_empty'])
@@ -304,8 +298,8 @@ def test_keep(runner, test_files):
 def test_replace(runner, test_files):
     nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
-        with open('nb.ipynb', 'w') as f:
-            f.write(nb3)
+        Path('nb.ipynb').write_text(nb3)
+
         assert len(IPYNB('nb.ipynb').search_all('df')) == 4
 
         result = runner.invoke(cli, ['replace', '-t', 'df', '-n', 'data', 'nb.ipynb'])
@@ -333,8 +327,8 @@ def test_replace(runner, test_files):
 def test_erase_output(runner, test_files):
     nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
-        with open('nb.ipynb', 'w') as f:
-            f.write(nb3)
+        Path('nb.ipynb').write_text(nb3)
+
         assert IPYNB('nb.ipynb').select('has_output').count() == 5
 
         result = runner.invoke(cli, ['erase-output', 'nb.ipynb'])
@@ -354,8 +348,7 @@ def test_erase_output(runner, test_files):
 def test_auto_slide(runner, test_files):
     nb3 = Path(str(test_files / 'nb3.ipynb')).read_text()
     with runner.isolated_filesystem():
-        with open('nb.ipynb', 'w') as f:
-            f.write(nb3)
+        Path('nb.ipynb').write_text(nb3)
 
         nb = IPYNB('nb.ipynb')
         assert nb.select('has_slide_type', 'slide').count() == 0
@@ -382,8 +375,7 @@ def test_auto_slide(runner, test_files):
 def test_split(runner, test_files):
     nb6 = Path(str(test_files / 'nb6.ipynb')).read_text()
     with runner.isolated_filesystem():
-        with open('nb.ipynb', 'w') as f:
-            f.write(nb6)
+        Path('nb.ipynb').write_text(nb6)
 
         result = runner.invoke(cli, ['split', 'nb.ipynb', '1,6'])
         assert result.exit_code == 0
@@ -409,8 +401,7 @@ def test_split(runner, test_files):
 def test_split_on_selection(runner, test_files):
     nb6 = Path(str(test_files / 'nb6.ipynb')).read_text()
     with runner.isolated_filesystem():
-        with open('nb.ipynb', 'w') as f:
-            f.write(nb6)
+        Path('nb.ipynb').write_text(nb6)
 
         selection_result = runner.invoke(cli, ['select', 'has_html_tag', 'h1'])
         assert selection_result.exit_code == 0
@@ -431,8 +422,7 @@ def test_split_on_selection(runner, test_files):
 def test_toc(runner, test_files):
     nb6 = Path(str(test_files / 'nb6.ipynb')).read_text()
     with runner.isolated_filesystem():
-        with open('nb.ipynb', 'w') as f:
-            f.write(nb6)
+        Path('nb.ipynb').write_text(nb6)
 
         result = runner.invoke(cli, ['toc', 'nb.ipynb', '-w', '60'])
         assert result.exit_code == 0
@@ -443,11 +433,9 @@ def test_cat(runner, test_files):
     nb1 = Path(str(test_files / 'nb1.ipynb')).read_text()
     nb2 = Path(str(test_files / 'nb2.ipynb')).read_text()
     with runner.isolated_filesystem():
-        with open('nb1.ipynb', 'w') as f:
-            f.write(nb1)
+        Path('nb1.ipynb').write_text(nb1)
 
-        with open('nb2.ipynb', 'w') as f:
-            f.write(nb2)
+        Path('nb2.ipynb').write_text(nb2)
 
         result = runner.invoke(
             cli, ['cat', 'nb1.ipynb', 'nb2.ipynb', '-o', 'nb3.ipynb']
@@ -479,3 +467,18 @@ def test_cat(runner, test_files):
 
         nb5 = IPYNB('nb5.ipynb')
         assert len(nb5) == 2
+
+
+def test_attachments(runner: CliRunner, test_files):
+    import shutil
+
+    nb7 = (test_files / 'nb7.ipynb').read_text()
+    with runner.isolated_filesystem() as tmpdir:
+        shutil.copytree(test_files / 'assets', Path(tmpdir) / 'assets')
+        Path('nb.ipynb').write_text(nb7)
+
+        original_size = len(nb7)
+
+        result = runner.invoke(cli, ['burn', 'nb.ipynb', '-f'])
+        assert result.exit_code == 0
+        assert len(Path('nb.ipynb').read_text()) > 2 * original_size
