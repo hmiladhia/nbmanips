@@ -1,9 +1,9 @@
-# flake8: noqa
-from os.path import dirname as _dir
-from os.path import join as _join
+from pathlib import Path
 
 import nbmanips.exporters
 from nbmanips.notebook import DBC, IPYNB, ZPLN, Notebook
 
-with open(_join(_dir(__file__), 'VERSION'), 'r', encoding='utf-8') as fh:
-    __version__ = fh.read().strip()
+
+__version__ = (Path(__file__).parent / 'VERSION').read_text(encoding='utf-8').strip()
+
+__all__ = ['DBC', 'IPYNB', 'ZPLN', 'Notebook', '__version__']
