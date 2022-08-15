@@ -1,5 +1,3 @@
-import re
-
 from nbmanips.notebook_base import NotebookBase
 from nbmanips.notebook_mixins import (
     ClassicNotebook,
@@ -62,6 +60,7 @@ class Notebook(
         :type case: default True
         :param regex: boolean whether to use regex or not
         """
+        import re
 
         compiled_regex = re.compile(
             old if regex else re.escape(old), flags=0 if case else re.IGNORECASE

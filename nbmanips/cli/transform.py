@@ -7,7 +7,16 @@ import click
 from nbmanips import Notebook
 from nbmanips.cli import export, get_selector
 
-__all__ = ['erase', 'delete', 'keep', 'replace', 'auto_slide', 'erase_output', 'split']
+__all__ = [
+    'erase',
+    'delete',
+    'keep',
+    'replace',
+    'auto_slide',
+    'erase_output',
+    'split',
+    'burn',
+]
 
 
 @click.command(help='Erase the content of the selected cells')
@@ -174,3 +183,34 @@ def split(notebook_path, output, indexes, index, force, use_selection):
         else:
             output_path = None
         export(nb, input_path % i, output_path, force=force)
+
+
+@click.command(help='Burn the images in markdown cells as attachments')
+@click.argument('notebook_path')
+@click.option(
+    '--assets-path',
+    '-a',
+    type=str,
+    default=None,
+    help='Path of the assets used in the notebook',
+)
+@click.option(
+    '--html/--no-html',
+    is_flag=True,
+    default=True,
+    help='burn images in img html tags as attachments',
+)
+@click.option('--output', '-o', default=None)
+@click.option(
+    '--force',
+    '-f',
+    is_flag=True,
+    default=False,
+    help='Do not prompt for confirmation if file already exists',
+)
+def burn(notebook_path, assets_path, output, force, html):
+    nb: Notebook = Notebook.read(notebook_path)
+    selector = get_selector()
+
+    nb.select(selector).burn_attachments(assets_path=assets_path, html=html)
+    export(nb, notebook_path, output, force=force)

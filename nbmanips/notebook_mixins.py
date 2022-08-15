@@ -529,17 +529,29 @@ class ExportMixin(NotebookBase):
         :return: Notebook object
         """
         nb = read_ipynb(path)
-        return cls(nb, name or get_ipynb_name(path), validate=False)
+        nb = cls(nb, name or get_ipynb_name(path), validate=False)
+
+        nb._original_path = path
+
+        return nb
 
     @classmethod
     def read_dbc(cls, path, filename=None, encoding='utf-8', name=None):
         dbc_name, nb = read_dbc(path, filename=filename, encoding=encoding)
-        return cls(nb, name or dbc_name, validate=False)
+        nb = cls(nb, name or dbc_name, validate=False)
+
+        nb._original_path = path
+
+        return nb
 
     @classmethod
     def read_zpln(cls, path, encoding='utf-8', name=None):
         zpln_name, nb = read_zpln(path, encoding=encoding)
-        return cls(nb, name or zpln_name, validate=False)
+        nb = cls(nb, name or zpln_name, validate=False)
+
+        nb._original_path = path
+
+        return nb
 
     @classmethod
     def read(cls, path, name=None, **kwargs):
@@ -686,6 +698,45 @@ class NotebookCellMetadata(ClassicNotebook):
         :param value: boolean
         """
         self.update_cell_metadata('jupyter', {'outputs_hidden': value})
+
+    def burn_attachments(self, assets_path=None, html=True):
+        import re
+        from functools import partial
+
+        from nbmanips.utils import (
+            HTML_IMG_EXPRESSION,
+            HTML_IMG_REGEX,
+            MD_IMG_EXPRESSION,
+            MD_IMG_REGEX,
+            burn_attachment,
+            get_assets_path,
+        )
+
+        assets_path = get_assets_path(self, assets_path)
+        compiled_md_regex = re.compile(MD_IMG_REGEX)
+        compiled_html_regex = re.compile(HTML_IMG_REGEX)
+
+        for cell in self.select('markdown_cells').iter_cells():
+            # replace markdown
+            rep_func = partial(
+                burn_attachment,
+                cell=cell,
+                assets_path=assets_path,
+                expr=MD_IMG_EXPRESSION,
+            )
+            cell.source = compiled_md_regex.sub(rep_func, cell.get_source())
+
+            if not html:
+                continue
+
+            # replace html
+            rep_func = partial(
+                burn_attachment,
+                cell=cell,
+                assets_path=assets_path,
+                expr=HTML_IMG_EXPRESSION,
+            )
+            cell.source = compiled_html_regex.sub(rep_func, cell.get_source())
 
 
 class ContentAnalysisMixin(NotebookBase):

@@ -1,6 +1,7 @@
 import re
 import shutil
 from abc import ABCMeta, abstractmethod
+from mimetypes import guess_type
 from textwrap import wrap
 
 from nbmanips.color import supports_color
@@ -112,6 +113,10 @@ def monochrome(text):
     :param text: any text
     """
     return ANSI_ESCAPE.sub('', text)
+
+
+def get_mime_type(path):
+    return guess_type(path)[0]
 
 
 class ParserBase(metaclass=ABCMeta):
