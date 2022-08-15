@@ -25,8 +25,7 @@ def get_ipynb_name(path: str) -> str:
 
 def read_ipynb(notebook_path: str, version=4) -> dict:
     nb_node = nbformat.read(notebook_path, as_version=version)
-    raw_json = nbformat.writes(nb_node)
-    return json.loads(raw_json)
+    return dict(nb_node)
 
 
 def read_zpln(notebook_path: str, version=4, encoding='utf-8'):
@@ -119,8 +118,7 @@ def read_zpln(notebook_path: str, version=4, encoding='utf-8'):
         notebook['cells'].append(cell)
 
     nb_node = nbformat.reads(json.dumps(notebook), as_version=version)
-    raw_json = nbformat.writes(nb_node)
-    return name, json.loads(raw_json)
+    return name, dict(nb_node)
 
 
 def read_dbc(
@@ -213,8 +211,7 @@ def read_dbc(
         notebook['cells'].append(cell)
 
     nb_node = nbformat.reads(json.dumps(notebook), as_version=version)
-    raw_json = nbformat.writes(nb_node)
-    return name, json.loads(raw_json)
+    return name, dict(nb_node)
 
 
 def write_ipynb(nb_dict: dict, notebook_path: str, version=nbformat.NO_CONVERT) -> None:
