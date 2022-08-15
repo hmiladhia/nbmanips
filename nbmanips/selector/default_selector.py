@@ -206,9 +206,9 @@ def has_tag(cell: Cell, tag: str, case=False) -> bool:
         }
 
 
-def has_html_tag(cell: MarkdownCell, css_selector: str) -> bool:
+def with_css_selector(cell: MarkdownCell, css_selector: str) -> bool:
     """
-    Select cells that have a certain HTML tag
+    Select cells that match a certain CSS Selector
 
     :param cell: Cell object to select
     :param css_selector: Css selector
@@ -218,7 +218,7 @@ def has_html_tag(cell: MarkdownCell, css_selector: str) -> bool:
     if not is_markdown(cell):
         return False
 
-    return bool(cell.soup.select(css_selector))
+    return cell.soup.select_one(css_selector) is not None
 
 
 def is_new_slide(cell: Cell, subslide=True) -> bool:
@@ -239,11 +239,16 @@ DefaultSelector.register_selector('contains', contains)
 DefaultSelector.register_selector('has_match', has_match)
 DefaultSelector.register_selector('empty', is_empty)
 DefaultSelector.register_selector('is_empty', is_empty)
+DefaultSelector.register_selector('has_byte_size', has_byte_size)
+DefaultSelector.register_selector('has_tag', has_tag)
+
+# -- Code Specific Selectors --
 DefaultSelector.register_selector('has_output', has_output)
 DefaultSelector.register_selector('has_output_type', has_output_type)
-DefaultSelector.register_selector('has_byte_size', has_byte_size)
-DefaultSelector.register_selector('has_html_tag', has_html_tag)
-DefaultSelector.register_selector('has_tag', has_tag)
+
+# -- Markdown Specific Selectors --
+DefaultSelector.register_selector('has_html_tag', with_css_selector)
+DefaultSelector.register_selector('with_css_selector', with_css_selector)
 
 # -- Cell Types --
 DefaultSelector.register_selector('has_type', has_type)

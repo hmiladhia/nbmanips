@@ -92,7 +92,7 @@ class ClassicNotebook(NotebookBase):
         :param crop: crop on selection
         :return: a new copy of the notebook
         """
-        cp = self.__class__(self.raw_nb, self.name, validate=False)
+        cp = self.__class__(self.raw_nb, self.name, validate=False, copy=True)
         if selection:
             cp._selector = self._selector
             if crop:
@@ -117,7 +117,7 @@ class ClassicNotebook(NotebookBase):
         cp = self.reset_selection()
         notebooks = []
         prev = 0
-        for cell in list(self.iter_cells()):
+        for cell in self.iter_cells():
             if cell.num == prev:
                 continue
 
@@ -209,7 +209,7 @@ class SlideShowMixin(ClassicNotebook):
             self.select('is_empty').delete()
 
         # Each title represents
-        self.select('has_html_tag', title_tags).set_slide()
+        self.select('with_css_selector', title_tags).set_slide()
 
         # Create a new slide only
         for cell in reversed(list(self.iter_cells())):
