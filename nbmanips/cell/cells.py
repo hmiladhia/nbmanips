@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
@@ -119,20 +120,29 @@ class Cell:
         self.cell['source'] = content
 
     def contains(self, text, case=True, output=False, regex=False, flags=0):
-        import re
-
         search_target = self.source
         if output:
             search_target += '\n' + self.output
 
         if not regex:
-            text = re.escape(text)
+            if not case:
+                text = text.lower()
+                search_target = search_target.lower()
+
+            return text in search_target
 
         if case is False:
             flags = flags | re.IGNORECASE
         else:
             flags = flags & ~re.IGNORECASE
         return bool(re.search(text, search_target, flags=flags))
+
+    def has_match(self, regex: re.Pattern, output=False):
+        search_target = self.source
+        if output:
+            search_target += '\n' + self.output
+
+        return bool(regex.search(search_target))
 
     def erase_output(self, output_types: Optional[Union[str, set]] = None):
         """

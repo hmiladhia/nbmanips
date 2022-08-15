@@ -1,3 +1,5 @@
+import re
+
 from .notebook_base import NotebookBase
 from .notebook_mixins import (
     ClassicNotebook,
@@ -7,6 +9,16 @@ from .notebook_mixins import (
     NotebookMetadata,
     SlideShowMixin,
 )
+
+
+def _get_regex(text, case=False, regex=False):
+    if not regex:
+        text = re.escape(text)
+
+    flags = 0
+    flags = (flags & ~re.IGNORECASE) if case else (flags | re.IGNORECASE)
+
+    return re.compile(text, flags)
 
 
 class Notebook(
@@ -29,9 +41,12 @@ class Notebook(
         :param regex: boolean whether to use regex or not
         :return:
         """
-        return self.select(
-            'contains', text=text, case=case, output=output, regex=regex
-        ).first()
+
+        if not regex:
+            return self.select('contains', text=text, case=case, output=output).first()
+
+        compiled_regex = _get_regex(text, case=case, regex=regex)
+        return self.select('has_match', compiled_regex, output=output).first()
 
     def search_all(self, text, case=False, output=False, regex=False):
         """
@@ -45,9 +60,12 @@ class Notebook(
         :param regex: boolean whether to use regex or not
         :return:
         """
-        return self.select(
-            'contains', text=text, case=case, output=output, regex=regex
-        ).list()
+
+        if not regex:
+            return self.select('contains', text=text, case=case, output=output).list()
+
+        compiled_regex = _get_regex(text, case=case, regex=regex)
+        return self.select('has_match', compiled_regex, output=output).list()
 
     def replace(self, old, new, count=None, case=True, regex=False):
         """
@@ -60,12 +78,9 @@ class Notebook(
         :type case: default True
         :param regex: boolean whether to use regex or not
         """
-        import re
 
-        compiled_regex = re.compile(
-            old if regex else re.escape(old), flags=0 if case else re.IGNORECASE
-        )
-        selection = self.select('contains', text=old, case=case, regex=regex)
+        compiled_regex = _get_regex(old, case=case, regex=regex)
+        selection = self.select('has_match', compiled_regex)
         for n_cells, cell in enumerate(selection.iter_cells(), start=1):
             cell.source = compiled_regex.sub(new, cell.get_source())
             if count is not None and n_cells >= count:

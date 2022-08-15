@@ -1,3 +1,4 @@
+import re
 from typing import Callable, ClassVar, Dict, Optional, Union
 
 from nbmanips.cell import Cell, MarkdownCell
@@ -19,7 +20,9 @@ class DefaultSelector(CallableSelector):
 
 
 # -- Default Selectors --
-def contains(cell: Cell, text, case=True, output=False, regex=False) -> bool:
+def contains(
+    cell: Cell, text, case=True, output=False, regex=False, flags: int = 0
+) -> bool:
     """
     Selects Cells containing a certain text.
 
@@ -30,9 +33,31 @@ def contains(cell: Cell, text, case=True, output=False, regex=False) -> bool:
     :param output: True if you want the search in the output of the cell too
     :type output: default False
     :param regex: boolean whether to use regex or not
+    :param flags: flags used if regex is set to True
+    :type flags: int
     :return: a bool object (True if cell should be selected)
     """
-    return cell.contains(text, case=case, output=output, regex=regex)
+    return cell.contains(text, case=case, output=output, regex=regex, flags=flags)
+
+
+def has_match(cell: Cell, regex: Union[str, re.Pattern], output=False) -> bool:
+    """
+    Selects Cells that match a certain regex.
+
+    :param cell: Cell object to select
+    :param text: a string to find in cell
+    :param case: True if the search is case sensitive
+    :type case: default True
+    :param output: True if you want the search in the output of the cell too
+    :type output: default False
+    :param regex: boolean whether to use regex or not
+    :return: a bool object (True if cell should be selected)
+    """
+
+    if isinstance(regex, str):
+        regex = re.compile(regex)
+
+    return cell.has_match(regex, output=output)
 
 
 def has_type(cell: Cell, type) -> bool:
@@ -211,6 +236,7 @@ def is_new_slide(cell: Cell, subslide=True) -> bool:
 
 # -- Default Selectors --
 DefaultSelector.register_selector('contains', contains)
+DefaultSelector.register_selector('has_match', has_match)
 DefaultSelector.register_selector('empty', is_empty)
 DefaultSelector.register_selector('is_empty', is_empty)
 DefaultSelector.register_selector('has_output', has_output)
