@@ -437,6 +437,11 @@ class ExportMixin(NotebookBase):
             )
 
         try:
+            if pygments_lexer in {'ipython3', 'python', 'py', 'python3', 'py3'}:
+                from pygments.lexers.python import PythonLexer
+
+                return PythonLexer()
+
             return get_lexer_by_name(pygments_lexer)
         except pygments.util.ClassNotFound:
             return None
