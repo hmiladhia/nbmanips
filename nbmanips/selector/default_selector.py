@@ -40,7 +40,7 @@ def contains(
     return cell.contains(text, case=case, output=output, regex=regex, flags=flags)
 
 
-def has_match(cell: Cell, regex: Union[str, re.Pattern], output=False) -> bool:
+def has_match(cell: Cell, regex, output=False) -> bool:
     """
     Selects Cells that match a certain regex.
 

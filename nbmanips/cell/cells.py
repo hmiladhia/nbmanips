@@ -137,7 +137,7 @@ class Cell:
             flags = flags & ~re.IGNORECASE
         return bool(re.search(text, search_target, flags=flags))
 
-    def has_match(self, regex: re.Pattern, output=False):
+    def has_match(self, regex, output=False):
         search_target = self.source
         if output:
             search_target += '\n' + self.output
