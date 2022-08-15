@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Optional, Union
+from typing import Callable, ClassVar, Dict, Optional, Union
 
 from nbmanips.cell import Cell, MarkdownCell
 
@@ -6,7 +6,7 @@ from .callable_selector import CallableSelector
 
 
 class DefaultSelector(CallableSelector):
-    default_selectors: Dict[str, Callable] = {}
+    default_selectors: ClassVar[Dict[str, Callable]] = {}
 
     def __init__(self, selector: str, *args, **kwargs):
         # TODO: use signature ?
@@ -14,12 +14,12 @@ class DefaultSelector(CallableSelector):
         super(DefaultSelector, self).__init__(callable_selector, *args, **kwargs)
 
     @classmethod
-    def register_selector(cls, key: str, selector: Callable[..., bool]):
+    def register_selector(cls, key: str, selector: Callable[..., bool]) -> None:
         cls.default_selectors[key] = selector
 
 
 # -- Default Selectors --
-def contains(cell, text, case=True, output=False, regex=False):
+def contains(cell: Cell, text, case=True, output=False, regex=False) -> bool:
     """
     Selects Cells containing a certain text.
 
@@ -35,7 +35,7 @@ def contains(cell, text, case=True, output=False, regex=False):
     return cell.contains(text, case=case, output=output, regex=regex)
 
 
-def has_type(cell, type):
+def has_type(cell: Cell, type) -> bool:
     """
     Selects cells with the given type
 
@@ -46,7 +46,7 @@ def has_type(cell, type):
     return cell.type == type
 
 
-def is_code(cell):
+def is_code(cell: Cell) -> bool:
     """
     Selects code cells
 
@@ -56,7 +56,7 @@ def is_code(cell):
     return has_type(cell, 'code')
 
 
-def is_markdown(cell):
+def is_markdown(cell: Cell) -> bool:
     """
     Selects markdown cells
 
@@ -66,7 +66,7 @@ def is_markdown(cell):
     return has_type(cell, 'markdown')
 
 
-def is_raw(cell):
+def is_raw(cell: Cell) -> bool:
     """
     Selects raw cells
 
@@ -76,7 +76,7 @@ def is_raw(cell):
     return has_type(cell, 'raw')
 
 
-def has_output(cell, value=True):
+def has_output(cell: Cell, value: bool = True) -> bool:
     """
     Checks if the cell has any output
 
@@ -87,7 +87,7 @@ def has_output(cell, value=True):
     return (cell.output != '') == value
 
 
-def has_output_type(cell, output_type: Union[set, str]):
+def has_output_type(cell: Cell, output_type: Union[set, str]) -> bool:
     """
     Selects cells that have a given output_type
 
@@ -104,7 +104,7 @@ def has_output_type(cell, output_type: Union[set, str]):
     return cell.has_output_type(output_types)
 
 
-def is_empty(cell):
+def is_empty(cell: Cell) -> bool:
     """
     Selects empty cells
 
@@ -115,12 +115,12 @@ def is_empty(cell):
 
 
 def has_byte_size(
-    cell,
+    cell: Cell,
     min_size=0,
     max_size: Optional[int] = None,
     output_types=None,
     ignore_source=False,
-):
+) -> bool:
     """
     Selects cells with byte size less than max_size and more than min_size.
 
@@ -140,7 +140,7 @@ def has_byte_size(
     return size >= min_size and (max_size is None or size < max_size)
 
 
-def has_slide_type(cell, slide_type):
+def has_slide_type(cell: Cell, slide_type) -> bool:
     """
     Selects markdown cells that have a given slide type
 
@@ -162,7 +162,7 @@ def has_slide_type(cell, slide_type):
     )
 
 
-def has_tag(cell: Cell, tag: str, case=False):
+def has_tag(cell: Cell, tag: str, case=False) -> bool:
     """
     Selects cells that have a certain tag
 
@@ -181,7 +181,7 @@ def has_tag(cell: Cell, tag: str, case=False):
         }
 
 
-def has_html_tag(cell: MarkdownCell, css_selector: str):
+def has_html_tag(cell: MarkdownCell, css_selector: str) -> bool:
     """
     Select cells that have a certain HTML tag
 
@@ -196,7 +196,7 @@ def has_html_tag(cell: MarkdownCell, css_selector: str):
     return bool(cell.soup.select(css_selector))
 
 
-def is_new_slide(cell, subslide=True):
+def is_new_slide(cell: Cell, subslide=True) -> bool:
     """
     Selects cells where a new slide/subslide starts
     :param cell: Cell object to select

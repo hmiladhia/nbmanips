@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from copy import copy
 from itertools import filterfalse
-from typing import Callable, List, Tuple
+from typing import Callable, Iterator, List, Tuple
 
 from nbmanips._utils import partial
 from nbmanips.cell import Cell
@@ -15,7 +15,7 @@ class SelectorBase(ABC):
     def get_callable(self, nb: dict) -> Callable[..., bool]:
         pass
 
-    def iter_cells(self, nb, neg=False):
+    def iter_cells(self, nb, neg=False) -> Iterator[Cell]:
         selector = self.get_callable(nb)
         filter_method = filterfalse if (self._neg ^ neg) else filter
         return filter_method(
@@ -47,7 +47,7 @@ class SelectorBase(ABC):
 
 
 class TrueSelector(SelectorBase):
-    def iter_cells(self, nb, neg=False):
+    def iter_cells(self, nb, neg=False) -> Iterator[Cell]:
         if self._neg ^ neg:
             return (_ for _ in range(0))
         return (Cell(cell, i) for i, cell in enumerate(nb['cells']))

@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Iterator, Optional
 
 import nbformat
 
@@ -57,7 +57,7 @@ class NotebookBase:
 
         return notebook_selection
 
-    def iter_cells(self, neg=False):
+    def iter_cells(self, neg=False) -> Iterator[Cell]:
         return self._selector.iter_cells(self.raw_nb, neg=neg)
 
     @property
@@ -105,7 +105,7 @@ class NotebookBase:
         cell = cell.get_copy(new_id)
         self.cells.insert(pos, cell.cell)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Cell]:
         return self.iter_cells()
 
     def __add__(self, other: 'NotebookBase'):
