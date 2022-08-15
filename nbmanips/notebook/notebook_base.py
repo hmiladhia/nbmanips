@@ -41,7 +41,7 @@ class NotebookBase:
         return list(map(func, self.iter_cells(neg)))
 
     def reset_selection(self):
-        notebook_selection = self.__class__(None, self.name, validate=False)
+        notebook_selection = self.__class__({}, self.name, validate=False)
         notebook_selection.raw_nb = self.raw_nb
 
         # Adding Original Notebook Path if defined
