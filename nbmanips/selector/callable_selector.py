@@ -1,7 +1,7 @@
 from typing import Callable
 
+from nbmanips._utils import partial
 from nbmanips.selector import SelectorBase
-from nbmanips.utils import partial
 
 
 class CallableSelector(SelectorBase):

@@ -1,8 +1,6 @@
 from typing import Dict, Optional
 
-from nbmanips.utils import total_size
-
-from .cell_utils import _get_output_types, _to_html
+from .cell_utils import _get_output_types, _to_html, total_size
 from .output_parsers import ParserBase
 
 

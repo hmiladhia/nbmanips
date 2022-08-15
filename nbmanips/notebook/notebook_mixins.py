@@ -12,8 +12,7 @@ except ImportError:
     nbconvert = None
 
 from nbmanips.cell.cell_utils import PYGMENTS_SUPPORTED
-from nbmanips.notebook_base import NotebookBase
-from nbmanips.utils import (
+from nbmanips.notebook.utils import (
     dict_to_ipynb,
     get_ipynb_name,
     read_dbc,
@@ -21,6 +20,8 @@ from nbmanips.utils import (
     read_zpln,
     write_ipynb,
 )
+
+from .notebook_base import NotebookBase
 
 try:
     import pygments.util

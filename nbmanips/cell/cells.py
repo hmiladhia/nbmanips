@@ -15,8 +15,8 @@ from nbmanips.cell.cell_utils import (
     get_mime_type,
     monochrome,
     printable_cell,
+    total_size,
 )
-from nbmanips.utils import total_size
 
 from .cell_output import CellOutput
 

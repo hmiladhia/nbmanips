@@ -1,7 +1,6 @@
 import json
 import os
 import zipfile
-from functools import wraps
 from io import StringIO
 from typing import Tuple
 
@@ -18,10 +17,6 @@ except ImportError:
 ZPLN_PREFIXES = {
     'python': {'%python', '%pyspark', '%spark.pyspark'},
 }
-
-
-def total_size(o):
-    return len(json.dumps(o).encode('utf-8'))
 
 
 def get_ipynb_name(path: str) -> str:
@@ -230,12 +225,3 @@ def write_ipynb(nb_dict: dict, notebook_path: str, version=nbformat.NO_CONVERT) 
 def dict_to_ipynb(nb_dict: dict, default_version=4) -> nbformat.NotebookNode:
     version = nb_dict.get('nbformat', default_version)
     return nbformat.reads(json.dumps(nb_dict), as_version=version)
-
-
-def partial(func, *args, **keywords):
-    @wraps(func)
-    def new_func(*f_args, **f_keywords):
-        new_keywords = {**f_keywords, **keywords}
-        return func(*f_args, *args, **new_keywords)
-
-    return new_func

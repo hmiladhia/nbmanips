@@ -3,8 +3,8 @@ from copy import copy
 from itertools import filterfalse
 from typing import Callable, List, Tuple
 
+from nbmanips._utils import partial
 from nbmanips.cell import Cell
-from nbmanips.utils import partial
 
 
 class SelectorBase(ABC):

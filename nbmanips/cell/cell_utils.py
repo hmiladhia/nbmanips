@@ -1,3 +1,4 @@
+import json
 import re
 import shutil
 import urllib.parse
@@ -168,3 +169,7 @@ def burn_attachment(match, cell, assets_path: Path, expr):
     attachment_name = match_dict.pop('PATH').replace(' ', '%20')
     cell.attach(str(path), attachment_name=attachment_name)
     return expr.format(**match_dict, attachment_name=attachment_name)
+
+
+def total_size(o):
+    return len(json.dumps(o).encode('utf-8'))

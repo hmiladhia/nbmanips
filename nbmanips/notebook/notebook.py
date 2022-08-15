@@ -1,5 +1,5 @@
-from nbmanips.notebook_base import NotebookBase
-from nbmanips.notebook_mixins import (
+from .notebook_base import NotebookBase
+from .notebook_mixins import (
     ClassicNotebook,
     ContentAnalysisMixin,
     ExportMixin,
