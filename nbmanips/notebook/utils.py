@@ -2,6 +2,7 @@ import json
 import os
 import zipfile
 from io import StringIO
+from pathlib import Path
 from typing import Tuple
 
 import nbformat
@@ -23,9 +24,17 @@ def get_ipynb_name(path: str) -> str:
     return os.path.splitext(os.path.basename(path))[0]
 
 
+def _get_nb_from_dict(nb_dict, as_version):
+    (major, minor) = nbformat.reader.get_version(nb_dict)
+    nb = nbformat.versions[major].to_notebook_json(nb_dict, minor=minor)
+    return nbformat.convert(nb, as_version)
+
+
 def read_ipynb(notebook_path: str, version=4) -> dict:
-    nb_node = nbformat.read(notebook_path, as_version=version)
-    return dict(nb_node)
+    s = Path(notebook_path).read_text(encoding='utf-8')
+    nb = nbformat.reader.reads(s)
+    nb = nbformat.convert(nb, version)
+    return dict(nb)
 
 
 def read_zpln(notebook_path: str, version=4, encoding='utf-8'):
@@ -117,7 +126,7 @@ def read_zpln(notebook_path: str, version=4, encoding='utf-8'):
 
         notebook['cells'].append(cell)
 
-    nb_node = nbformat.reads(json.dumps(notebook), as_version=version)
+    nb_node = _get_nb_from_dict(notebook, as_version=version)
     return name, dict(nb_node)
 
 
@@ -210,7 +219,7 @@ def read_dbc(
 
         notebook['cells'].append(cell)
 
-    nb_node = nbformat.reads(json.dumps(notebook), as_version=version)
+    nb_node = _get_nb_from_dict(notebook, as_version=version)
     return name, dict(nb_node)
 
 
@@ -221,4 +230,4 @@ def write_ipynb(nb_dict: dict, notebook_path: str, version=nbformat.NO_CONVERT) 
 
 def dict_to_ipynb(nb_dict: dict, default_version=4) -> nbformat.NotebookNode:
     version = nb_dict.get('nbformat', default_version)
-    return nbformat.reads(json.dumps(nb_dict), as_version=version)
+    return _get_nb_from_dict(nb_dict, as_version=version)

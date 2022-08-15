@@ -534,7 +534,7 @@ class ExportMixin(NotebookBase):
         )
 
     @classmethod
-    def read_ipynb(cls, path, name=None):
+    def read_ipynb(cls, path, name=None, validate=False):
         """
         Read ipynb file
         :param path: path to the ipynb file
@@ -542,32 +542,32 @@ class ExportMixin(NotebookBase):
         :return: Notebook object
         """
         nb = read_ipynb(path)
-        nb = cls(nb, name or get_ipynb_name(path), validate=False)
+        nb = cls(nb, name or get_ipynb_name(path), validate=validate, copy=False)
 
         nb._original_path = path
 
         return nb
 
     @classmethod
-    def read_dbc(cls, path, filename=None, encoding='utf-8', name=None):
+    def read_dbc(cls, path, filename=None, encoding='utf-8', name=None, validate=False):
         dbc_name, nb = read_dbc(path, filename=filename, encoding=encoding)
-        nb = cls(nb, name or dbc_name, validate=False)
+        nb = cls(nb, name or dbc_name, validate=validate, copy=False)
 
         nb._original_path = path
 
         return nb
 
     @classmethod
-    def read_zpln(cls, path, encoding='utf-8', name=None):
+    def read_zpln(cls, path, encoding='utf-8', name=None, validate=False):
         zpln_name, nb = read_zpln(path, encoding=encoding)
-        nb = cls(nb, name or zpln_name, validate=False)
+        nb = cls(nb, name or zpln_name, validate=validate, copy=False)
 
         nb._original_path = path
 
         return nb
 
     @classmethod
-    def read(cls, path, name=None, **kwargs):
+    def read(cls, path, name=None, validate=False, **kwargs):
         readers = {
             '.ipynb': cls.read_ipynb,
             '.dbc': cls.read_dbc,
@@ -580,11 +580,11 @@ class ExportMixin(NotebookBase):
         ext = Path(path).suffix.lower()
         reader = readers.get(ext, None)
         if reader:
-            return reader(path, name=name, **kwargs)
+            return reader(path, name=name, validate=validate, **kwargs)
 
         for reader in readers.values():
             try:
-                return reader(path, name=name, **kwargs)
+                return reader(path, name=name, validate=validate, **kwargs)
             except Exception:
                 continue
 

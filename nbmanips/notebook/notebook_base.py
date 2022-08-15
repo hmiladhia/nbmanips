@@ -1,4 +1,4 @@
-import copy
+from copy import deepcopy
 from typing import Any, Callable, Optional
 
 import nbformat
@@ -8,14 +8,20 @@ from nbmanips.selector import Selector
 
 
 class NotebookBase:
-    def __init__(self, content: Optional[dict] = None, name=None, validate=True):
+    def __init__(
+        self, content: Optional[dict] = None, name=None, validate=True, copy=True
+    ):
         if content is None:
             content = dict(nbformat.v4.new_notebook())
 
         if validate:
             self.__validate(content)
 
-        self.raw_nb = copy.deepcopy(content)
+        if copy:
+            self.raw_nb = deepcopy(content)
+        else:
+            self.raw_nb = content
+
         self.name = name
         self._selector = Selector(None)
 
@@ -107,11 +113,13 @@ class NotebookBase:
             return NotImplemented
 
         # Copying the notebook
-        raw_nb = copy.deepcopy(self.raw_nb)
+        raw_nb = {
+            key: deepcopy(value) for key, value in self.raw_nb.items() if key != 'cells'
+        }
 
         # Creating empty Notebook
         raw_nb['cells'] = []
-        new_nb = self.__class__(raw_nb)
+        new_nb = self.__class__(raw_nb, validate=False, copy=False)
 
         # Concatenating the notebooks
         for cell in self.list_cells() + other.list_cells():
@@ -124,11 +132,13 @@ class NotebookBase:
             return NotImplemented
 
         # Copying the notebook
-        raw_nb = copy.deepcopy(self.raw_nb)
+        raw_nb = {
+            key: deepcopy(value) for key, value in self.raw_nb.items() if key != 'cells'
+        }
 
         # Creating empty Notebook
         raw_nb['cells'] = []
-        new_nb = self.__class__(raw_nb)
+        new_nb = self.__class__(raw_nb, validate=False, copy=False)
 
         # Concatenating the notebooks
         for _ in range(other):
