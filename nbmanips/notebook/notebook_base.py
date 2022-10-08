@@ -155,7 +155,7 @@ class NotebookBase:
     def __len__(self):
         if self.raw_nb is None or 'cells' not in self.raw_nb:
             return 0
-        return len(self.raw_nb['cells'])
+        return len(self.list_cells())
 
     def __repr__(self):
         if self.name:

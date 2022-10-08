@@ -139,7 +139,7 @@ class ClassicNotebook(NotebookBase):
         Return the numbers of the selected cells
         :return:
         """
-        return len(self.list())
+        return len(self)
 
 
 class SlideShowMixin(ClassicNotebook):
@@ -519,19 +519,19 @@ class ExportMixin(NotebookBase):
         :param parsers_config:
         :param excluded_data_types:
         """
-        print(
-            self.to_str(
-                width=width,
-                use_pygments=use_pygments,
-                exclude_output=exclude_output,
-                style=style,
-                border_color=border_color,
-                parsers=parsers,
-                parsers_config=parsers_config,
-                excluded_data_types=excluded_data_types,
-                truncate=truncate,
-            )
+        str_repr = self.to_str(
+            width=width,
+            use_pygments=use_pygments,
+            exclude_output=exclude_output,
+            style=style,
+            border_color=border_color,
+            parsers=parsers,
+            parsers_config=parsers_config,
+            excluded_data_types=excluded_data_types,
+            truncate=truncate,
         )
+        if str_repr:
+            print(str_repr)
 
     @classmethod
     def read_ipynb(cls, path, name=None, validate=False):
