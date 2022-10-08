@@ -1,9 +1,6 @@
 import json
 import os
-import urllib.parse
-import warnings
 import zipfile
-from functools import wraps
 from io import StringIO
 from pathlib import Path
 from typing import Tuple
@@ -17,34 +14,27 @@ except ImportError:
     pd = None
 
 # -- Constants --
-# --- Attachment Constants ---
-MD_IMG_REGEX = r'!\[(?P<ALT_TEXT>.*?)]\((?P<PATH>.*?)\)'
-MD_IMG_EXPRESSION = r'![{ALT_TEXT}](attachment:{attachment_name})'
-HTML_IMG_REGEX = (
-    r'<img\s(?P<PREFIX>.*?)'
-    r'src\s*=\s*\"?(?P<PATH>(?<=\")[^\"]*(?=\")|(?:[^\"\s]|(?<=\\)\s)*[^\s\\/])\"?'
-    r'(?P<SUFFIX>.*?)>'
-)
-HTML_IMG_EXPRESSION = r'<img {PREFIX}src="attachment:{attachment_name}"{SUFFIX}>'
-
 # --- READERS Constants ---
 ZPLN_PREFIXES = {
     'python': {'%python', '%pyspark', '%spark.pyspark'},
 }
 
 
-def total_size(o):
-    return len(json.dumps(o).encode('utf-8'))
-
-
 def get_ipynb_name(path: str) -> str:
     return os.path.splitext(os.path.basename(path))[0]
 
 
+def _get_nb_from_dict(nb_dict, as_version):
+    (major, minor) = nbformat.reader.get_version(nb_dict)
+    nb = nbformat.versions[major].to_notebook_json(nb_dict, minor=minor)
+    return nbformat.convert(nb, as_version)
+
+
 def read_ipynb(notebook_path: str, version=4) -> dict:
-    nb_node = nbformat.read(notebook_path, as_version=version)
-    raw_json = nbformat.writes(nb_node)
-    return json.loads(raw_json)
+    s = Path(notebook_path).read_text(encoding='utf-8')
+    nb = nbformat.reader.reads(s)
+    nb = nbformat.convert(nb, version)
+    return dict(nb)
 
 
 def read_zpln(notebook_path: str, version=4, encoding='utf-8'):
@@ -136,9 +126,8 @@ def read_zpln(notebook_path: str, version=4, encoding='utf-8'):
 
         notebook['cells'].append(cell)
 
-    nb_node = nbformat.reads(json.dumps(notebook), as_version=version)
-    raw_json = nbformat.writes(nb_node)
-    return name, json.loads(raw_json)
+    nb_node = _get_nb_from_dict(notebook, as_version=version)
+    return name, dict(nb_node)
 
 
 def read_dbc(
@@ -230,9 +219,8 @@ def read_dbc(
 
         notebook['cells'].append(cell)
 
-    nb_node = nbformat.reads(json.dumps(notebook), as_version=version)
-    raw_json = nbformat.writes(nb_node)
-    return name, json.loads(raw_json)
+    nb_node = _get_nb_from_dict(notebook, as_version=version)
+    return name, dict(nb_node)
 
 
 def write_ipynb(nb_dict: dict, notebook_path: str, version=nbformat.NO_CONVERT) -> None:
@@ -242,40 +230,4 @@ def write_ipynb(nb_dict: dict, notebook_path: str, version=nbformat.NO_CONVERT) 
 
 def dict_to_ipynb(nb_dict: dict, default_version=4) -> nbformat.NotebookNode:
     version = nb_dict.get('nbformat', default_version)
-    return nbformat.reads(json.dumps(nb_dict), as_version=version)
-
-
-def partial(func, *args, **keywords):
-    @wraps(func)
-    def new_func(*f_args, **f_keywords):
-        new_keywords = {**f_keywords, **keywords}
-        return func(*f_args, *args, **new_keywords)
-
-    return new_func
-
-
-def get_assets_path(nb, assets_path=None):
-    if assets_path is None:
-        assets_path = getattr(nb, '_original_path', None)
-        if assets_path:
-            return Path(assets_path).parent
-        return Path.cwd()
-
-    return Path(assets_path)
-
-
-def burn_attachment(match, cell, assets_path: Path, expr):
-    path = match.group('PATH')
-    if path.startswith('attachment:'):
-        return match.group(0)
-
-    path = assets_path / urllib.parse.unquote(path)
-    if not path.exists():
-        path = match.group('PATH')
-        warnings.warn(f"Couldn't find '{path}'")
-        return match.group(0)
-
-    match_dict = match.groupdict()
-    attachment_name = match_dict.pop('PATH').replace(' ', '%20')
-    cell.attach(str(path), attachment_name=attachment_name)
-    return expr.format(**match_dict, attachment_name=attachment_name)
+    return _get_nb_from_dict(nb_dict, as_version=version)

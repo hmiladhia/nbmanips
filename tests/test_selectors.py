@@ -19,7 +19,7 @@ from nbmanips.selector import Selector
 )
 def test_has_output(nb3, cell_num, expected):
     from nbmanips.cell import Cell
-    from nbmanips.selector import has_output
+    from nbmanips.selector.default_selector import has_output
 
     cell = Cell(nb3.cells[cell_num], cell_num)
     assert has_output(cell) == expected

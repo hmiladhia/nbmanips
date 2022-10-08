@@ -18,5 +18,5 @@ profile = "black"
 
 [tool.mypy]
 exclude = [
-    '/utils\.py',
+    '/notebook/utils\.py',
 ]

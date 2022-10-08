@@ -11,10 +11,8 @@ try:
 except ImportError:
     nbconvert = None
 
-from nbmanips.cell_utils import PYGMENTS_SUPPORTED
-from nbmanips.notebook_base import NotebookBase
-from nbmanips.selector import has_output_type, has_slide_type, is_new_slide
-from nbmanips.utils import (
+from nbmanips.cell.cell_utils import PYGMENTS_SUPPORTED
+from nbmanips.notebook.utils import (
     dict_to_ipynb,
     get_ipynb_name,
     read_dbc,
@@ -22,6 +20,8 @@ from nbmanips.utils import (
     read_zpln,
     write_ipynb,
 )
+
+from .notebook_base import NotebookBase
 
 try:
     import pygments.util
@@ -92,7 +92,7 @@ class ClassicNotebook(NotebookBase):
         :param crop: crop on selection
         :return: a new copy of the notebook
         """
-        cp = self.__class__(self.raw_nb, self.name, validate=False)
+        cp = self.__class__(self.raw_nb, self.name, validate=False, copy=True)
         if selection:
             cp._selector = self._selector
             if crop:
@@ -117,7 +117,7 @@ class ClassicNotebook(NotebookBase):
         cp = self.reset_selection()
         notebooks = []
         prev = 0
-        for cell in list(self.iter_cells()):
+        for cell in self.iter_cells():
             if cell.num == prev:
                 continue
 
@@ -139,7 +139,7 @@ class ClassicNotebook(NotebookBase):
         Return the numbers of the selected cells
         :return:
         """
-        return len(self.list())
+        return len(self)
 
 
 class SlideShowMixin(ClassicNotebook):
@@ -166,6 +166,12 @@ class SlideShowMixin(ClassicNotebook):
         self.update_cell_metadata('slideshow', {'slide_type': tag})
 
     def max_cells_per_slide(self, n_cells=3, n_images=1):
+        from nbmanips.selector.default_selector import (
+            has_output_type,
+            has_slide_type,
+            is_new_slide,
+        )
+
         cells_count = 0
         img_count = 0
         for cell in self.iter_cells():
@@ -196,12 +202,14 @@ class SlideShowMixin(ClassicNotebook):
         delete_empty=True,
         title_tags='h1, h2',
     ):
+        from nbmanips.selector.default_selector import is_new_slide
+
         # Delete Empty
         if delete_empty:
             self.select('is_empty').delete()
 
         # Each title represents
-        self.select('has_html_tag', title_tags).set_slide()
+        self.select('with_css_selector', title_tags).set_slide()
 
         # Create a new slide only
         for cell in reversed(list(self.iter_cells())):
@@ -429,6 +437,11 @@ class ExportMixin(NotebookBase):
             )
 
         try:
+            if pygments_lexer in {'ipython3', 'python', 'py', 'python3', 'py3'}:
+                from pygments.lexers.python import PythonLexer
+
+                return PythonLexer()
+
             return get_lexer_by_name(pygments_lexer)
         except pygments.util.ClassNotFound:
             return None
@@ -506,22 +519,22 @@ class ExportMixin(NotebookBase):
         :param parsers_config:
         :param excluded_data_types:
         """
-        print(
-            self.to_str(
-                width=width,
-                use_pygments=use_pygments,
-                exclude_output=exclude_output,
-                style=style,
-                border_color=border_color,
-                parsers=parsers,
-                parsers_config=parsers_config,
-                excluded_data_types=excluded_data_types,
-                truncate=truncate,
-            )
+        str_repr = self.to_str(
+            width=width,
+            use_pygments=use_pygments,
+            exclude_output=exclude_output,
+            style=style,
+            border_color=border_color,
+            parsers=parsers,
+            parsers_config=parsers_config,
+            excluded_data_types=excluded_data_types,
+            truncate=truncate,
         )
+        if str_repr:
+            print(str_repr)
 
     @classmethod
-    def read_ipynb(cls, path, name=None):
+    def read_ipynb(cls, path, name=None, validate=False):
         """
         Read ipynb file
         :param path: path to the ipynb file
@@ -529,32 +542,32 @@ class ExportMixin(NotebookBase):
         :return: Notebook object
         """
         nb = read_ipynb(path)
-        nb = cls(nb, name or get_ipynb_name(path), validate=False)
+        nb = cls(nb, name or get_ipynb_name(path), validate=validate, copy=False)
 
         nb._original_path = path
 
         return nb
 
     @classmethod
-    def read_dbc(cls, path, filename=None, encoding='utf-8', name=None):
+    def read_dbc(cls, path, filename=None, encoding='utf-8', name=None, validate=False):
         dbc_name, nb = read_dbc(path, filename=filename, encoding=encoding)
-        nb = cls(nb, name or dbc_name, validate=False)
+        nb = cls(nb, name or dbc_name, validate=validate, copy=False)
 
         nb._original_path = path
 
         return nb
 
     @classmethod
-    def read_zpln(cls, path, encoding='utf-8', name=None):
+    def read_zpln(cls, path, encoding='utf-8', name=None, validate=False):
         zpln_name, nb = read_zpln(path, encoding=encoding)
-        nb = cls(nb, name or zpln_name, validate=False)
+        nb = cls(nb, name or zpln_name, validate=validate, copy=False)
 
         nb._original_path = path
 
         return nb
 
     @classmethod
-    def read(cls, path, name=None, **kwargs):
+    def read(cls, path, name=None, validate=False, **kwargs):
         readers = {
             '.ipynb': cls.read_ipynb,
             '.dbc': cls.read_dbc,
@@ -567,11 +580,11 @@ class ExportMixin(NotebookBase):
         ext = Path(path).suffix.lower()
         reader = readers.get(ext, None)
         if reader:
-            return reader(path, name=name, **kwargs)
+            return reader(path, name=name, validate=validate, **kwargs)
 
         for reader in readers.values():
             try:
-                return reader(path, name=name, **kwargs)
+                return reader(path, name=name, validate=validate, **kwargs)
             except Exception:
                 continue
 
@@ -703,7 +716,7 @@ class NotebookCellMetadata(ClassicNotebook):
         import re
         from functools import partial
 
-        from nbmanips.utils import (
+        from nbmanips.cell.cell_utils import (
             HTML_IMG_EXPRESSION,
             HTML_IMG_REGEX,
             MD_IMG_EXPRESSION,

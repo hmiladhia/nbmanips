@@ -1,7 +1,4 @@
-import base64
 import re
-import uuid
-from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
@@ -14,12 +11,15 @@ except ImportError:
     pygments = None
     get_lexer_by_name = None
 
-from bs4 import BeautifulSoup
-from nbconvert.filters.markdown_mistune import IPythonRenderer, MarkdownWithMath
+from nbmanips.cell.cell_utils import (
+    FORMATTER,
+    get_mime_type,
+    monochrome,
+    printable_cell,
+    total_size,
+)
 
-from nbmanips.cell_output import CellOutput
-from nbmanips.cell_utils import FORMATTER, get_mime_type, monochrome, printable_cell
-from nbmanips.utils import total_size
+from .cell_output import CellOutput
 
 
 class Cell:
@@ -72,6 +72,8 @@ class Cell:
         return map(CellOutput, self.cell.get('outputs', []))
 
     def get_copy(self, new_id=None):
+        from copy import deepcopy
+
         cell = self.__class__(deepcopy(self.cell), None)
         if new_id is not None:
             cell.id = new_id
@@ -123,13 +125,24 @@ class Cell:
             search_target += '\n' + self.output
 
         if not regex:
-            text = re.escape(text)
+            if not case:
+                text = text.lower()
+                search_target = search_target.lower()
+
+            return text in search_target
 
         if case is False:
             flags = flags | re.IGNORECASE
         else:
             flags = flags & ~re.IGNORECASE
         return bool(re.search(text, search_target, flags=flags))
+
+    def has_match(self, regex, output=False):
+        search_target = self.source
+        if output:
+            search_target += '\n' + self.output
+
+        return bool(regex.search(search_target))
 
     def erase_output(self, output_types: Optional[Union[str, set]] = None):
         """
@@ -242,6 +255,8 @@ class Cell:
 
     @staticmethod
     def generate_id_candidate():
+        import uuid
+
         return uuid.uuid4().hex[:8]
 
     def __new__(cls, content, *args, **kwargs):
@@ -325,6 +340,8 @@ class MarkdownCell(Cell, cell_type='markdown'):
         return self.cell.setdefault('attachments', {})
 
     def attach(self, path: Union[str, Path], attachment_name: Optional[str] = None):
+        import base64
+
         mime_type = get_mime_type(str(path))
         path = Path(path)
         attachment_name = attachment_name or path.name
@@ -334,6 +351,8 @@ class MarkdownCell(Cell, cell_type='markdown'):
 
     @property
     def html(self):
+        from nbconvert.filters.markdown_mistune import IPythonRenderer, MarkdownWithMath
+
         renderer = IPythonRenderer(
             escape=False, attachments=self.attachments, exclude_anchor_links=True
         )
@@ -341,6 +360,8 @@ class MarkdownCell(Cell, cell_type='markdown'):
 
     @property
     def soup(self):
+        from bs4 import BeautifulSoup
+
         return BeautifulSoup(self.html, self._bs4_parser)
 
 

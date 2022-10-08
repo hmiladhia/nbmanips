@@ -32,5 +32,5 @@ repos:
       - id: mypy
         files: ^nbmanips/
         # exclude utils.py for now
-        exclude: 'nbmanips/utils\.py$'
+        exclude: 'nbmanips/notebook/utils\.py$'
         args: [--no-strict-optional, --ignore-missing-imports, --follow-imports, silent]

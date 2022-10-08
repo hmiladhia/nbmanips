@@ -1,5 +1,5 @@
-import copy
-from typing import Any, Callable, Optional
+from copy import deepcopy
+from typing import Any, Callable, Iterator, Optional
 
 import nbformat
 
@@ -8,14 +8,20 @@ from nbmanips.selector import Selector
 
 
 class NotebookBase:
-    def __init__(self, content: Optional[dict] = None, name=None, validate=True):
+    def __init__(
+        self, content: Optional[dict] = None, name=None, validate=True, copy=True
+    ):
         if content is None:
             content = dict(nbformat.v4.new_notebook())
 
         if validate:
             self.__validate(content)
 
-        self.raw_nb = copy.deepcopy(content)
+        if copy:
+            self.raw_nb = deepcopy(content)
+        else:
+            self.raw_nb = content
+
         self.name = name
         self._selector = Selector(None)
 
@@ -41,8 +47,9 @@ class NotebookBase:
         return list(map(func, self.iter_cells(neg)))
 
     def reset_selection(self):
-        notebook_selection = self.__class__(None, self.name, validate=False)
-        notebook_selection.raw_nb = self.raw_nb
+        notebook_selection = self.__class__(
+            self.raw_nb, self.name, validate=False, copy=False
+        )
 
         # Adding Original Notebook Path if defined
         original_path = getattr(self, '_original_path', None)
@@ -51,7 +58,7 @@ class NotebookBase:
 
         return notebook_selection
 
-    def iter_cells(self, neg=False):
+    def iter_cells(self, neg=False) -> Iterator[Cell]:
         return self._selector.iter_cells(self.raw_nb, neg=neg)
 
     @property
@@ -99,7 +106,7 @@ class NotebookBase:
         cell = cell.get_copy(new_id)
         self.cells.insert(pos, cell.cell)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Cell]:
         return self.iter_cells()
 
     def __add__(self, other: 'NotebookBase'):
@@ -107,11 +114,13 @@ class NotebookBase:
             return NotImplemented
 
         # Copying the notebook
-        raw_nb = copy.deepcopy(self.raw_nb)
+        raw_nb = {
+            key: deepcopy(value) for key, value in self.raw_nb.items() if key != 'cells'
+        }
 
         # Creating empty Notebook
         raw_nb['cells'] = []
-        new_nb = self.__class__(raw_nb)
+        new_nb = self.__class__(raw_nb, validate=False, copy=False)
 
         # Concatenating the notebooks
         for cell in self.list_cells() + other.list_cells():
@@ -124,11 +133,13 @@ class NotebookBase:
             return NotImplemented
 
         # Copying the notebook
-        raw_nb = copy.deepcopy(self.raw_nb)
+        raw_nb = {
+            key: deepcopy(value) for key, value in self.raw_nb.items() if key != 'cells'
+        }
 
         # Creating empty Notebook
         raw_nb['cells'] = []
-        new_nb = self.__class__(raw_nb)
+        new_nb = self.__class__(raw_nb, validate=False, copy=False)
 
         # Concatenating the notebooks
         for _ in range(other):
@@ -144,7 +155,7 @@ class NotebookBase:
     def __len__(self):
         if self.raw_nb is None or 'cells' not in self.raw_nb:
             return 0
-        return len(self.raw_nb['cells'])
+        return len(self.list_cells())
 
     def __repr__(self):
         if self.name:
