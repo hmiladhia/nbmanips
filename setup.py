@@ -1,10 +1,10 @@
+from pathlib import Path
+
 import setuptools
 
-with open('README.md', 'r', encoding='utf-8') as fh:
-    long_description = fh.read()
+long_description = Path('README.md').read_text(encoding='utf-8')
+version = Path('nbmanips/VERSION').read_text(encoding='utf-8').strip()
 
-with open('nbmanips/VERSION', 'r', encoding='utf-8') as fh:
-    version = fh.read().strip()
 
 setuptools.setup(
     name='nbmanips',
@@ -16,7 +16,7 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     license='MIT',
     url='https://github.com/hmiladhia/nbmanips',
-    packages=['nbmanips', 'nbmanips.cli'],
+    packages=setuptools.find_packages(include=[('nbmanips*')]),
     include_package_data=True,
     entry_points={
         'console_scripts': [
