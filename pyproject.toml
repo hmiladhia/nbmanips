@@ -1,22 +1,125 @@
 [build-system]
-requires = ["setuptools>=42.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.pytest.ini_options]
-testpaths = [
-    "tests",
+[project]
+name = "nbmanips"
+description = "nbmanips allows you easily manipulate notebook files"
+authors = [{ name = "Dhia Hmila", email = "dhiahmila.dev@gmail.com" }]
+maintainers = [{ name = "Dhia Hmila", email = "dhiahmila.dev@gmail.com" }]
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">= 3.8"
+license = { file = "LICENSE" }
+dynamic = ["version"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 5 - Production/Stable",
+]
+keywords = [
+    "jupyter",
+    "notebook",
+    "ipynb",
+    "dbc",
+    "zpln",
+    "zeppelin",
+    "slides",
+    "notebooks",
+]
+dependencies = [
+    "nbconvert>=6.0.0, <6.5",
+    "nbformat>=5.1.3",
+    "html2text==2020.1.16",
+    "click>=7.1.0",
+    "Pygments>=2.10",
+    "colorama>=0.4.0",
+    "beautifulsoup4>=4.10.0",
+    "lxml>=4.7.1",
+    "pyzmq>=24.0",
+    'cloudpickle>=1.6.0; python_version < "3.11"',
+    'cloudpickle>=2.1; python_version >= "3.11"',
+    'cloudpickle>=3.0; python_version >= "3.12"',
 ]
 
-[tool.black]
-line-length = 88
-target-version = ['py38']
-skip-string-normalization = true
+[project.optional-dependencies]
+images = ["img2text>=0.1.1"]
 
+[project.urls]
+Repository = "https://github.com/hmiladhia/nbmanips.git"
+Issues = "https://github.com/hmiladhia/nbmanips/issues"
+
+[project.scripts]
+nbmanips = "nbmanips.__main__:nbmanips"
+nb = "nbmanips.__main__:nbmanips"
+
+# == Hatch configuration ==
+[tool.hatch.version]
+path = "src/nbmanips/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+only-include = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nbmanips"]
+sources = ["src"]
+
+# == Formatting & Linting ==
 [tool.isort]
 line_length = 88
 profile = "black"
 
-[tool.mypy]
-exclude = [
-    '/notebook/utils\.py',
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+include = ["*.py", "*.pyi", "**/pyproject.toml", "*.ipynb"]
+
+
+[tool.ruff.lint]
+# Rules: https://docs.astral.sh/ruff/rules
+select = [
+    "A",
+    "B",
+    "D4",
+    "E",
+    "F",
+    "G",
+    "N",
+    "S",
+    "Q",
+    # "D",
+    "NPY",
+    "DTZ",
+    "RUF",
+    "PT",
+    "PL",
+    "FA",
+    "SIM",
+    "UP",
+    "EXE",
+    "ICN",
+    "PIE",
+    "PYI",
+    "TID",
+    "YTT",
+    # "ANN",
+    "BLE",
 ]
+ignore = ["ANN101", "ANN102", "ANN204"]
+extend-ignore = ["PLR0913", "D4"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["S101", "PLR2004", "PT006", "PLR0913"]
+"tests/test_nbmanips.py" = ["PT011"]
+
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 100
+
+
+[tool.ruff.lint.mccabe]
+max-complexity = 8
+
+[tool.mypy]
+exclude = ['/notebook/utils\.py']
