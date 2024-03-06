@@ -4,8 +4,7 @@ import re
 from typing import Callable, ClassVar
 
 from nbmanips.cell import Cell, MarkdownCell
-
-from .callable_selector import CallableSelector
+from nbmanips.selector.callable_selector import CallableSelector
 
 
 class DefaultSelector(CallableSelector):

@@ -1,6 +1,6 @@
-from .cell_output import CellOutput
-from .cells import Cell, CodeCell, MarkdownCell, RawCell
-from .output_parsers import HtmlParser, ImageParser, TextParser
+from nbmanips.cell.cell_output import CellOutput
+from nbmanips.cell.cells import Cell, CodeCell, MarkdownCell, RawCell
+from nbmanips.cell.output_parsers import HtmlParser, ImageParser, TextParser
 
 CellOutput.register_parser("text", TextParser())
 CellOutput.register_parser("text/html", HtmlParser())
