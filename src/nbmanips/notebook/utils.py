@@ -1,13 +1,9 @@
 from __future__ import annotations
 
 import json
-import os
-import zipfile
-from io import StringIO
 from pathlib import Path
 
 import nbformat
-from html2text import html2text
 
 try:
     import pandas as pd
@@ -22,7 +18,7 @@ ZPLN_PREFIXES = {
 
 
 def get_ipynb_name(path: str) -> str:
-    return os.path.splitext(os.path.basename(path))[0]
+    return Path(path).stem
 
 
 def _get_nb_from_dict(nb_dict, as_version):
@@ -39,9 +35,10 @@ def read_ipynb(notebook_path: str, version=4) -> dict:
 
 
 def read_zpln(notebook_path: str, version=4, encoding="utf-8"):
-    with open(notebook_path, encoding=encoding) as f:
-        zep_nb = json.load(f)
-    name = zep_nb.get("name", os.path.splitext(os.path.basename(notebook_path))[0])
+    from io import StringIO
+
+    zep_nb = json.loads(Path(notebook_path).read_text(encoding=encoding))
+    name = zep_nb.get("name", Path(notebook_path).stem)
     language = zep_nb.get("defaultInterpreterGroup", "python")
     language_prefixes = ZPLN_PREFIXES.get(language, {"%" + language})
     notebook = {
@@ -131,12 +128,13 @@ def read_zpln(notebook_path: str, version=4, encoding="utf-8"):
 def _get_dbc_dict(
     notebook_path: str, filename: str | None = None, encoding: str = "utf-8"
 ) -> dict:
+    import zipfile
+
     if not zipfile.is_zipfile(notebook_path):
-        if filename is not None or filename != os.path.basename(notebook_path):
+        if filename is not None or filename != Path(notebook_path).name:
             raise ValueError(f"Invalid filename: {filename}")
 
-        with open(notebook_path, encoding=encoding) as f:
-            return json.load(f)
+        return json.loads(Path(notebook_path).read_text(encoding=encoding))
 
     with zipfile.ZipFile(notebook_path, "r") as zf:
         if filename is None:
@@ -154,12 +152,12 @@ def _get_dbc_dict(
 def read_dbc(
     notebook_path: str, version=4, filename=None, encoding="utf-8"
 ) -> tuple[str, dict]:
+    from html2text import html2text
+
     dbc_nb = _get_dbc_dict(notebook_path, filename, encoding)
 
-    name = dbc_nb.get("name", os.path.splitext(os.path.basename(notebook_path))[0])
-    language = dbc_nb.get(
-        "language", os.path.splitext(os.path.basename(notebook_path))[1]
-    )
+    name = dbc_nb.get("name", Path(notebook_path).stem)
+    language = dbc_nb.get("language", Path(notebook_path).suffix.lstrip(".").lower())
     language_prefix = f"%{language}" if language != "python" else "%py"
     notebook = {
         "metadata": {"language_info": {"name": language}},

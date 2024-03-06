@@ -2,7 +2,7 @@ import json
 import os
 import zipfile
 
-from nbmanips.notebook import Notebook
+from nbmanips.notebook.notebook import Notebook
 
 
 def _parent_directory(path: str):

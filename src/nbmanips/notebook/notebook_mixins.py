@@ -13,6 +13,7 @@ import nbconvert
 from nbconvert.exporters.exporter import Exporter
 
 from nbmanips.cell.cell_utils import PYGMENTS_SUPPORTED
+from nbmanips.notebook.notebook_base import NotebookBase
 from nbmanips.notebook.utils import (
     dict_to_ipynb,
     get_ipynb_name,
@@ -21,8 +22,6 @@ from nbmanips.notebook.utils import (
     read_zpln,
     write_ipynb,
 )
-
-from .notebook_base import NotebookBase
 
 try:
     import pygments.util

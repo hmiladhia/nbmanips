@@ -1,6 +1,6 @@
 from typing import Callable
 
-from .base_selectors import ListSelector, SelectorBase, TrueSelector
+from nbmanips.selector.base_selectors import ListSelector, SelectorBase, TrueSelector
 
 
 class Selector(SelectorBase):
