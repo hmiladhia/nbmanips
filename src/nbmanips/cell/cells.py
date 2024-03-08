@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Iterable
 
 try:
     import pygments
@@ -81,7 +81,11 @@ class Cell:
         return cell
 
     def get_output(
-        self, text=True, parsers=None, parsers_config=None, excluded_data_types=None
+        self,
+        text: bool = True,
+        parsers: Iterable[str] | None = None,
+        parsers_config: dict[str, dict[str, Any]] | None = None,
+        excluded_data_types: Iterable[str] | None = None,
     ):
         """
         Tries its best to return a readable output from cell
@@ -122,7 +126,14 @@ class Cell:
             ]
         self.cell["source"] = content
 
-    def contains(self, text, case=True, output=False, regex=False, flags=0):
+    def contains(
+        self,
+        text: str,
+        case: bool = True,
+        output: bool = False,
+        regex: bool = False,
+        flags: int = 0,
+    ):
         search_target = self.source
         if output:
             search_target += "\n" + self.output
@@ -144,7 +155,7 @@ class Cell:
 
         return bool(regex.search(search_target))
 
-    def erase_output(self, output_types: str | set | None = None):
+    def erase_output(self, output_types: str | Iterable[str] | None = None):
         """
         erase output of cells that have a given output_type
 
@@ -281,10 +292,10 @@ class CodeCell(Cell, cell_type="code"):
         pygments_lexer=None,
         color=None,
         exclude_output=False,
-        parsers=None,
-        parsers_config=None,
-        excluded_data_types=None,
-        truncate=None,
+        parsers: Iterable[str] | None = None,
+        parsers_config: dict[str, dict[str, Any]] | None = None,
+        excluded_data_types: Iterable[str] | None = None,
+        truncate: int | None = None,
     ):
         sources = [
             printable_cell(
