@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import Any, ClassVar, Iterable
 
 from nbmanips.cell.cell_utils import _get_output_types, _to_html, total_size
 from nbmanips.cell.output_parsers import ParserBase
@@ -18,7 +18,12 @@ class CellOutput:
     def output_types(self) -> set:
         raise NotImplementedError()
 
-    def to_str(self, parsers=None, parsers_config=None, excluded_data_types=None):
+    def to_str(
+        self,
+        parsers: Iterable[str] | None = None,
+        parsers_config: dict[str, dict[str, Any]] | None = None,
+        excluded_data_types: Iterable[str] | None = None,
+    ):
         return ""
 
     def to_html(self, excluded_data_types=None):
@@ -83,7 +88,12 @@ class StreamOutput(CellOutput, output_type="stream"):
     def output_types(self):
         return _get_output_types("text/plain")
 
-    def to_str(self, parsers=None, parsers_config=None, excluded_data_types=None):
+    def to_str(
+        self,
+        parsers: Iterable[str] | None = None,
+        parsers_config: dict[str, dict[str, Any]] | None = None,
+        excluded_data_types: Iterable[str] | None = None,
+    ):
         parsers_config = parsers_config or {}
         excluded_data_types = (
             set() if excluded_data_types is None else set(excluded_data_types)
@@ -133,7 +143,12 @@ class DataOutput(CellOutput):
         )
         return s1, s2
 
-    def to_str(self, parsers=None, parsers_config=None, excluded_data_types=None):
+    def to_str(
+        self,
+        parsers: Iterable[str] | None = None,
+        parsers_config: dict[str, dict[str, Any]] | None = None,
+        excluded_data_types: Iterable[str] | None = None,
+    ):
         parsers = self.default_parsers if parsers is None else set(parsers)
         parsers_config = parsers_config or {}
         excluded_data_types = (
@@ -234,7 +249,12 @@ class ErrorOutput(CellOutput, output_type="error"):
     def output_types(self):
         return _get_output_types("text/error")
 
-    def to_str(self, parsers=None, parsers_config=None, excluded_data_types=None):
+    def to_str(
+        self,
+        parsers: Iterable[str] | None = None,
+        parsers_config: dict[str, dict[str, Any]] | None = None,
+        excluded_data_types: Iterable[str] | None = None,
+    ):
         parsers_config = parsers_config or {}
         excluded_data_types = (
             set() if excluded_data_types is None else set(excluded_data_types)

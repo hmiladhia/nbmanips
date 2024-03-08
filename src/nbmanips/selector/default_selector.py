@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Callable, ClassVar
+from typing import Callable, ClassVar, Iterable, Literal
 
 from nbmanips.cell import Cell, MarkdownCell
 from nbmanips.selector.callable_selector import CallableSelector
@@ -22,7 +22,12 @@ class DefaultSelector(CallableSelector):
 
 # -- Default Selectors --
 def contains(
-    cell: Cell, text, case=True, output=False, regex=False, flags: int = 0
+    cell: Cell,
+    text: str,
+    case: bool = True,
+    output: bool = False,
+    regex: bool = False,
+    flags: int = 0,
 ) -> bool:
     """
     Selects Cells containing a certain text.
@@ -41,7 +46,7 @@ def contains(
     return cell.contains(text, case=case, output=output, regex=regex, flags=flags)
 
 
-def has_match(cell: Cell, regex, output=False) -> bool:
+def has_match(cell: Cell, regex: str | re.Pattern, output: bool = False) -> bool:
     """
     Selects Cells that match a certain regex.
 
@@ -61,7 +66,7 @@ def has_match(cell: Cell, regex, output=False) -> bool:
     return cell.has_match(regex, output=output)
 
 
-def has_type(cell: Cell, type_) -> bool:
+def has_type(cell: Cell, type_: str) -> bool:
     """
     Selects cells with the given type
 
@@ -110,10 +115,10 @@ def has_output(cell: Cell, value: bool = True) -> bool:
     :param value: set to False if you want to select cells with no output
     :return: a bool object (True if cell should be selected)
     """
-    return (cell.output != "") == value
+    return (cell.output != "") is value
 
 
-def has_output_type(cell: Cell, output_type: set | str) -> bool:
+def has_output_type(cell: Cell, output_type: Iterable[str] | str) -> bool:
     """
     Selects cells that have a given output_type
 
@@ -139,10 +144,10 @@ def is_empty(cell: Cell) -> bool:
 
 def has_byte_size(
     cell: Cell,
-    min_size=0,
+    min_size: int = 0,
     max_size: int | None = None,
-    output_types=None,
-    ignore_source=False,
+    output_types: Iterable[str] | str | None = None,
+    ignore_source: bool = False,
 ) -> bool:
     """
     Selects cells with byte size less than max_size and more than min_size.
@@ -163,7 +168,10 @@ def has_byte_size(
     return size >= min_size and (max_size is None or size < max_size)
 
 
-def has_slide_type(cell: Cell, slide_type) -> bool:
+def has_slide_type(
+    cell: Cell,
+    slide_type: Literal["-", "skip", "slide", "subslide", "fragment", "notes"],
+) -> bool:
     """
     Selects markdown cells that have a given slide type
 
@@ -185,7 +193,7 @@ def has_slide_type(cell: Cell, slide_type) -> bool:
     )
 
 
-def has_tag(cell: Cell, tag: str, case=False) -> bool:
+def has_tag(cell: Cell, tag: str, case: bool = False) -> bool:
     """
     Selects cells that have a certain tag
 
@@ -219,7 +227,7 @@ def with_css_selector(cell: MarkdownCell, css_selector: str) -> bool:
     return cell.soup.select_one(css_selector) is not None
 
 
-def is_new_slide(cell: Cell, subslide=True) -> bool:
+def is_new_slide(cell: Cell, subslide: bool = True) -> bool:
     """
     Select cells where a new slide/subslide starts.
     :param cell: Cell object to select

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import os
 import zipfile
@@ -5,11 +7,11 @@ import zipfile
 from nbmanips.notebook.notebook import Notebook
 
 
-def _parent_directory(path: str):
+def _parent_directory(path: str) -> str:
     return os.path.abspath(os.path.join(path, os.pardir))
 
 
-def _get_dirs(path, common_path):
+def _get_dirs(path: str, common_path: str) -> set[str]:
     dirs = set()
     while path.startswith(common_path):
         rel_path = os.path.relpath(path, common_path)
@@ -23,8 +25,11 @@ def _get_dirs(path, common_path):
 class DbcExporter:
     @staticmethod
     def _to_dbc_notebook(
-        nb: Notebook, name=None, language=None, version="NotebookV1"
-    ) -> dict:
+        nb: Notebook,
+        name: str | None = None,
+        language: str | None = None,
+        version: str = "NotebookV1",
+    ) -> dict[str]:
         if version != "NotebookV1":
             raise ValueError(f"Unsupported version: {version}")
 
@@ -90,14 +95,16 @@ class DbcExporter:
 
         return notebook
 
-    def export(self, nb: Notebook, output_path: str, filename=None, **kwargs):
+    def export(
+        self, nb: Notebook, output_path: str, filename: str | None = None, **kwargs
+    ) -> None:
         dbc_nb = self._to_dbc_notebook(nb, **kwargs)
         filename = filename or f"{dbc_nb['name']}.{dbc_nb['language']}"
         with zipfile.ZipFile(output_path, mode="w") as zf:
             zf.writestr(filename, json.dumps(dbc_nb))
 
     @staticmethod
-    def _check_common_path(file_list, common_path):
+    def _check_common_path(file_list: list[str], common_path: str | None) -> str:
         if common_path is None:
             common_path = os.path.commonpath(
                 [_parent_directory(path) for path in file_list]
@@ -115,7 +122,9 @@ class DbcExporter:
                 )
         return common_path
 
-    def write_dbc(self, file_list, output_path, common_path=None):
+    def write_dbc(
+        self, file_list: list[str], output_path: str, common_path: str | None = None
+    ) -> None:
         # absolute paths
         file_list = [os.path.abspath(file) for file in file_list]
         common_path = self._check_common_path(file_list, common_path)

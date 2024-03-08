@@ -53,6 +53,14 @@ Issues = "https://github.com/hmiladhia/nbmanips/issues"
 nbmanips = "nbmanips.__main__:nbmanips"
 nb = "nbmanips.__main__:nbmanips"
 
+[tool.rye]
+dev-dependencies = [
+    "pytest-cov==2.12.1",
+    "pytest~=8.0.0",
+    "tox~=4.0.0",
+    "snakeviz>=2.2.0",
+]
+
 # == Hatch configuration ==
 [tool.hatch.version]
 path = "src/nbmanips/__init__.py"

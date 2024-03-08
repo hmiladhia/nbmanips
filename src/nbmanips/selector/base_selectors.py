@@ -3,10 +3,11 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from copy import copy
 from itertools import filterfalse
-from typing import Callable, Iterator
+from typing import Callable, Iterable, Iterator
 
 from nbmanips._utils import partial
 from nbmanips.cell import Cell
+from nbmanips.notebook.ipynb import RawNotebookType
 
 
 class SelectorBase(ABC):
@@ -14,10 +15,10 @@ class SelectorBase(ABC):
         self._neg = False
 
     @abstractmethod
-    def get_callable(self, nb: dict) -> Callable[..., bool]:
+    def get_callable(self, nb: RawNotebookType) -> Callable[[Cell], bool]:
         pass
 
-    def iter_cells(self, nb, neg=False) -> Iterator[Cell]:
+    def iter_cells(self, nb: RawNotebookType, neg: bool = False) -> Iterator[Cell]:
         selector = self.get_callable(nb)
         filter_method = filterfalse if (self._neg ^ neg) else filter
         return filter_method(
@@ -49,15 +50,15 @@ class SelectorBase(ABC):
 
 
 class TrueSelector(SelectorBase):
-    def iter_cells(self, nb, neg=False) -> Iterator[Cell]:
+    def iter_cells(self, nb: RawNotebookType, neg: bool = False) -> Iterator[Cell]:
         if self._neg ^ neg:
             return (_ for _ in range(0))
         return (Cell(cell, i) for i, cell in enumerate(nb["cells"]))
 
-    def get_callable(self, nb):
+    def get_callable(self, nb: RawNotebookType) -> Callable[[Cell], bool]:
         return lambda cell: True
 
-    def __and__(self, other: SelectorBase):
+    def __and__(self, other: SelectorBase) -> SelectorBase:
         if not isinstance(other, SelectorBase):
             return NotImplemented
 
@@ -65,7 +66,7 @@ class TrueSelector(SelectorBase):
             return copy(self)
         return copy(other)
 
-    def __or__(self, other: SelectorBase):
+    def __or__(self, other: SelectorBase) -> SelectorBase:
         if not isinstance(other, SelectorBase):
             return NotImplemented
 
@@ -75,7 +76,7 @@ class TrueSelector(SelectorBase):
 
 
 class ListSelector(SelectorBase):
-    def __init__(self, selector, *args, **kwargs):
+    def __init__(self, selector: Iterable[SelectorBase], *args, **kwargs):
         from . import Selector
 
         selector = list(selector)
@@ -125,15 +126,17 @@ class ListSelector(SelectorBase):
             selector._list.append(other)
         return selector
 
-    def get_callable(self, nb: dict) -> Callable:
+    def get_callable(self, nb: RawNotebookType) -> Callable[[Cell], bool]:
         op = all if self._and else any
         return partial(self.__combine, op=op, nb=nb)
 
-    def __combine(self, cell: Cell, op, nb):
+    def __combine(
+        self, cell: Cell, op: Callable[[Iterable[bool]], bool], nb: RawNotebookType
+    ) -> bool:
         return op((sel._neg ^ sel.get_callable(nb)(cell)) for sel in self._list)
 
     @staticmethod
-    def _check_sanity(kwargs):
+    def _check_sanity(kwargs: dict[str, str]) -> bool:
         _type = kwargs.pop("type", "and")
         if _type not in {"and", "or"}:
             raise ValueError('type can only have the following values: {"and", "or"}')

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os.path
 from functools import reduce
 from operator import add
@@ -29,7 +31,7 @@ __all__ = [
     default=False,
     help="Do not prompt for confirmation if file already exists",
 )
-def erase(notebook_path, output, force):
+def erase(notebook_path: str, output: str | None, force: bool):
     nb = Notebook.read(notebook_path)
     selector = get_selector()
 
@@ -201,7 +203,9 @@ def split(notebook_path, output, indexes, index, force, use_selection):
     default=False,
     help="Do not prompt for confirmation if file already exists",
 )
-def burn(notebook_path: str, assets_path: str, output, force, html):
+def burn(
+    notebook_path: str, assets_path: str, output: str | None, force: bool, html: bool
+):
     nb = Notebook.read(notebook_path)
     selector = get_selector()
 

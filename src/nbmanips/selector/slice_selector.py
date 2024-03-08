@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from functools import partial
 from typing import Callable
 
@@ -6,7 +8,7 @@ from nbmanips.selector.base_selectors import SelectorBase
 
 
 class SliceSelector(SelectorBase):
-    def __init__(self, selector):
+    def __init__(self, selector: slice) -> None:
         self._slice = selector
         super().__init__()
 
@@ -15,7 +17,7 @@ class SliceSelector(SelectorBase):
         return self.__get_slice_selector(new_slice)
 
     @staticmethod
-    def __adapt_slice(old_slice, n_cells):
+    def __adapt_slice(old_slice: slice, n_cells: int) -> slice:
         start, stop, step = old_slice.start, old_slice.stop, old_slice.step
         if stop is not None and stop < 0:
             stop = stop + n_cells
@@ -41,5 +43,5 @@ class SliceSelector(SelectorBase):
         return partial(cls.__get_multiple_selector, selector_list=selector_list)
 
     @staticmethod
-    def __get_multiple_selector(cell, selector_list: list):
+    def __get_multiple_selector(cell: Cell, selector_list: list[SelectorBase]) -> bool:
         return all(sel(cell) for sel in selector_list)

@@ -1,4 +1,6 @@
-from typing import Callable
+from __future__ import annotations
+
+from typing import Callable, Iterable
 
 from nbmanips.selector.base_selectors import ListSelector, SelectorBase, TrueSelector
 
@@ -7,7 +9,12 @@ class Selector(SelectorBase):
     def __init__(self, *args, **kwargs):
         super().__init__()
 
-    def __new__(cls, selector, *args, **kwargs):
+    def __new__(
+        cls,
+        selector: int | str | Iterable[SelectorBase] | slice | SelectorBase | None,
+        *args,
+        **kwargs,
+    ):
         if callable(selector):
             from .callable_selector import CallableSelector
 
