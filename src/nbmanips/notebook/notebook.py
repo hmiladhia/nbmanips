@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import re
 from contextlib import suppress
 from copy import deepcopy
@@ -515,11 +514,11 @@ class Notebook:
         (body, resources) = exporter.from_notebook_node(notebook_node)
 
         # Exporting result
-        build_directory, file_name = os.path.split(path)
+        path = Path(path)
+        build_directory, file_name = path.parent.resolve().as_posix(), path.name
         writer = nbconvert.writers.files.FilesWriter(build_directory=build_directory)
 
-        _, ext = os.path.splitext(file_name)
-        if ext:
+        if path.suffix:
             resources.pop("output_extension")
 
         writer.write(body, resources, file_name)
