@@ -1,7 +1,7 @@
 import nbmanips.exporters as _nb_exporters
 from nbmanips.notebook import DBC, IPYNB, ZPLN, Notebook
 
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 __author__ = "Dhia Hmila"
 __all__ = ["DBC", "IPYNB", "ZPLN", "Notebook", "__version__", "__author__"]
 

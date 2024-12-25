@@ -1,0 +1,9 @@
+[version]
+path = "src/nbmanips/__init__.py"
+
+[build.targets.sdist]
+only-include = ["src"]
+
+[build.targets.wheel]
+packages = ["src/nbmanips"]
+sources = ["src"]
