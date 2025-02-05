@@ -10,7 +10,7 @@ on:
 jobs:
   quality:
     name: 🚧 Quality Gates
-    uses: ./.github/workflows/quality.yaml
+    uses: ./.github/workflows/tests.yaml
 
   publish:
     name: 🚀 Upload Python Package to PYPI
