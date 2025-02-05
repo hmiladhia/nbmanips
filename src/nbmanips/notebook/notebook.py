@@ -5,11 +5,19 @@ import re
 from contextlib import suppress
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Iterable, Iterator, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Iterable,
+    Iterator,
+    TypedDict,
+    TypeVar,
+)
 
 import nbconvert
 import nbformat
-from nbconvert.exporters.exporter import Exporter
 
 try:
     import pygments.util
@@ -18,28 +26,18 @@ except ImportError:
     pygments = None
     get_lexer_by_name = None
 
-
-from nbmanips.cell import Cell
-from nbmanips.cell.cell_utils import PYGMENTS_SUPPORTED
-from nbmanips.notebook.ipynb import (
-    dict_to_ipynb,
-    get_ipynb_name,
-    read_ipynb,
-    write_ipynb,
-)
 from nbmanips.selector import Selector
+
+if TYPE_CHECKING:
+    from nbconvert.exporters.exporter import Exporter
+
+    from nbmanips.cell import Cell
 
 T = TypeVar("T")
 
 
-def _get_regex(text: str, case: bool = False, regex: bool = False) -> re.Pattern:
-    if not regex:
-        text = re.escape(text)
-
-    flags = 0
-    flags = (flags & ~re.IGNORECASE) if case else (flags | re.IGNORECASE)
-
-    return re.compile(text, flags)
+class RawNotebookType(TypedDict, total=False):
+    ...
 
 
 class Notebook:
@@ -75,11 +73,60 @@ class Notebook:
         self.name = name
         self._selector = Selector(None)
 
+    # == Properties ==
+    @property
+    def cells(self) -> list[dict[str, Any]]:
+        return self.raw_nb["cells"]
+
+    @property
+    def metadata(self) -> dict[str, Any]:
+        return self.raw_nb["metadata"]
+
+    @property
+    def language(self) -> str | None:
+        lang = self.metadata.get("kernelspec", {}).get("language", None)
+        lang = lang or self.metadata.get("language_info", {}).get("name", None)
+        return lang or self.metadata.get("language_info", {}).get(
+            "pygments_lexer", None
+        )
+
+    @property
+    def used_ids(self) -> set[str]:
+        return {cell["id"] for cell in self.cells if "id" in cell}
+
+    @property
+    def toc(self) -> list[tuple[int, str, int]]:
+        markdown_cells = self.select("is_markdown")
+
+        toc = []
+        indentation_levels = []
+        for cell in markdown_cells.iter_cells():
+            for element in cell.soup.select("h1, h2, h3, h4, h5, h6"):
+                indentation_level = int(element.name[-1]) - 1
+                indentation_levels.append(indentation_level)
+                toc.append((indentation_level, element.text, cell.num))
+
+        return toc
+
+    # == Selection ==
     def select(self, selector: Any, *args, **kwargs) -> Notebook:
         nb = self.reset_selection()
         nb._selector = self._selector & Selector(selector, *args, **kwargs)
         return nb
 
+    def reset_selection(self) -> Notebook:
+        notebook_selection = Notebook(
+            self.raw_nb, self.name, validate=False, copy=False
+        )
+
+        # Adding Original Notebook Path if defined
+        original_path = getattr(self, "_original_path", None)
+        if original_path:
+            notebook_selection._original_path = original_path
+
+        return notebook_selection
+
+    # == Iterator ==
     def apply(self, func: Callable[[Cell], Cell | None], neg: bool = False) -> None:
         delete_list = []
         for cell in self.iter_cells(neg):
@@ -96,32 +143,42 @@ class Notebook:
     def map(self, func: Callable[[Cell], T], neg: bool = False) -> list[T]:
         return list(map(func, self.iter_cells(neg)))
 
-    def reset_selection(self) -> Notebook:
-        notebook_selection = Notebook(
-            self.raw_nb, self.name, validate=False, copy=False
-        )
-
-        # Adding Original Notebook Path if defined
-        original_path = getattr(self, "_original_path", None)
-        if original_path:
-            notebook_selection._original_path = original_path
-
-        return notebook_selection
-
     def iter_cells(self, neg: bool = False) -> Iterator[Cell]:
         return self._selector.iter_cells(self.raw_nb, neg=neg)
 
-    @property
-    def cells(self) -> list[dict[str, Any]]:
-        return self.raw_nb["cells"]
+    def __iter__(self) -> Iterator[Cell]:
+        return self.iter_cells()
 
-    @property
-    def metadata(self) -> dict[str, Any]:
-        return self.raw_nb["metadata"]
+    # ==
+    def first(self) -> int | None:
+        """
+        Return the number of the first selected cell
+        :return:
+        """
+        for cell in self.iter_cells():
+            return cell.num
 
-    @property
-    def used_ids(self) -> set[str]:
-        return {cell["id"] for cell in self.cells if "id" in cell}
+    def last(self) -> int | None:
+        """
+        Return the number of the last selected cell
+        :return:
+        """
+        for cell in reversed(list(self.iter_cells())):
+            return cell.num
+
+    def list(self) -> list[int]:
+        """
+        Return the numbers of the selected cells
+        :return:
+        """
+        return [cell.num for cell in self.iter_cells()]
+
+    def count(self) -> int:
+        """
+        Return the numbers of the selected cells
+        :return:
+        """
+        return len(self)
 
     def first_cell(self) -> Cell | None:
         """
@@ -146,6 +203,7 @@ class Notebook:
         """
         return [cell for cell in self.iter_cells()]
 
+    # == Operands ==
     def add_cell(self, cell: Cell, pos: int | None = None) -> None:
         pos = len(self) if pos is None else pos
 
@@ -155,9 +213,6 @@ class Notebook:
 
         cell = cell.get_copy(new_id)
         self.cells.insert(pos, cell.cell)
-
-    def __iter__(self) -> Iterator[Cell]:
-        return self.iter_cells()
 
     def __add__(self, other: Notebook):
         if not isinstance(other, Notebook):
@@ -173,7 +228,7 @@ class Notebook:
         new_nb = self.__class__(raw_nb, validate=False, copy=False)
 
         # Concatenating the notebooks
-        for cell in self.list_cells() + other.list_cells():
+        for cell in (*self.iter_cells(), *other.iter_cells()):
             new_nb.add_cell(cell)
 
         return new_nb
@@ -205,7 +260,7 @@ class Notebook:
     def __len__(self) -> int:
         if self.raw_nb is None or "cells" not in self.raw_nb:
             return 0
-        return len(self.list_cells())
+        return len([*self.iter_cells()])
 
     def __repr__(self) -> str:
         if self.name:
@@ -243,6 +298,7 @@ class Notebook:
         nb._selector = ~self._selector
         return nb
 
+    # == Instantiation ==
     @staticmethod
     def __validate(content: dict) -> None:
         if not isinstance(content, dict):
@@ -291,22 +347,6 @@ class Notebook:
         """
         self.raw_nb["cells"] = [cell.cell for cell in self.iter_cells()]
 
-    def first(self) -> int | None:
-        """
-        Return the number of the first selected cell
-        :return:
-        """
-        for cell in self.iter_cells():
-            return cell.num
-
-    def last(self) -> int | None:
-        """
-        Return the number of the last selected cell
-        :return:
-        """
-        for cell in reversed(list(self.iter_cells())):
-            return cell.num
-
     def copy(self, selection: bool = True, crop: bool = True) -> Notebook:
         """
         Copy the notebook instance
@@ -323,6 +363,7 @@ class Notebook:
                 cp = cp.reset_selection()
         return cp
 
+    # == Split Notebook ==
     def split(self, *args) -> list[Notebook]:
         """
         Split the notebook based passed selectors (typically cell indexes)
@@ -350,22 +391,7 @@ class Notebook:
         notebooks.append(cp[prev:].copy())
         return notebooks
 
-    def list(self) -> list[int]:
-        """
-        Return the numbers of the selected cells
-        :return:
-        """
-        return [cell.num for cell in self.list_cells()]
-
-    def count(self) -> int:
-        """
-        Return the numbers of the selected cells
-        :return:
-        """
-        return len(self)
-
     # == SlideShowMixin ==
-
     def mark_slideshow(self) -> None:
         self.raw_nb["metadata"]["celltoolbar"] = "Slideshow"
 
@@ -448,7 +474,6 @@ class Notebook:
         self.max_cells_per_slide(max_cells_per_slide, max_images_per_slide)
 
     # == ExportMixin ==
-
     @classmethod
     def register_exporter(
         cls,
@@ -475,6 +500,8 @@ class Notebook:
         """
         returns notebook as an nbformat NotebookNode
         """
+        from nbmanips.notebook.ipynb import dict_to_ipynb
+
         return dict_to_ipynb(self.raw_nb)
 
     def convert(
@@ -662,38 +689,6 @@ class Notebook:
             version=version,
         )
 
-    def _get_pygments_lexer(self, use_pygments: bool):
-        if use_pygments:
-            pygments_lexer = self.metadata.get("language_info", {}).get(
-                "pygments_lexer", None
-            )
-            pygments_lexer = pygments_lexer or self.metadata.get(
-                "language_info", {}
-            ).get("name", None)
-            pygments_lexer = pygments_lexer or self.metadata.get("kernelspec", {}).get(
-                "language", None
-            )
-        else:
-            pygments_lexer = None
-
-        if pygments_lexer is None:
-            return pygments_lexer
-
-        if get_lexer_by_name is None:
-            raise ModuleNotFoundError(
-                "You need to install pygments first.\n pip install pygments"
-            )
-
-        try:
-            if pygments_lexer in {"ipython3", "python", "py", "python3", "py3"}:
-                from pygments.lexers.python import PythonLexer
-
-                return PythonLexer()
-
-            return get_lexer_by_name(pygments_lexer)
-        except pygments.util.ClassNotFound:
-            return None
-
     def to_str(
         self,
         width: int | None = None,
@@ -706,8 +701,10 @@ class Notebook:
         excluded_data_types: Iterable[str] | None = None,
         truncate: int | None = None,
     ) -> str:
+        from nbmanips.cell.cell_utils import PYGMENTS_SUPPORTED
+
         use_pygments = PYGMENTS_SUPPORTED if use_pygments is None else use_pygments
-        pygments_lexer = self._get_pygments_lexer(use_pygments)
+        pygments_lexer = _get_pygments_lexer(self, use_pygments)
 
         return "\n".join(
             cell.to_str(
@@ -742,6 +739,8 @@ class Notebook:
         Export to ipynb file
         :param path: target path
         """
+        from nbmanips.notebook.ipynb import write_ipynb
+
         write_ipynb(self.raw_nb, path)
 
     def show(
@@ -782,6 +781,7 @@ class Notebook:
         if str_repr:
             print(str_repr)
 
+    # == Readers ==
     @classmethod
     def read_ipynb(
         cls, path: str, name: str | None = None, validate: bool = False
@@ -793,6 +793,8 @@ class Notebook:
         :param validate: validate the notebook fields
         :return: Notebook object
         """
+        from nbmanips.notebook.ipynb import get_ipynb_name, read_ipynb
+
         nb = read_ipynb(path)
         nb_obj = cls(nb, name or get_ipynb_name(path), validate=validate, copy=False)
 
@@ -839,7 +841,7 @@ class Notebook:
     def read(
         cls, path: str, name: str | None = None, validate: bool = False, **kwargs
     ) -> Notebook:
-        readers: Callable[[str, str | None, bool], Notebook] = {
+        readers: dict[str, Callable[[str, str | None, bool], Notebook]] = {
             ".ipynb": cls.read_ipynb,
             ".dbc": cls.read_dbc,
             ".zpln": cls.read_zpln,
@@ -859,15 +861,6 @@ class Notebook:
         raise ValueError("Could not determine the notebook type")
 
     # == NotebookMetadata ==
-
-    @property
-    def language(self) -> str | None:
-        lang = self.metadata.get("kernelspec", {}).get("language", None)
-        lang = lang or self.metadata.get("language_info", {}).get("name", None)
-        return lang or self.metadata.get("language_info", {}).get(
-            "pygments_lexer", None
-        )
-
     def add_author(self, name: str, **kwargs) -> None:
         """
         Add author to metadata
@@ -1024,21 +1017,6 @@ class Notebook:
             cell.source = compiled_html_regex.sub(rep_func, cell.get_source())
 
     # == ContentAnalysisMixin ==
-
-    @property
-    def toc(self) -> list[tuple[int, str, int]]:
-        markdown_cells = self.select("is_markdown")
-
-        toc = []
-        indentation_levels = []
-        for cell in markdown_cells.iter_cells():
-            for element in cell.soup.select("h1, h2, h3, h4, h5, h6"):
-                indentation_level = int(element.name[-1]) - 1
-                indentation_levels.append(indentation_level)
-                toc.append((indentation_level, element.text, cell.num))
-
-        return toc
-
     def ptoc(self, width: int | None = None, index: bool = False) -> str:
         import textwrap
 
@@ -1107,7 +1085,6 @@ class Notebook:
         self.add_cell(toc_cell, pos)
 
     # == Notebook ==
-
     def search(
         self, text: str, case: bool = False, output: bool = False, regex: bool = False
     ) -> int | None:
@@ -1176,24 +1153,45 @@ class Notebook:
                 break
 
 
-class IPYNB(Notebook):
-    def __new__(cls, path: str, name: str | None = None) -> Notebook:
-        return Notebook.read_ipynb(path, name)
+# Helpers
+def _get_pygments_lexer(nb: Notebook, use_pygments: bool):
+    if use_pygments:
+        pygments_lexer = nb.metadata.get("language_info", {}).get(
+            "pygments_lexer", None
+        )
+        pygments_lexer = pygments_lexer or nb.metadata.get("language_info", {}).get(
+            "name", None
+        )
+        pygments_lexer = pygments_lexer or nb.metadata.get("kernelspec", {}).get(
+            "language", None
+        )
+    else:
+        pygments_lexer = None
+
+    if pygments_lexer is None:
+        return pygments_lexer
+
+    if get_lexer_by_name is None:
+        raise ModuleNotFoundError(
+            "You need to install pygments first.\n pip install pygments"
+        )
+
+    try:
+        if pygments_lexer in {"ipython3", "python", "py", "python3", "py3"}:
+            from pygments.lexers.python import PythonLexer
+
+            return PythonLexer()
+
+        return get_lexer_by_name(pygments_lexer)
+    except pygments.util.ClassNotFound:
+        return None
 
 
-class DBC(Notebook):
-    def __new__(
-        cls,
-        path: str,
-        filename: str | None = None,
-        encoding: str = "utf-8",
-        name: str | None = None,
-    ) -> Notebook:
-        return Notebook.read_dbc(path, filename=filename, encoding=encoding, name=name)
+def _get_regex(text: str, case: bool = False, regex: bool = False) -> re.Pattern:
+    if not regex:
+        text = re.escape(text)
 
+    flags = 0
+    flags = (flags & ~re.IGNORECASE) if case else (flags | re.IGNORECASE)
 
-class ZPLN(Notebook):
-    def __new__(
-        cls, path: str, name: str | None = None, encoding: str = "utf-8"
-    ) -> Notebook:
-        return Notebook.read_zpln(path, encoding=encoding, name=name)
+    return re.compile(text, flags)

@@ -1,20 +1,22 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TypedDict
 
 import nbformat
 
+from nbmanips.notebook.notebook import Notebook, RawNotebookType
 
-class RawNotebookType(TypedDict, total=False):
-    ...
+
+class IPYNB(Notebook):
+    def __new__(cls, path: str, name: str | None = None) -> Notebook:
+        return Notebook.read_ipynb(path, name)
 
 
 def get_ipynb_name(path: str) -> str:
     return Path(path).stem
 
 
-def _get_nb_from_dict(
+def get_nb_from_dict(
     nb_dict: RawNotebookType, as_version: int
 ) -> nbformat.NotebookNode:
     (major, minor) = nbformat.reader.get_version(nb_dict)
@@ -42,4 +44,4 @@ def dict_to_ipynb(
     nb_dict: RawNotebookType, default_version: int = 4
 ) -> nbformat.NotebookNode:
     version = nb_dict.get("nbformat", default_version)
-    return _get_nb_from_dict(nb_dict, as_version=version)
+    return get_nb_from_dict(nb_dict, as_version=version)
