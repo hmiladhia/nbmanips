@@ -8,7 +8,6 @@ from click import Group
 
 from nbmanips.cli import get_selector
 from nbmanips.selector import Selector
-from nbmanips.selector.default_selector import DefaultSelector
 
 __all__ = [
     "select",
@@ -19,7 +18,7 @@ def _is_digit(selector):
     match = re.fullmatch(r"(-?\d+)", selector)
 
     if match is None:
-        match = re.fullmatch(r"\[(-?\d+)\]", selector)
+        match = re.fullmatch(r"\[(-?\d+)]", selector)
 
     if match is None:
         return None
@@ -30,7 +29,7 @@ def _is_slice(selector):
     match = re.fullmatch(r"((-?\d+))?(:(-?\d+)?)?(:(-?\d+)?)?", selector)
 
     if match is None:
-        match = re.fullmatch(r"\[((-?\d+))?(:(-?\d+)?)?(:(-?\d+)?)?\]", selector)
+        match = re.fullmatch(r"\[((-?\d+))?(:(-?\d+)?)?(:(-?\d+)?)?]", selector)
 
     if match is None:
         return None
@@ -41,6 +40,8 @@ def _is_slice(selector):
 class SelectGroup(Group):
     @property
     def dynamic_commands(self):
+        from nbmanips.selector.default_selector import DefaultSelector
+
         return DefaultSelector.default_selectors
 
     def resolve_command(self, ctx, args):
