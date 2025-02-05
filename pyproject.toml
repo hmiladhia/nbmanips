@@ -40,7 +40,7 @@ dependencies = [
     'cloudpickle>=1.6.0; python_version < "3.11"',
     'cloudpickle>=2.1; python_version >= "3.11"',
     'cloudpickle>=3.0; python_version >= "3.12"',
-    "auto-lazy-imports>=0.1.0",
+    "auto-lazy-imports>=0.2.0",
 ]
 
 [project.optional-dependencies]
@@ -177,3 +177,4 @@ commands = [["ruff", "check", { replace = "posargs", default = ["."], extend = t
 
 [project.entry-points.lazyimports]
 lazy_modules = "nbconvert,nbformat"
+lazy_exporters = "nbconvert:HTMLExporter,nbconvert:SlidesExporter,nbconvert:PythonExporter,nbconvert:MarkdownExporter,nbconvert:ScriptExporter,nbmanips.exporters:DbcExporter"

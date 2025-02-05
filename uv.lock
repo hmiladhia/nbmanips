@@ -17,11 +17,11 @@ wheels = [
 
 [[package]]
 name = "auto-lazy-imports"
-version = "0.1.0"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b8/94/b6009a18f474cedfbc4e3243d32b922105127775345d266623fbd25b15e0/auto_lazy_imports-0.1.0.tar.gz", hash = "sha256:cb90ecaabe28f8486a91bf3341d602706534e9bc19f0c49d0783b0af4aa20d66", size = 204935 }
+sdist = { url = "https://files.pythonhosted.org/packages/ba/e2/9e1ae087ea8c4a99244f88cbd35a6b34e0865b0dd9c319aa335a9ca94261/auto_lazy_imports-0.2.0.tar.gz", hash = "sha256:b9c3b342cceabe0b1d499c7986840eeea6fa233cdcc384b428c99e61c3e08d9d", size = 206574 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/08/d8/369590d85a64f9af595091dfd7a12c7c85d6d5af4acb1492161068834994/auto_lazy_imports-0.1.0-py3-none-any.whl", hash = "sha256:f5cbfafa91aad7cf7eb39c816987570a59d7f82c88aa8d22a052bf447107d94e", size = 3741 },
+    { url = "https://files.pythonhosted.org/packages/16/00/c00e9f38ac51ff3471b7a7fa526b26196d2fce690523f48abdd81a6ea5d3/auto_lazy_imports-0.2.0-py3-none-any.whl", hash = "sha256:0e07f5c51c9928b7ceb8c05291f7712b5d56797d6c308541fb8acf190c573b1b", size = 5134 },
 ]
 
 [[package]]
@@ -719,7 +719,7 @@ typing = [
 
 [package.metadata]
 requires-dist = [
-    { name = "auto-lazy-imports", specifier = ">=0.1.0" },
+    { name = "auto-lazy-imports", specifier = ">=0.2.0" },
     { name = "beautifulsoup4", specifier = ">=4.10.0" },
     { name = "click", specifier = ">=7.1.0" },
     { name = "cloudpickle", marker = "python_full_version < '3.11'", specifier = ">=1.6.0" },

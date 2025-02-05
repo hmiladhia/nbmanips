@@ -26,6 +26,7 @@ except ImportError:
     pygments = None
     get_lexer_by_name = None
 
+import nbmanips.exporters as _nb_exporters
 from nbmanips.selector import Selector
 
 if TYPE_CHECKING:
@@ -42,8 +43,18 @@ class RawNotebookType(TypedDict, total=False):
 
 class Notebook:
     __slots__ = ("raw_nb", "name", "_selector", "_original_path")
-    _exporters_init = False
-    __exporters: ClassVar[dict[str, dict[str, type[Exporter]]]] = {}
+    __exporters: ClassVar[dict[str, dict[str, type[Exporter]]]] = {
+        "nbconvert": {
+            "html": nbconvert.HTMLExporter,
+            "slides": nbconvert.SlidesExporter,
+            "python": nbconvert.PythonExporter,
+            "markdown": nbconvert.MarkdownExporter,
+            "script": nbconvert.ScriptExporter,
+        },
+        "nbmanips": {
+            "dbc": _nb_exporters.DbcExporter,
+        },
+    }
 
     def __init__(
         self,
@@ -474,7 +485,6 @@ class Notebook:
         exporter: type[Exporter],
         exporter_type: str = "nbconvert",
     ) -> None:
-        _register(cls)
         exporters = cls.__exporters.setdefault(exporter_type, {})
         exporters[exporter_name] = exporter
 
@@ -482,7 +492,6 @@ class Notebook:
     def get_exporter(
         cls, exporter_name: str, *args, exporter_type: str = "nbconvert", **kwargs
     ) -> Exporter:
-        _register(cls)
         return cls.__exporters[exporter_type][exporter_name](*args, **kwargs)
 
     def to_json(self) -> str:
@@ -1190,20 +1199,3 @@ def _get_regex(text: str, case: bool = False, regex: bool = False) -> re.Pattern
     flags = (flags & ~re.IGNORECASE) if case else (flags | re.IGNORECASE)
 
     return re.compile(text, flags)
-
-
-def _register(cls):
-    if cls._exporters_init:
-        return
-
-    import nbmanips.exporters as _nb_exporters
-
-    cls._exporters_init = True
-    Notebook.register_exporter(
-        "dbc", _nb_exporters.DbcExporter, exporter_type="nbmanips"
-    )
-    Notebook.register_exporter("html", nbconvert.HTMLExporter)
-    Notebook.register_exporter("slides", nbconvert.SlidesExporter)
-    Notebook.register_exporter("python", nbconvert.PythonExporter)
-    Notebook.register_exporter("markdown", nbconvert.MarkdownExporter)
-    Notebook.register_exporter("script", nbconvert.ScriptExporter)
