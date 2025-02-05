@@ -40,6 +40,7 @@ dependencies = [
     'cloudpickle>=1.6.0; python_version < "3.11"',
     'cloudpickle>=2.1; python_version >= "3.11"',
     'cloudpickle>=3.0; python_version >= "3.12"',
+    "auto-lazy-imports>=0.1.0",
 ]
 
 [project.optional-dependencies]
@@ -172,3 +173,7 @@ description = "run linters"
 skip_install = true
 dependency_groups = ["linting"]
 commands = [["ruff", "check", { replace = "posargs", default = ["."], extend = true} ]]
+
+
+[project.entry-points.lazyimports]
+lazy_modules = "nbconvert,nbformat"

@@ -16,6 +16,7 @@ from typing import (
     TypeVar,
 )
 
+import nbconvert
 import nbformat
 
 try:
@@ -523,8 +524,6 @@ class Notebook:
         template_name: str | None = None,
         **kwargs,
     ) -> None:
-        import nbconvert
-
         notebook_node = self.to_notebook_node()
 
         if template_name is not None:
@@ -1196,8 +1195,6 @@ def _get_regex(text: str, case: bool = False, regex: bool = False) -> re.Pattern
 def _register(cls):
     if cls._exporters_init:
         return
-
-    import nbconvert
 
     import nbmanips.exporters as _nb_exporters
 
