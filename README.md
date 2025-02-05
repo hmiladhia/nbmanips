@@ -1,8 +1,12 @@
 # nbmanips
-![PyPI](https://img.shields.io/pypi/v/nbmanips)
-![PyPI - License](https://img.shields.io/pypi/l/nbmanips)
-![PyPI - Wheel](https://img.shields.io/pypi/wheel/nbmanips)
 
+[![logo](https://raw.githubusercontent.com/hmiladhia/nbmanips/refs/heads/main/docs/linelogo.png)](https://pypi.org/project/nbmanips/)
+
+[![PyPI](https://img.shields.io/pypi/v/nbmanips)](https://pypi.org/project/nbmanips/)
+[![PyPI - License](https://img.shields.io/pypi/l/nbmanips)](https://pypi.org/project/nbmanips/)
+[![PyPI - Wheel](https://img.shields.io/pypi/wheel/nbmanips)](https://pypi.org/project/nbmanips/)
+
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![Tests](https://github.com/hmiladhia/nbmanips/actions/workflows/tests.yml/badge.svg)
 [![codecov](https://codecov.io/gh/hmiladhia/nbmanips/branch/main/graph/badge.svg)](https://codecov.io/gh/hmiladhia/nbmanips)
 
