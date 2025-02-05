@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from copy import copy
+from functools import partial
 from itertools import filterfalse
-from typing import Callable, Iterable, Iterator
+from typing import TYPE_CHECKING, Callable, Iterable, Iterator
 
-from nbmanips._utils import partial
 from nbmanips.cell import Cell
-from nbmanips.notebook.ipynb import RawNotebookType
+
+if TYPE_CHECKING:
+    from nbmanips.notebook import RawNotebookType
 
 
 class SelectorBase(ABC):
