@@ -3,12 +3,21 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from nbmanips.notebook.ipynb import get_nb_from_dict
+from nbmanips.notebook.notebook import Notebook
+
 try:
     import pandas as pd
 except ImportError:
     pd = None
 
-from nbmanips.notebook.ipynb import _get_nb_from_dict
+
+class ZPLN(Notebook):
+    def __new__(
+        cls, path: str, name: str | None = None, encoding: str = "utf-8"
+    ) -> Notebook:
+        return Notebook.read_zpln(path, encoding=encoding, name=name)
+
 
 # -- Constants --
 # --- READERS Constants ---
@@ -106,5 +115,5 @@ def read_zpln(
 
         notebook["cells"].append(cell)
 
-    nb_node = _get_nb_from_dict(notebook, as_version=version)
+    nb_node = get_nb_from_dict(notebook, as_version=version)
     return name, dict(nb_node)

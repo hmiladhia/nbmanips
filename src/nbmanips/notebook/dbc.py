@@ -3,7 +3,19 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from nbmanips.notebook.ipynb import _get_nb_from_dict
+from nbmanips.notebook.ipynb import get_nb_from_dict
+from nbmanips.notebook.notebook import Notebook
+
+
+class DBC(Notebook):
+    def __new__(
+        cls,
+        path: str,
+        filename: str | None = None,
+        encoding: str = "utf-8",
+        name: str | None = None,
+    ) -> Notebook:
+        return Notebook.read_dbc(path, filename=filename, encoding=encoding, name=name)
 
 
 def _get_dbc_dict(
@@ -102,5 +114,5 @@ def read_dbc(
 
         notebook["cells"].append(cell)
 
-    nb_node = _get_nb_from_dict(notebook, as_version=version)
+    nb_node = get_nb_from_dict(notebook, as_version=version)
     return name, dict(nb_node)
